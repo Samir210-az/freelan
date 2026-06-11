@@ -1431,6 +1431,29 @@
   </div>
 </div>
 
+<!-- ===== BID MODAL ===== -->
+<div class="modal-overlay" id="modal-bid">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('bid')">✕</button>
+    <h2>Təklif ver 💼</h2>
+    <p class="modal-sub" id="bid-job-title-label" style="color:var(--grad1);font-weight:600;"></p>
+    <div class="form-group">
+      <label class="form-label">Təklif məbləği (₼)</label>
+      <input class="form-input" id="bid-amount" type="number" placeholder="Məs: 350">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Müddət (gün)</label>
+      <input class="form-input" id="bid-days" type="number" placeholder="Məs: 5">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Müraciət məktubu</label>
+      <textarea class="form-textarea" id="bid-cover" placeholder="Özünüzü təqdim edin, niyə bu işi edə biləcəyinizi yazın..."></textarea>
+    </div>
+    <div id="bid-error" class="fb-error" style="display:none;margin-bottom:10px;"></div>
+    <button class="btn btn-primary" id="bid-btn" style="width:100%;justify-content:center;" onclick="fbSubmitBid()">Təklifi göndər 🚀</button>
+  </div>
+</div>
+
 <!-- ===== JOB DETAIL PAGE ===== -->
 <div id="page-job-detail" class="page">
   <div style="padding-top:68px;">
@@ -1456,73 +1479,30 @@
           </div>
         </div>
         <div class="jd-card" style="margin-top:16px;">
-          <div style="font-size:16px;font-weight:700;margin-bottom:16px;" data-i18n="bids_title">Təkliflər (8)</div>
-          <div class="bid-item">
-            <div class="bid-avatar" style="background:linear-gradient(135deg,#7C3AED,#2563EB)">A</div>
-            <div class="bid-body">
-              <div class="bid-header-row">
-                <div><div class="bid-name">Aytən M. <span class="bid-stars">★ 4.9</span></div><div class="bid-role">UI/UX Dizayner · 120 iş</div></div>
-                <div class="bid-price">₼320</div>
-              </div>
-              <div class="bid-text">Salam! Bu layihə üçün çox maraqlı idealarım var. 5 illik brendinq təcrübəm var. 3 gün ərzində ilkin konsept göndərə bilərəm.</div>
-              <div class="bid-actions">
-                <button class="btn btn-primary" style="padding:8px 16px;font-size:13px;" onclick="openModal('register')" data-i18n="accept_bid">Qəbul et</button>
-                <button class="btn btn-outline" style="padding:8px 14px;font-size:13px;" onclick="showPage('messages')" data-i18n="send_msg">Mesaj göndər</button>
-              </div>
-            </div>
-          </div>
-          <div class="bid-item">
-            <div class="bid-avatar" style="background:linear-gradient(135deg,#059669,#2563EB)">N</div>
-            <div class="bid-body">
-              <div class="bid-header-row">
-                <div><div class="bid-name">Nicat B. <span class="bid-stars">★ 4.8</span></div><div class="bid-role">Qrafik Dizayner · 85 iş</div></div>
-                <div class="bid-price">₼380</div>
-              </div>
-              <div class="bid-text">Restoran brendinqi sahəsində 20+ uğurlu layihəm var. Sürətli çatdırılma təmin edirəm.</div>
-              <div class="bid-actions">
-                <button class="btn btn-primary" style="padding:8px 16px;font-size:13px;" onclick="openModal('register')" data-i18n="accept_bid">Qəbul et</button>
-                <button class="btn btn-outline" style="padding:8px 14px;font-size:13px;" onclick="showPage('messages')" data-i18n="send_msg">Mesaj göndər</button>
-              </div>
-            </div>
-          </div>
-          <div class="bid-item">
-            <div class="bid-avatar" style="background:linear-gradient(135deg,#D97706,#DB2777)">S</div>
-            <div class="bid-body">
-              <div class="bid-header-row">
-                <div><div class="bid-name">Sevinc A. <span class="bid-stars">★ 4.7</span></div><div class="bid-role">Qrafik Dizayner · 42 iş</div></div>
-                <div class="bid-price">₼290</div>
-              </div>
-              <div class="bid-text">Minimal brendinq üzrə ixtisaslaşmışam. Türk restoranları üçün xüsusi konsept hazırlaya bilərəm.</div>
-              <div class="bid-actions">
-                <button class="btn btn-primary" style="padding:8px 16px;font-size:13px;" onclick="openModal('register')" data-i18n="accept_bid">Qəbul et</button>
-                <button class="btn btn-outline" style="padding:8px 14px;font-size:13px;" onclick="showPage('messages')" data-i18n="send_msg">Mesaj göndər</button>
-              </div>
-            </div>
+          <div style="font-size:16px;font-weight:700;margin-bottom:16px;" data-i18n="bids_title">Təkliflər (<span id="jd-bids-count">0</span>)</div>
+          <div id="jd-bids-list">
+            <p style="color:var(--text3);font-size:13px;text-align:center;padding:20px;">Elan seçin...</p>
           </div>
         </div>
       </div>
       <div>
         <div class="jd-sidebar-card">
-          <div class="jd-price-big">₼350</div>
+          <div class="jd-price-big" id="jd-budget">₼—</div>
           <div style="font-size:12px;color:var(--text3);margin-bottom:16px;" data-i18n="fixed_price">Sabit qiymət</div>
-          <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:13px;" onclick="openModal('register')"><span data-i18n="bid_now">Təklif ver</span> →</button>
+          <button class="btn btn-primary" id="jd-bid-btn" style="width:100%;justify-content:center;font-size:15px;padding:13px;" onclick="openModal('register')"><span data-i18n="bid_now">Təklif ver</span> →</button>
           <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:10px;" onclick="openModal('register')" data-i18n="save_job">♡ Saxla</button>
           <div class="jd-info-list">
-            <div class="jd-info-item"><span data-i18n="cat_label">Kateqoriya</span><strong>Dizayn</strong></div>
-            <div class="jd-info-item"><span data-i18n="deadline_label2">Müddət</span><strong>7 gün</strong></div>
-            <div class="jd-info-item"><span data-i18n="bids_count">Təkliflər</span><strong>8</strong></div>
-            <div class="jd-info-item"><span data-i18n="posted_label">Yerləşdirildi</span><strong data-i18n="time_ago">2 saat əvvəl</strong></div>
+            <div class="jd-info-item"><span data-i18n="cat_label">Kateqoriya</span><strong id="jd-cat">—</strong></div>
+            <div class="jd-info-item"><span data-i18n="deadline_label2">Müddət</span><strong id="jd-deadline">—</strong></div>
+            <div class="jd-info-item"><span data-i18n="bids_count">Təkliflər</span><strong id="jd-bids-sidebar">—</strong></div>
           </div>
         </div>
         <div class="jd-sidebar-card" style="margin-top:16px;">
           <div style="font-size:13px;font-weight:700;margin-bottom:14px;" data-i18n="client_info">Müştəri haqqında</div>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#6D28D9,#DB2777);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:white;">E</div>
-            <div><div style="font-size:14px;font-weight:600;">Elnur H.</div><div style="font-size:11px;color:var(--text3);">⭐ 4.7 · 12 elan</div></div>
+            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#6D28D9,#DB2777);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:white;" id="jd-client-avatar">?</div>
+            <div><div style="font-size:14px;font-weight:600;" id="jd-client-name">—</div></div>
           </div>
-          <div class="jd-info-item"><span data-i18n="member_since">Üzv olub</span><strong>2024</strong></div>
-          <div class="jd-info-item"><span data-i18n="jobs_posted">Yerləşdirilən</span><strong>12 elan</strong></div>
-          <div class="jd-info-item"><span data-i18n="hire_rate">Seçim faizi</span><strong>89%</strong></div>
         </div>
       </div>
     </div>
@@ -1665,8 +1645,13 @@
         <!-- MY BIDS -->
         <div id="dash-my-bids" class="dash-section">
           <h2 class="dash-title">Təkliflərim</h2>
-          <div id="dash-bids-list">
-            <p style="color:var(--text3);font-size:13px;text-align:center;padding:24px;">Hələ heç bir təklif verməmisiniz.</p>
+          <div class="bids-table">
+            <div class="bids-table-header">
+              <span>Tapşırıq</span><span>Məbləğ</span><span>Status</span>
+            </div>
+            <div id="dash-bids-table">
+              <div style="text-align:center;color:var(--text3);padding:24px;font-size:13px;">Hələ heç bir təklif verməmisiniz.</div>
+            </div>
           </div>
         </div>
 
@@ -2478,6 +2463,188 @@
     if (el) el.style.display = 'none';
   };
 
+  // ======= OPEN BID MODAL =======
+  window.openBidModal = function(jobId, jobTitle) {
+    if (!window._fb.currentUser) {
+      openModal('register');
+      return;
+    }
+    const role = window._fb.currentUserData?.role;
+    if (role === 'client') {
+      showToast('Yalnız freelancerlər təklif verə bilər');
+      return;
+    }
+    window._bidJobId = jobId;
+    document.getElementById('bid-job-title-label').textContent = jobTitle || 'Elan';
+    document.getElementById('bid-amount').value = '';
+    document.getElementById('bid-days').value = '';
+    document.getElementById('bid-cover').value = '';
+    document.getElementById('bid-error').style.display = 'none';
+    document.getElementById('modal-bid').classList.add('open');
+  };
+
+  // ======= SUBMIT BID =======
+  window.fbSubmitBid = async function() {
+    const user = window._fb.currentUser;
+    if (!user) return;
+    const jobId = window._bidJobId;
+    const amount = parseInt(document.getElementById('bid-amount').value);
+    const days = parseInt(document.getElementById('bid-days').value);
+    const cover = document.getElementById('bid-cover').value.trim();
+
+    if (!amount || amount < 1) { showFbError('bid-error', 'Məbləği daxil edin'); return; }
+    if (!days || days < 1) { showFbError('bid-error', 'Müddəti daxil edin'); return; }
+    if (!cover) { showFbError('bid-error', 'Müraciət məktubunu yazın'); return; }
+
+    const btn = document.getElementById('bid-btn');
+    btn.disabled = true; btn.textContent = '⏳ Göndərilir...';
+
+    try {
+      const userData = window._fb.currentUserData;
+      // Check if already bid
+      const existing = await getDocs(query(collection(db, 'bids'),
+        where('jobId', '==', jobId), where('freelancerId', '==', user.uid)));
+      if (!existing.empty) {
+        showFbError('bid-error', 'Bu elanda artıq təklifiniz var');
+        btn.disabled = false; btn.textContent = 'Təklifi göndər 🚀';
+        return;
+      }
+      await addDoc(collection(db, 'bids'), {
+        jobId,
+        freelancerId: user.uid,
+        freelancerName: userData?.name || user.email.split('@')[0],
+        freelancerRating: userData?.rating || 0,
+        amount, days, cover,
+        status: 'pending',
+        createdAt: serverTimestamp()
+      });
+      // increment bids count on job
+      await updateDoc(doc(db, 'jobs', jobId), { bids: (await getDoc(doc(db, 'jobs', jobId))).data()?.bids + 1 || 1 });
+      document.getElementById('modal-bid').classList.remove('open');
+      showToast('Təklifiniz göndərildi! 🎉');
+      loadJobs();
+      // reload job detail if open
+      if (window._currentJobId === jobId) loadJobDetail(jobId);
+    } catch(e) {
+      showFbError('bid-error', 'Xəta: ' + e.message);
+      btn.disabled = false; btn.textContent = 'Təklifi göndər 🚀';
+    }
+  };
+
+  // ======= LOAD JOB DETAIL =======
+  window.loadJobDetail = async function(jobId) {
+    window._currentJobId = jobId;
+    try {
+      const jobSnap = await getDoc(doc(db, 'jobs', jobId));
+      if (!jobSnap.exists()) return;
+      const j = { id: jobSnap.id, ...jobSnap.data() };
+
+      // Fill detail page
+      const titleEl = document.getElementById('jd-title');
+      const descEl = document.getElementById('jd-desc');
+      const budgetEl = document.getElementById('jd-budget');
+      const catEl = document.getElementById('jd-cat');
+      const deadlineEl = document.getElementById('jd-deadline');
+      const bidsEl = document.getElementById('jd-bids-count');
+      const clientEl = document.getElementById('jd-client-name');
+      const bidBtnEl = document.getElementById('jd-bid-btn');
+
+      if (titleEl) titleEl.textContent = j.title;
+      if (descEl) descEl.textContent = j.description;
+      if (budgetEl) budgetEl.textContent = '₼' + j.budget;
+      if (catEl) catEl.textContent = j.category;
+      if (deadlineEl) deadlineEl.textContent = j.deadline + ' gün';
+      if (bidsEl) bidsEl.textContent = j.bids || 0;
+      if (clientEl) clientEl.textContent = j.clientName || 'Müştəri';
+      if (bidBtnEl) {
+        bidBtnEl.onclick = () => openBidModal(j.id, j.title);
+      }
+
+      // Load bids for this job
+      const bidsSnap = await getDocs(query(collection(db, 'bids'),
+        where('jobId', '==', jobId), orderBy('createdAt', 'desc'), limit(10)));
+      const bids = [];
+      bidsSnap.forEach(d => bids.push({ id: d.id, ...d.data() }));
+      renderJobBids(bids, j);
+
+      showPage('job-detail');
+    } catch(e) {
+      console.log('Job detail error:', e);
+    }
+  };
+
+  function renderJobBids(bids, job) {
+    const listEl = document.getElementById('jd-bids-list');
+    if (!listEl) return;
+    if (bids.length === 0) {
+      listEl.innerHTML = '<p style="color:var(--text3);font-size:13px;text-align:center;padding:20px;">Hələ heç bir təklif yoxdur. İlk siz olun! 🚀</p>';
+      return;
+    }
+    const isOwner = window._fb.currentUser?.uid === job.clientId;
+    listEl.innerHTML = bids.map(b => `
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+          <div>
+            <div style="font-weight:700;font-size:15px;">${b.freelancerName}</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px;">⭐ ${b.freelancerRating || '—'} · ⏱ ${b.days} gün</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:18px;font-weight:800;color:var(--grad1);">₼${b.amount}</div>
+            ${isOwner && b.status === 'pending' ? `
+              <button onclick="window.acceptBid('${b.id}','${job.id}','${b.freelancerId}')" style="margin-top:6px;background:var(--grad1);color:#fff;border:none;padding:5px 12px;border-radius:8px;cursor:pointer;font-size:12px;">✅ Qəbul et</button>
+            ` : b.status === 'accepted' ? '<span style="color:#10B981;font-size:12px;font-weight:600;">✅ Qəbul edildi</span>' : ''}
+          </div>
+        </div>
+        <p style="font-size:13px;color:var(--text2);margin-top:10px;line-height:1.6;">${b.cover}</p>
+      </div>
+    `).join('');
+  }
+
+  // ======= ACCEPT BID =======
+  window.acceptBid = async function(bidId, jobId, freelancerId) {
+    try {
+      await updateDoc(doc(db, 'bids', bidId), { status: 'accepted' });
+      await updateDoc(doc(db, 'jobs', jobId), { status: 'in_progress', assignedTo: freelancerId });
+      showToast('Təklif qəbul edildi! İş başlayır 🎉');
+      loadJobDetail(jobId);
+    } catch(e) { showToast('Xəta: ' + e.message); }
+  };
+
+  // ======= LOAD MY BIDS (Dashboard) =======
+  window.loadMyBids = async function() {
+    const user = window._fb.currentUser;
+    if (!user) return;
+    try {
+      const q = query(collection(db, 'bids'), where('freelancerId', '==', user.uid), orderBy('createdAt', 'desc'));
+      const snap = await getDocs(q);
+      const bids = [];
+      snap.forEach(d => bids.push({ id: d.id, ...d.data() }));
+
+      const el = document.getElementById('dash-bids-table');
+      if (!el) return;
+      if (bids.length === 0) {
+        el.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:24px;">Hələ heç bir təklifiniz yoxdur</td></tr>';
+        return;
+      }
+      // Get job titles
+      const jobIds = [...new Set(bids.map(b => b.jobId))];
+      const jobTitles = {};
+      for (const jid of jobIds) {
+        try {
+          const js = await getDoc(doc(db, 'jobs', jid));
+          if (js.exists()) jobTitles[jid] = js.data().title;
+        } catch(e) {}
+      }
+      el.innerHTML = bids.map(b => `
+        <div class="bids-table-row">
+          <span style="font-size:13px;">${jobTitles[b.jobId] || '—'}</span>
+          <span style="font-weight:700;color:var(--grad1);">₼${b.amount}</span>
+          <span><span class="status-badge ${b.status === 'accepted' ? 'badge-open' : b.status === 'pending' ? 'status-pending' : 'status-progress'}">${b.status === 'accepted' ? 'Qəbul edildi' : b.status === 'pending' ? 'Gözləyir' : b.status}</span></span>
+        </div>
+      `).join('');
+    } catch(e) { console.log('My bids error:', e); }
+  };
+
   // Init on load
   window.addEventListener('DOMContentLoaded', () => {
     loadJobs();
@@ -2500,8 +2667,12 @@
     if (activeLink) activeLink.classList.add('active-page');
   }
 
-  function showJobDetail() {
-    showPage('job-detail');
+  function showJobDetail(jobId) {
+    if (jobId && window.loadJobDetail) {
+      window.loadJobDetail(jobId);
+    } else {
+      showPage('job-detail');
+    }
   }
 
   // ========== ADMIN TABS ==========
@@ -2524,6 +2695,7 @@
     if (el) el.classList.add('active');
     document.querySelectorAll('.dash-nav-item').forEach(a => a.classList.remove('active'));
     event.currentTarget.classList.add('active');
+    if (tab === 'bids' && window.loadMyBids) window.loadMyBids();
   }
 
   // ========== MOBILE MENU ==========
@@ -2547,6 +2719,7 @@
   function closeModal(type) {
     if (type === 'auth') document.getElementById('modal-auth').classList.remove('open');
     if (type === 'postjob') document.getElementById('modal-postjob').classList.remove('open');
+    if (type === 'bid') document.getElementById('modal-bid').classList.remove('open');
   }
   document.querySelectorAll('.modal-overlay').forEach(o => {
     o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
