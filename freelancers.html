@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Freelancerlər — Freelan.az</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header id="app-header"></header>
+
+<div class="container">
+  <div class="page-head">
+    <h1>Freelancerlər</h1>
+    <p id="fl-count">Yüklənir...</p>
+  </div>
+
+  <div class="searchbar" style="margin-top:20px;">
+    <input type="text" id="search-q" placeholder="Ad və ya ixtisas üzrə axtar..." onkeydown="if(event.key==='Enter')applyFilter()" oninput="if(!this.value)applyFilter()">
+    <button class="btn btn-green" onclick="applyFilter()">Axtar</button>
+  </div>
+
+  <div class="grid-4" id="fl-grid" style="padding-bottom:60px;">
+    <div class="empty" style="grid-column:1/-1;"><div class="ico">⏳</div><p>Yüklənir...</p></div>
+  </div>
+</div>
+
+<footer id="app-footer"></footer>
+
+<script type="module" src="js/app.js"></script>
+<script type="module">
+let all = [];
+document.addEventListener('fb-ready', load);
+
+let loading = false;
+async function load() {
+  if (loading) return; loading = true;
+  const { db, collection, getDocs, query, where, limit } = FB;
+  try {
+    const snap = await getDocs(query(collection(db, 'users'), where('role','==','freelancer'), limit(100)));
+    all = [];
+    snap.forEach(d => { const u = d.data(); if (u.status !== 'banned') all.push({ id: d.id, ...u }); });
+    all.sort((a,b) => (b.rating||0) - (a.rating||0));
+    applyFilter();
+  } catch(e) {
+    document.getElementById('fl-grid').innerHTML = '<div class="empty" style="grid-column:1/-1;"><div class="ico">⚠️</div><p>Yüklənmədi: ' + esc(e.message) + '</p></div>';
+  }
+  loading = false;
+}
+
+window.applyFilter = function() {
+  const kw = document.getElementById('search-q').value.trim().toLowerCase();
+  const list = kw
+    ? all.filter(f => (f.name||'').toLowerCase().includes(kw) || (f.title||'').toLowerCase().includes(kw) || (f.skills||[]).join(' ').toLowerCase().includes(kw))
+    : all;
+  document.getElementById('fl-count').textContent = list.length + ' freelancer';
+  const el = document.getElementById('fl-grid');
+  el.innerHTML = list.length
+    ? list.map(f => `
+      <div class="fl-card" onclick="location.href='profile.html?id=${f.id}'">
+        <div class="avatar">${esc((f.name||'?')[0].toUpperCase())}</div>
+        <h3>${esc(f.name)}</h3>
+        <div class="role">${esc(f.title || 'Freelancer')}</div>
+        <div class="stars">★ ${f.rating > 0 ? f.rating.toFixed(1) : 'Yeni'} · ${f.jobsDone||0} iş</div>
+        ${(f.skills||[]).length ? `<div class="tags" style="justify-content:center;margin-top:10px;">${f.skills.slice(0,3).map(s=>`<span class="tag">${esc(s)}</span>`).join('')}</div>` : ''}
+        ${f.rate > 0 ? `<div class="rate">₼${f.rate}/saat</div>` : ''}
+      </div>`).join('')
+    : '<div class="empty" style="grid-column:1/-1;"><div class="ico">🔍</div><p>Nəticə tapılmadı</p></div>';
+};
+</script>
+</body>
+</html>
