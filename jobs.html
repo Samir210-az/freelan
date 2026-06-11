@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tapşırıqlar — Freelan.az</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header id="app-header"></header>
+
+<div class="container">
+  <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;">
+    <div>
+      <h1>Tapşırıqlar</h1>
+      <p id="jobs-count">Yüklənir...</p>
+    </div>
+    <button class="btn btn-green" onclick="openPostJob()">+ Elan ver</button>
+  </div>
+
+  <div class="searchbar" style="margin-top:20px;">
+    <input type="text" id="search-q" placeholder="Tapşırıq axtar... (başlıq, təsvir, kateqoriya)" onkeydown="if(event.key==='Enter')applyFilters()" oninput="if(!this.value)applyFilters()">
+    <button class="btn btn-green" onclick="applyFilters()">Axtar</button>
+  </div>
+
+  <div class="filter-pills" id="cat-pills">
+    <button class="pill active" data-cat="" onclick="pickCat(this)">Hamısı</button>
+    <button class="pill" data-cat="Dizayn" onclick="pickCat(this)">Dizayn</button>
+    <button class="pill" data-cat="Proqramlaşdırma" onclick="pickCat(this)">Proqramlaşdırma</button>
+    <button class="pill" data-cat="Kopiraytinq" onclick="pickCat(this)">Kopiraytinq</button>
+    <button class="pill" data-cat="SMM & Marketing" onclick="pickCat(this)">SMM & Marketing</button>
+    <button class="pill" data-cat="Video & Animasiya" onclick="pickCat(this)">Video & Animasiya</button>
+    <button class="pill" data-cat="Tərcümə" onclick="pickCat(this)">Tərcümə</button>
+    <button class="pill" data-cat="Data & Analitika" onclick="pickCat(this)">Data & Analitika</button>
+    <button class="pill" data-cat="Audio & Musiqi" onclick="pickCat(this)">Audio & Musiqi</button>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px;padding-bottom:60px;" id="jobs-list">
+    <div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div>
+  </div>
+</div>
+
+<footer id="app-footer"></footer>
+
+<script type="module" src="js/app.js"></script>
+<script type="module">
+let allJobs = [];
+let activeCat = '';
+
+document.addEventListener('fb-ready', load);
+document.addEventListener('job-posted', load);
+document.addEventListener('bid-sent', load);
+
+let loading = false;
+async function load() {
+  if (loading) return; loading = true;
+  const { db, collection, getDocs, query, where, limit } = FB;
+  try {
+    const snap = await getDocs(query(collection(db, 'jobs'), where('status','==','approved'), limit(100)));
+    allJobs = [];
+    snap.forEach(d => allJobs.push({ id: d.id, ...d.data() }));
+    allJobs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    // Apply URL params
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q');
+    const cat = params.get('cat');
+    if (q) document.getElementById('search-q').value = q;
+    if (cat) {
+      const pill = document.querySelector(`.pill[data-cat="${cat}"]`);
+      if (pill) {
+        document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        activeCat = cat;
+      }
+    }
+    applyFilters();
+  } catch(e) {
+    document.getElementById('jobs-list').innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>Elanlar yüklənmədi: ' + esc(e.message) + '</p></div>';
+  }
+  loading = false;
+}
+
+window.pickCat = function(btn) {
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  activeCat = btn.dataset.cat;
+  applyFilters();
+};
+
+window.applyFilters = function() {
+  const kw = document.getElementById('search-q').value.trim().toLowerCase();
+  let list = allJobs;
+  if (activeCat) list = list.filter(j => j.category === activeCat);
+  if (kw) list = list.filter(j =>
+    (j.title||'').toLowerCase().includes(kw) ||
+    (j.description||'').toLowerCase().includes(kw) ||
+    (j.category||'').toLowerCase().includes(kw));
+  const el = document.getElementById('jobs-list');
+  document.getElementById('jobs-count').textContent = list.length + ' tapşırıq tapıldı';
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="ico">🔍</div><p>${kw ? '"' + esc(kw) + '" üzrə nəticə tapılmadı' : 'Bu kateqoriyada elan yoxdur'}</p>
+      <button class="btn btn-line btn-sm" style="margin-top:14px;" onclick="resetFilters()">Filtri sıfırla</button></div>`;
+    return;
+  }
+  el.innerHTML = list.map(jobCardHtml).join('');
+};
+
+window.resetFilters = function() {
+  document.getElementById('search-q').value = '';
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  document.querySelector('.pill[data-cat=""]').classList.add('active');
+  activeCat = '';
+  applyFilters();
+};
+</script>
+</body>
+</html>
