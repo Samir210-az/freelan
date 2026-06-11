@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — Freelan.az</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header id="app-header"></header>
+
+<div class="dash-wrap" id="admin-wrap" style="display:none;">
+  <aside class="dash-side">
+    <div class="dash-user">
+      <div class="avatar" style="background:var(--ink);">👑</div>
+      <div style="font-weight:700;font-size:15px;">Admin Panel</div>
+    </div>
+    <nav class="dash-nav">
+      <a class="active" data-sec="overview" onclick="showSec('overview')">📊 İcmal</a>
+      <a data-sec="pending" onclick="showSec('pending')">⏳ Moderasiya <span class="badge badge-orange" id="pending-count" style="margin-left:auto;">0</span></a>
+      <a data-sec="jobs" onclick="showSec('jobs')">📋 Bütün elanlar</a>
+      <a data-sec="users" onclick="showSec('users')">👥 İstifadəçilər</a>
+    </nav>
+  </aside>
+
+  <main class="dash-main">
+    <!-- OVERVIEW -->
+    <div class="dash-sec active" id="sec-overview">
+      <h2 style="font-size:22px;margin-bottom:20px;">İcmal 📊</h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="ico">👥</div><div class="val" id="st-users">0</div><div class="lbl">İstifadəçi</div></div>
+        <div class="stat-card"><div class="ico">📋</div><div class="val" id="st-jobs">0</div><div class="lbl">Elan</div></div>
+        <div class="stat-card"><div class="ico">⏳</div><div class="val" id="st-pending">0</div><div class="lbl">Moderasiyada</div></div>
+        <div class="stat-card"><div class="ico">💼</div><div class="val" id="st-bids">0</div><div class="lbl">Təklif</div></div>
+      </div>
+    </div>
+
+    <!-- PENDING -->
+    <div class="dash-sec" id="sec-pending">
+      <h2 style="font-size:22px;margin-bottom:20px;">Moderasiya gözləyənlər ⏳</h2>
+      <div id="pending-list"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
+    </div>
+
+    <!-- ALL JOBS -->
+    <div class="dash-sec" id="sec-jobs">
+      <h2 style="font-size:22px;margin-bottom:20px;">Bütün elanlar 📋</h2>
+      <div class="tbl-wrap" id="jobs-table"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
+    </div>
+
+    <!-- USERS -->
+    <div class="dash-sec" id="sec-users">
+      <h2 style="font-size:22px;margin-bottom:20px;">İstifadəçilər 👥</h2>
+      <div class="tbl-wrap" id="users-table"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
+    </div>
+  </main>
+</div>
+
+<div id="no-access" class="container" style="display:none;">
+  <div class="empty" style="padding:100px 20px;">
+    <div class="ico">⛔</div>
+    <p>Bu səhifəyə yalnız adminlər daxil ola bilər</p>
+    <a class="btn btn-green btn-sm" style="margin-top:14px;" href="index.html">Ana səhifəyə qayıt</a>
+  </div>
+</div>
+
+<footer id="app-footer"></footer>
+
+<script type="module" src="js/app.js"></script>
+<script type="module">
+document.addEventListener('fb-ready', init);
+
+function init() {
+  if (!FB.user || FB.userData?.role !== 'admin') {
+    document.getElementById('no-access').style.display = 'block';
+    return;
+  }
+  document.getElementById('admin-wrap').style.display = 'grid';
+  loadAll();
+}
+
+window.showSec = function(sec) {
+  document.querySelectorAll('.dash-sec').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + sec)?.classList.add('active');
+  document.querySelectorAll('.dash-nav a[data-sec]').forEach(a => a.classList.remove('active'));
+  document.querySelector(`.dash-nav a[data-sec="${sec}"]`)?.classList.add('active');
+};
+
+async function loadAll() {
+  const { db, collection, getDocs } = FB;
+  try {
+    const [jobsSnap, usersSnap, bidsSnap] = await Promise.all([
+      getDocs(collection(db, 'jobs')),
+      getDocs(collection(db, 'users')),
+      getDocs(collection(db, 'bids'))
+    ]);
+
+    const jobs = []; jobsSnap.forEach(d => jobs.push({ id: d.id, ...d.data() }));
+    const users = []; usersSnap.forEach(d => users.push({ id: d.id, ...d.data() }));
+    jobs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    users.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+
+    const pending = jobs.filter(j => j.status === 'pending');
+
+    // Stats
+    document.getElementById('st-users').textContent = users.length;
+    document.getElementById('st-jobs').textContent = jobs.length;
+    document.getElementById('st-pending').textContent = pending.length;
+    document.getElementById('st-bids').textContent = bidsSnap.size;
+    document.getElementById('pending-count').textContent = pending.length;
+
+    renderPending(pending);
+    renderJobs(jobs);
+    renderUsers(users);
+  } catch(e) {
+    showToast('Yükləmə xətası: ' + e.message);
+  }
+}
+
+function renderPending(list) {
+  const el = document.getElementById('pending-list');
+  el.innerHTML = list.length ? list.map(j => `
+    <div class="prop-item">
+      <div class="prop-head">
+        <div style="flex:1;">
+          <div class="prop-name">${esc(j.title)}</div>
+          <div class="prop-meta">📁 ${esc(j.category)} · 👤 ${esc(j.clientName)} · ${timeAgo(j.createdAt)}</div>
+          <p class="prop-cover">${esc((j.description||'').substring(0,200))}${(j.description||'').length>200?'…':''}</p>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div class="prop-amount">₼${j.budget}</div>
+          <div style="display:flex;gap:6px;margin-top:10px;">
+            <button class="btn btn-green btn-sm" onclick="approveJob('${j.id}')">✅ Təsdiqlə</button>
+            <button class="btn btn-danger btn-sm" onclick="rejectJob('${j.id}')">❌ Rədd et</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('')
+  : '<div class="empty"><div class="ico">✨</div><p>Moderasiya gözləyən elan yoxdur</p></div>';
+}
+
+function renderJobs(list) {
+  const el = document.getElementById('jobs-table');
+  const sb = s => s==='approved'?'<span class="badge badge-green">Aktiv</span>':s==='pending'?'<span class="badge badge-orange">Gözləyir</span>':s==='in_progress'?'<span class="badge badge-blue">Davam edir</span>':s==='completed'?'<span class="badge badge-gray">Tamamlanıb</span>':s==='rejected'?'<span class="badge badge-red">Rədd</span>':'<span class="badge badge-gray">'+esc(s)+'</span>';
+  el.innerHTML = list.length ? `
+    <table class="tbl">
+      <thead><tr><th>Başlıq</th><th>Müştəri</th><th>Büdcə</th><th>Status</th><th>Əməliyyat</th></tr></thead>
+      <tbody>${list.map(j => `
+        <tr>
+          <td style="font-weight:600;max-width:240px;"><a href="job.html?id=${j.id}" style="color:var(--green);">${esc(j.title)}</a></td>
+          <td>${esc(j.clientName||'—')}</td>
+          <td style="font-weight:700;">₼${j.budget}</td>
+          <td>${sb(j.status)}</td>
+          <td style="display:flex;gap:6px;">
+            ${j.status==='pending'?`<button class="btn btn-green btn-sm" onclick="approveJob('${j.id}')">✅</button>`:''}
+            <button class="btn btn-danger btn-sm" onclick="deleteJob('${j.id}')">🗑</button>
+          </td>
+        </tr>`).join('')}</tbody>
+    </table>` : '<div class="empty"><div class="ico">📋</div><p>Elan yoxdur</p></div>';
+}
+
+function renderUsers(list) {
+  const el = document.getElementById('users-table');
+  el.innerHTML = list.length ? `
+    <table class="tbl">
+      <thead><tr><th>Ad</th><th>E-poçt</th><th>Rol</th><th>Status</th><th>Əməliyyat</th></tr></thead>
+      <tbody>${list.map(u => `
+        <tr>
+          <td style="font-weight:600;">${esc(u.name||'—')}</td>
+          <td>${esc(u.email||'—')}</td>
+          <td>${u.role==='admin'?'<span class="badge badge-gray">👑 Admin</span>':u.role==='freelancer'?'<span class="badge badge-green">Freelancer</span>':'<span class="badge badge-blue">Müştəri</span>'}</td>
+          <td>${u.status==='banned'?'<span class="badge badge-red">Bloklanıb</span>':'<span class="badge badge-green">Aktiv</span>'}</td>
+          <td>${u.role!=='admin'?`<button class="btn ${u.status==='banned'?'btn-line':'btn-danger'} btn-sm" onclick="toggleBan('${u.id}','${u.status||'active'}')">${u.status==='banned'?'Bloku aç':'Blokla'}</button>`:'—'}</td>
+        </tr>`).join('')}</tbody>
+    </table>` : '<div class="empty"><div class="ico">👥</div><p>İstifadəçi yoxdur</p></div>';
+}
+
+window.approveJob = async function(id) {
+  const { db, doc, updateDoc } = FB;
+  try {
+    await updateDoc(doc(db, 'jobs', id), { status: 'approved' });
+    showToast('Elan təsdiqləndi ✅');
+    loadAll();
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
+
+window.rejectJob = async function(id) {
+  if (!confirm('Bu elanı rədd etmək istəyirsiniz?')) return;
+  const { db, doc, updateDoc } = FB;
+  try {
+    await updateDoc(doc(db, 'jobs', id), { status: 'rejected' });
+    showToast('Elan rədd edildi');
+    loadAll();
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
+
+window.deleteJob = async function(id) {
+  if (!confirm('Bu elanı tamamilə silmək istəyirsiniz? Geri qaytarıla bilməz!')) return;
+  const { db, doc, deleteDoc } = FB;
+  try {
+    await deleteDoc(doc(db, 'jobs', id));
+    showToast('Elan silindi 🗑');
+    loadAll();
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
+
+window.toggleBan = async function(uid, cur) {
+  const { db, doc, updateDoc } = FB;
+  try {
+    const ns = cur === 'banned' ? 'active' : 'banned';
+    await updateDoc(doc(db, 'users', uid), { status: ns });
+    showToast(ns === 'banned' ? 'İstifadəçi bloklandı 🚫' : 'Blok açıldı ✅');
+    loadAll();
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
+</script>
+</body>
+</html>
