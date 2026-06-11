@@ -682,8 +682,8 @@
   /* ===== RESPONSIVE — MOBILE (≤600px) ===== */
   @media (max-width: 600px) {
     /* Nav */
-    .nav-right .btn { display: none; }
-    .nav-right .btn:last-child { display: inline-flex; padding: 8px 14px; font-size: 13px; }
+    .nav-right .btn { display: inline-flex; padding: 7px 12px; font-size: 12px; }
+    .nav-right .lang-switch { display: none; }
     .lang-switch { gap: 1px; }
     .lang-btn { padding: 4px 8px; font-size: 11px; }
 
@@ -887,6 +887,7 @@
     <a href="#" onclick="showPage('jobs')" data-page="jobs" data-i18n="nav_jobs">Tapşırıqlar</a>
     <a href="#" onclick="showPage('freelancers')" data-page="freelancers" data-i18n="nav_freelancers">Freelancerlər</a>
     <a href="#" onclick="showPage('pricing')" data-page="pricing" data-i18n="nav_pricing">Tariflər</a>
+    <a href="#" id="admin-nav-link" onclick="showPage('admin')" data-page="admin" style="display:none;color:#6D28D9;font-weight:700;">👑 Admin</a>
   </div>
   <div class="nav-right">
     <div class="lang-switch">
@@ -1042,7 +1043,7 @@
         <div class="job-tags"><span class="tag">Logo</span><span class="tag">Brendinq</span><span class="tag">Illustrator</span></div>
         <div class="job-footer">
           <div class="job-meta"><span>⏱ 7 gün</span><span>💬 8 təklif</span></div>
-          <button class="bid-btn" onclick="event.stopPropagation();openModal('register')" data-i18n="bid_btn">Təklif ver</button>
+          <button class="bid-btn" onclick="event.stopPropagation();smartBid(this)" data-i18n="bid_btn">Təklif ver</button>
         </div>
       </div>
       <div class="job-card" onclick="showJobDetail()" style="cursor:pointer;">
@@ -1054,7 +1055,7 @@
         <div class="job-tags"><span class="tag">Kopiraytinq</span><span class="tag">SEO</span><span class="tag">AZ/RU</span></div>
         <div class="job-footer">
           <div class="job-meta"><span>⏱ 5 gün</span><span>💬 12 təklif</span></div>
-          <button class="bid-btn" onclick="event.stopPropagation();openModal('register')" data-i18n="bid_btn">Təklif ver</button>
+          <button class="bid-btn" onclick="event.stopPropagation();smartBid(this)" data-i18n="bid_btn">Təklif ver</button>
         </div>
       </div>
       <div class="job-card" onclick="showJobDetail()" style="cursor:pointer;">
@@ -1066,7 +1067,7 @@
         <div class="job-tags"><span class="tag">SMM</span><span class="tag">Instagram</span><span class="tag">Dizayn</span></div>
         <div class="job-footer">
           <div class="job-meta"><span>⏱ 10 gün</span><span>💬 6 təklif</span></div>
-          <button class="bid-btn" onclick="event.stopPropagation();openModal('register')" data-i18n="bid_btn">Təklif ver</button>
+          <button class="bid-btn" onclick="event.stopPropagation();smartBid(this)" data-i18n="bid_btn">Təklif ver</button>
         </div>
       </div>
     </div>
@@ -1211,7 +1212,7 @@
           <div class="job-tags"><span class="tag">Logo</span><span class="tag">Brendinq</span><span class="tag">Illustrator</span><span class="tag">Vektoral</span></div>
           <div class="job-footer">
             <div class="job-meta"><span>⏱ 7 gün</span><span>💬 8 təklif</span><span>👁 124 baxış</span></div>
-            <button class="bid-btn" onclick="openModal('register')" data-i18n="bid_btn">Təklif ver</button>
+            <button class="bid-btn" onclick="smartBid(this)" data-i18n="bid_btn">Təklif ver</button>
           </div>
         </div>
         <div class="job-card-list">
@@ -1223,7 +1224,7 @@
           <div class="job-tags"><span class="tag">Kopiraytinq</span><span class="tag">SEO</span><span class="tag">AZ/RU</span></div>
           <div class="job-footer">
             <div class="job-meta"><span>⏱ 5 gün</span><span>💬 12 təklif</span><span>👁 89 baxış</span></div>
-            <button class="bid-btn" onclick="openModal('register')" data-i18n="bid_btn">Təklif ver</button>
+            <button class="bid-btn" onclick="smartBid(this)" data-i18n="bid_btn">Təklif ver</button>
           </div>
         </div>
         <div class="job-card-list">
@@ -1235,7 +1236,7 @@
           <div class="job-tags"><span class="tag">UI/UX</span><span class="tag">Figma</span><span class="tag">iOS</span><span class="tag">Design System</span></div>
           <div class="job-footer">
             <div class="job-meta"><span>⏱ 14 gün</span><span>💬 5 təklif</span><span>👁 201 baxış</span></div>
-            <button class="bid-btn" onclick="openModal('register')" data-i18n="bid_btn">Təklif ver</button>
+            <button class="bid-btn" onclick="smartBid(this)" data-i18n="bid_btn">Təklif ver</button>
           </div>
         </div>
         <div class="job-card-list">
@@ -1247,7 +1248,7 @@
           <div class="job-tags"><span class="tag">SMM</span><span class="tag">Instagram</span><span class="tag">Canva/PS</span></div>
           <div class="job-footer">
             <div class="job-meta"><span>⏱ 10 gün</span><span>💬 6 təklif</span><span>👁 77 baxış</span></div>
-            <button class="bid-btn" onclick="openModal('register')" data-i18n="bid_btn">Təklif ver</button>
+            <button class="bid-btn" onclick="smartBid(this)" data-i18n="bid_btn">Təklif ver</button>
           </div>
         </div>
         <div class="job-card-list">
@@ -1259,7 +1260,7 @@
           <div class="job-tags"><span class="tag">HTML/CSS</span><span class="tag">JavaScript</span><span class="tag">Responsiv</span></div>
           <div class="job-footer">
             <div class="job-meta"><span>⏱ 10 gün</span><span>💬 9 təklif</span><span>👁 156 baxış</span></div>
-            <button class="bid-btn" onclick="openModal('register')" data-i18n="bid_btn">Təklif ver</button>
+            <button class="bid-btn" onclick="smartBid(this)" data-i18n="bid_btn">Təklif ver</button>
           </div>
         </div>
       </div>
@@ -2123,7 +2124,7 @@
           else { showPage('dashboard'); }
         };
         const logoutBtn = document.createElement('button');
-        logoutBtn.className = 'btn btn-outline';
+        logoutBtn.className = 'btn btn-outline btn-fb-logout';
         logoutBtn.style.cssText = 'padding:7px 14px;font-size:13px;';
         logoutBtn.textContent = '→ Çıxış';
         logoutBtn.onclick = () => window.fbLogout();
@@ -2143,9 +2144,17 @@
     const navRight = document.querySelector('.nav-right');
     if (navRight) {
       const userBtn = navRight.querySelector('.user-nav-btn');
-      const logoutBtn = navRight.querySelector('.btn-logout');
+      const logoutBtn = navRight.querySelector('.btn-fb-logout');
       if (userBtn) userBtn.remove();
       if (logoutBtn) logoutBtn.remove();
+      // restore login/register buttons
+      const btnLogin = navRight.querySelector('[data-action="login"]');
+      const btnReg = navRight.querySelector('[data-action="register"]');
+      if (btnLogin) btnLogin.style.display = '';
+      if (btnReg) btnReg.style.display = '';
+      // hide admin link
+      const adminLink = document.getElementById('admin-nav-link');
+      if (adminLink) adminLink.style.display = 'none';
     }
   }
 
@@ -2276,7 +2285,7 @@
           <div class="job-tags"><span class="tag">${j.category}</span></div>
           <div class="job-footer">
             <div class="job-meta"><span>⏱ ${j.deadline} gün</span><span>💬 ${j.bids} təklif</span></div>
-            <button class="bid-btn" onclick="event.stopPropagation();openModal('register')" data-i18n="bid_btn">Təklif ver</button>
+            <button class="bid-btn" onclick="event.stopPropagation();smartBid(this)" data-i18n="bid_btn">Təklif ver</button>
           </div>
         </div>
       `).join('');
@@ -2414,7 +2423,7 @@
       const overviewList = document.getElementById('dash-my-jobs-overview');
       const jobsList = document.getElementById('dash-jobs-list');
       const jobsHtml = jobs.length === 0
-        ? '<p style="color:var(--text3);font-size:13px;text-align:center;padding:24px 0;">Hələ heç bir elan yoxdur. <a onclick="openModal('postjob')" style="color:var(--grad1);cursor:pointer;">İlk elanı ver →</a></p>'
+        ? `<p style="color:var(--text3);font-size:13px;text-align:center;padding:24px 0;">Hələ heç bir elan yoxdur. <a onclick="openModal('postjob')" style="color:var(--grad1);cursor:pointer;">İlk elanı ver →</a></p>`
         : jobs.map(j => `
           <div class="active-job-item">
             <div style="flex:1;">
@@ -2653,6 +2662,16 @@
 
 <script>
 
+  // ========== SMART BID (demo cards) ==========
+  function smartBid(btn) {
+    const user = window._fb?.currentUser;
+    if (!user) { openModal('register'); return; }
+    const role = window._fb?.currentUserData?.role;
+    if (role !== 'freelancer') { showToast('Yalnız freelancerlər təklif verə bilər'); return; }
+    // Demo card - no real jobId, show info
+    showToast('Real elanlar üçün "Tapşırıqlar" bölməsinə keçin');
+  }
+
   // ========== PAGES ==========
   function showPage(name) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -2695,7 +2714,7 @@
     if (el) el.classList.add('active');
     document.querySelectorAll('.dash-nav-item').forEach(a => a.classList.remove('active'));
     event.currentTarget.classList.add('active');
-    if (tab === 'bids' && window.loadMyBids) window.loadMyBids();
+    if (tab === 'my-bids' && window.loadMyBids) window.loadMyBids();
   }
 
   // ========== MOBILE MENU ==========
