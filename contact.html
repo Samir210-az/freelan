@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Əlaqə — Freelan.az</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header id="app-header"></header>
+
+<div class="container" style="max-width:640px;">
+  <div class="page-head" style="text-align:center;">
+    <h1>Əlaqə 📬</h1>
+    <p>Sual, təklif və ya problemlə bağlı bizə yazın</p>
+  </div>
+
+  <div class="jd-card" style="margin:28px 0 70px;">
+    <div class="form-group"><label class="form-label">Adınız</label>
+      <input class="form-input" id="ct-name" placeholder="Adınız Soyadınız"></div>
+    <div class="form-group"><label class="form-label">E-poçt</label>
+      <input class="form-input" id="ct-email" type="email" placeholder="sizin@email.com"></div>
+    <div class="form-group"><label class="form-label">Mövzu</label>
+      <select class="form-select" id="ct-subject">
+        <option>Ümumi sual</option><option>Texniki problem</option>
+        <option>Ödəniş məsələsi</option><option>Şikayət</option>
+        <option>Əməkdaşlıq təklifi</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Mesajınız</label>
+      <textarea class="form-textarea" id="ct-msg" placeholder="Mesajınızı yazın..."></textarea></div>
+    <div id="ct-err" class="err-box"></div>
+    <div id="ct-ok" class="ok-box"></div>
+    <button class="btn btn-green" id="ct-btn" style="width:100%;" onclick="sendContact()">Göndər 📨</button>
+  </div>
+</div>
+
+<footer id="app-footer"></footer>
+
+<script type="module" src="js/app.js"></script>
+<script type="module">
+window.sendContact = async function() {
+  const name = document.getElementById('ct-name').value.trim();
+  const email = document.getElementById('ct-email').value.trim();
+  const subject = document.getElementById('ct-subject').value;
+  const msg = document.getElementById('ct-msg').value.trim();
+  if (!name || !email || !msg) { fbErr('ct-err', 'Bütün xanaları doldurun'); return; }
+  fbErrClear('ct-err');
+  const btn = document.getElementById('ct-btn');
+  btn.disabled = true; btn.textContent = '⏳ Göndərilir...';
+  const { db, collection, addDoc, serverTimestamp } = FB;
+  try {
+    await addDoc(collection(db, 'contacts'), {
+      name, email, subject, message: msg,
+      userId: FB.user?.uid || null,
+      createdAt: serverTimestamp()
+    });
+    const ok = document.getElementById('ct-ok');
+    ok.textContent = '✅ Mesajınız göndərildi! Tezliklə cavab verəcəyik.';
+    ok.style.display = 'block';
+    ['ct-name','ct-email','ct-msg'].forEach(id => document.getElementById(id).value = '');
+  } catch(e) {
+    fbErr('ct-err', 'Xəta: ' + e.message);
+  }
+  btn.disabled = false; btn.textContent = 'Göndər 📨';
+};
+</script>
+</body>
+</html>
