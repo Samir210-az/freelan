@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel — Freelan.az</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header id="app-header"></header>
+
+<div class="dash-wrap" id="dash-wrap" style="display:none;">
+  <aside class="dash-side">
+    <div class="dash-user">
+      <div class="avatar" id="du-avatar">?</div>
+      <div style="font-weight:700;font-size:15px;" id="du-name">—</div>
+      <div style="font-size:12px;color:var(--ink2);" id="du-role">—</div>
+    </div>
+    <nav class="dash-nav" id="dash-nav">
+      <a class="active" data-sec="overview" onclick="showSec('overview')">📊 İcmal</a>
+      <a data-sec="myjobs" onclick="showSec('myjobs')" id="nav-myjobs" style="display:none;">📋 Elanlarım</a>
+      <a data-sec="mybids" onclick="showSec('mybids')" id="nav-mybids" style="display:none;">💼 Təkliflərim</a>
+      <a data-sec="active" onclick="showSec('active')">🔄 Aktiv işlər</a>
+      <a href="messages.html">💬 Mesajlar</a>
+      <a data-sec="settings" onclick="showSec('settings')">⚙️ Tənzimləmələr</a>
+    </nav>
+  </aside>
+
+  <main class="dash-main">
+    <!-- OVERVIEW -->
+    <div class="dash-sec active" id="sec-overview">
+      <h2 style="font-size:22px;margin-bottom:20px;" id="ov-hello">Salam! 👋</h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="ico">💰</div><div class="val" id="st-balance">₼0</div><div class="lbl">Balans</div></div>
+        <div class="stat-card"><div class="ico">✅</div><div class="val" id="st-done">0</div><div class="lbl">Tamamlanan</div></div>
+        <div class="stat-card"><div class="ico">🔄</div><div class="val" id="st-active">0</div><div class="lbl">Aktiv iş</div></div>
+        <div class="stat-card"><div class="ico">⭐</div><div class="val" id="st-rating">—</div><div class="lbl">Reytinq</div></div>
+      </div>
+      <div id="ov-cta"></div>
+    </div>
+
+    <!-- MY JOBS (client) -->
+    <div class="dash-sec" id="sec-myjobs">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+        <h2 style="font-size:22px;">Elanlarım</h2>
+        <button class="btn btn-green btn-sm" onclick="openPostJob()">+ Yeni elan</button>
+      </div>
+      <div id="myjobs-list"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
+    </div>
+
+    <!-- MY BIDS (freelancer) -->
+    <div class="dash-sec" id="sec-mybids">
+      <h2 style="font-size:22px;margin-bottom:20px;">Təkliflərim</h2>
+      <div id="mybids-list"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
+    </div>
+
+    <!-- ACTIVE WORKS -->
+    <div class="dash-sec" id="sec-active">
+      <h2 style="font-size:22px;margin-bottom:20px;">Aktiv işlər</h2>
+      <div id="active-list"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="dash-sec" id="sec-settings">
+      <h2 style="font-size:22px;margin-bottom:20px;">Tənzimləmələr</h2>
+      <div class="jd-card" style="max-width:560px;">
+        <div class="form-group"><label class="form-label">Ad, Soyad</label>
+          <input class="form-input" id="set-name"></div>
+        <div class="form-group" id="set-title-wrap"><label class="form-label">İxtisas başlığı <small style="color:var(--ink3);">(məs: UI/UX Dizayner)</small></label>
+          <input class="form-input" id="set-title"></div>
+        <div class="form-group" id="set-skills-wrap"><label class="form-label">Bacarıqlar <small style="color:var(--ink3);">(vergüllə ayırın)</small></label>
+          <input class="form-input" id="set-skills" placeholder="Figma, Photoshop, Illustrator"></div>
+        <div class="form-group" id="set-rate-wrap"><label class="form-label">Saatlıq qiymət (₼)</label>
+          <input class="form-input" id="set-rate" type="number"></div>
+        <div class="form-group"><label class="form-label">Haqqında</label>
+          <textarea class="form-textarea" id="set-bio" placeholder="Özünüz haqqında qısa məlumat..."></textarea></div>
+        <div id="set-ok" class="ok-box"></div>
+        <button class="btn btn-green" onclick="saveSettings()">Yadda saxla</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="auth-required" class="container" style="display:none;">
+  <div class="empty" style="padding:100px 20px;">
+    <div class="ico">🔐</div>
+    <p style="margin-bottom:18px;">Panelə daxil olmaq üçün hesabınıza giriş edin</p>
+    <button class="btn btn-green" onclick="openAuth('login')">Daxil ol</button>
+  </div>
+</div>
+
+<footer id="app-footer"></footer>
+
+<script type="module" src="js/app.js"></script>
+<script type="module">
+document.addEventListener('fb-ready', init);
+
+async function init() {
+  if (!FB.user) {
+    document.getElementById('auth-required').style.display = 'block';
+    return;
+  }
+  const d = FB.userData || {};
+  if (d.role === 'admin') { location.href = 'admin.html'; return; }
+  document.getElementById('dash-wrap').style.display = 'grid';
+
+  const name = d.name || FB.user.email.split('@')[0];
+  document.getElementById('du-avatar').textContent = name[0].toUpperCase();
+  document.getElementById('du-name').textContent = name;
+  document.getElementById('du-role').textContent = d.role === 'freelancer' ? '🧑‍💻 Freelancer' : '💼 Müştəri';
+  document.getElementById('ov-hello').textContent = 'Salam, ' + name + '! 👋';
+  document.getElementById('st-balance').textContent = '₼' + (d.balance || 0);
+  document.getElementById('st-done').textContent = d.jobsDone || 0;
+  document.getElementById('st-rating').textContent = d.rating > 0 ? d.rating.toFixed(1) : '—';
+
+  // Role-based nav
+  if (d.role === 'client') {
+    document.getElementById('nav-myjobs').style.display = 'flex';
+    document.getElementById('set-title-wrap').style.display = 'none';
+    document.getElementById('set-skills-wrap').style.display = 'none';
+    document.getElementById('set-rate-wrap').style.display = 'none';
+    document.getElementById('ov-cta').innerHTML = '<button class="btn btn-green" onclick="openPostJob()">+ Yeni elan ver</button>';
+    loadMyJobs();
+  } else {
+    document.getElementById('nav-mybids').style.display = 'flex';
+    document.getElementById('ov-cta').innerHTML = '<a class="btn btn-green" href="jobs.html">İş axtar →</a>';
+    loadMyBids();
+  }
+
+  // Settings prefill
+  document.getElementById('set-name').value = d.name || '';
+  document.getElementById('set-title').value = d.title || '';
+  document.getElementById('set-skills').value = (d.skills || []).join(', ');
+  document.getElementById('set-rate').value = d.rate || '';
+  document.getElementById('set-bio').value = d.bio || '';
+
+  loadActive();
+}
+
+window.showSec = function(sec) {
+  document.querySelectorAll('.dash-sec').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + sec)?.classList.add('active');
+  document.querySelectorAll('.dash-nav a[data-sec]').forEach(a => a.classList.remove('active'));
+  document.querySelector(`.dash-nav a[data-sec="${sec}"]`)?.classList.add('active');
+};
+
+async function loadMyJobs() {
+  const { db, collection, getDocs, query, where } = FB;
+  const el = document.getElementById('myjobs-list');
+  try {
+    const snap = await getDocs(query(collection(db, 'jobs'), where('clientId','==',FB.user.uid)));
+    const jobs = [];
+    snap.forEach(d => jobs.push({ id: d.id, ...d.data() }));
+    jobs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    document.getElementById('st-active').textContent = jobs.filter(j=>j.status==='in_progress').length;
+    el.innerHTML = jobs.length ? jobs.map(j => `
+      <div class="prop-item" style="cursor:pointer;" onclick="location.href='job.html?id=${j.id}'">
+        <div class="prop-head">
+          <div>
+            <div class="prop-name">${esc(j.title)}</div>
+            <div class="prop-meta">💬 ${j.bids||0} təklif · ${timeAgo(j.createdAt)}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="prop-amount">₼${j.budget}</div>
+            ${j.status==='approved'?'<span class="badge badge-green">Açıq</span>':j.status==='pending'?'<span class="badge badge-orange">Moderasiyada</span>':j.status==='in_progress'?'<span class="badge badge-blue">Davam edir</span>':'<span class="badge badge-gray">'+esc(j.status)+'</span>'}
+          </div>
+        </div>
+      </div>`).join('')
+    : '<div class="empty"><div class="ico">📋</div><p>Hələ elan verməmisiniz</p><button class="btn btn-green btn-sm" style="margin-top:14px;" onclick="openPostJob()">+ İlk elanı ver</button></div>';
+  } catch(e) {
+    el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>' + esc(e.message) + '</p></div>';
+  }
+}
+
+async function loadMyBids() {
+  const { db, collection, getDocs, getDoc, doc, query, where } = FB;
+  const el = document.getElementById('mybids-list');
+  try {
+    const snap = await getDocs(query(collection(db, 'bids'), where('freelancerId','==',FB.user.uid)));
+    const bids = [];
+    snap.forEach(d => bids.push({ id: d.id, ...d.data() }));
+    bids.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    document.getElementById('st-active').textContent = bids.filter(b=>b.status==='accepted').length;
+    if (!bids.length) {
+      el.innerHTML = '<div class="empty"><div class="ico">💼</div><p>Hələ təklif verməmisiniz</p><a class="btn btn-green btn-sm" style="margin-top:14px;" href="jobs.html">İş axtar →</a></div>';
+      return;
+    }
+    const titles = {};
+    for (const b of bids.slice(0,20)) {
+      if (!titles[b.jobId]) {
+        try { const js = await getDoc(doc(db,'jobs',b.jobId)); titles[b.jobId] = js.exists() ? js.data().title : '(silinmiş elan)'; } catch(e) { titles[b.jobId] = '—'; }
+      }
+    }
+    el.innerHTML = bids.map(b => `
+      <div class="prop-item" style="cursor:pointer;" onclick="location.href='job.html?id=${b.jobId}'">
+        <div class="prop-head">
+          <div>
+            <div class="prop-name">${esc(titles[b.jobId]||'—')}</div>
+            <div class="prop-meta">⏱ ${b.days} gün · ${timeAgo(b.createdAt)}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="prop-amount">₼${b.amount}</div>
+            ${b.status==='accepted'?'<span class="badge badge-green">✅ Qəbul edildi</span>':'<span class="badge badge-orange">Gözləyir</span>'}
+          </div>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>' + esc(e.message) + '</p></div>';
+  }
+}
+
+async function loadActive() {
+  const { db, collection, getDocs, query, where } = FB;
+  const el = document.getElementById('active-list');
+  const d = FB.userData || {};
+  try {
+    let snap;
+    if (d.role === 'client') {
+      snap = await getDocs(query(collection(db,'jobs'), where('clientId','==',FB.user.uid), where('status','==','in_progress')));
+    } else {
+      snap = await getDocs(query(collection(db,'jobs'), where('assignedTo','==',FB.user.uid), where('status','==','in_progress')));
+    }
+    const jobs = [];
+    snap.forEach(x => jobs.push({ id: x.id, ...x.data() }));
+    el.innerHTML = jobs.length ? jobs.map(j => `
+      <div class="prop-item" style="cursor:pointer;" onclick="location.href='job.html?id=${j.id}'">
+        <div class="prop-head">
+          <div>
+            <div class="prop-name">${esc(j.title)}</div>
+            <div class="prop-meta">${d.role==='client'?'Freelancer işləyir':'Müştəri: '+esc(j.clientName)}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="prop-amount">₼${j.budget}</div>
+            ${d.role==='client'?`<button class="btn btn-green btn-sm" style="margin-top:6px;" onclick="event.stopPropagation();completeJob('${j.id}')">✅ İşi qəbul et</button>`:'<span class="badge badge-blue">Davam edir</span>'}
+          </div>
+        </div>
+      </div>`).join('')
+    : '<div class="empty"><div class="ico">🔄</div><p>Aktiv iş yoxdur</p></div>';
+  } catch(e) {
+    el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>' + esc(e.message) + '</p></div>';
+  }
+}
+
+window.completeJob = async function(jobId) {
+  if (!confirm('İşi qəbul edib tamamlamaq istəyirsiniz?')) return;
+  const { db, doc, updateDoc, getDoc } = FB;
+  try {
+    const js = await getDoc(doc(db,'jobs',jobId));
+    const j = js.data();
+    await updateDoc(doc(db,'jobs',jobId), { status: 'completed' });
+    // Update freelancer stats
+    if (j.assignedTo) {
+      try {
+        const fs = await getDoc(doc(db,'users',j.assignedTo));
+        const f = fs.data();
+        await updateDoc(doc(db,'users',j.assignedTo), {
+          jobsDone: (f.jobsDone||0) + 1,
+          balance: (f.balance||0) + (j.budget||0)
+        });
+      } catch(e) {}
+    }
+    showToast('İş tamamlandı! 🎉');
+    loadActive(); 
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
+
+window.saveSettings = async function() {
+  const { db, doc, updateDoc } = FB;
+  const name = document.getElementById('set-name').value.trim();
+  if (!name) { showToast('Ad boş ola bilməz'); return; }
+  const data = {
+    name,
+    title: document.getElementById('set-title').value.trim(),
+    skills: document.getElementById('set-skills').value.split(',').map(s=>s.trim()).filter(Boolean),
+    rate: parseInt(document.getElementById('set-rate').value) || 0,
+    bio: document.getElementById('set-bio').value.trim()
+  };
+  try {
+    await updateDoc(doc(db, 'users', FB.user.uid), data);
+    Object.assign(FB.userData, data);
+    const ok = document.getElementById('set-ok');
+    ok.textContent = '✅ Yadda saxlanıldı';
+    ok.style.display = 'block';
+    setTimeout(() => ok.style.display = 'none', 2500);
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
+</script>
+</body>
+</html>
