@@ -133,18 +133,59 @@
 
   .hero {
     position: relative;
-    padding: 100px 5% 80px;
+    padding: 120px 5% 90px;
     text-align: center;
     overflow: hidden;
+    min-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
 
   .hero-bg {
     position: absolute; inset: 0; z-index: 0;
     background:
-      radial-gradient(ellipse 60% 50% at 20% 50%, rgba(109,40,217,0.10) 0%, transparent 70%),
-      radial-gradient(ellipse 50% 60% at 80% 30%, rgba(37,99,235,0.09) 0%, transparent 70%),
-      radial-gradient(ellipse 40% 40% at 60% 80%, rgba(219,39,119,0.07) 0%, transparent 70%);
+      radial-gradient(ellipse 70% 60% at 15% 40%, rgba(109,40,217,0.18) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 70% at 85% 20%, rgba(37,99,235,0.15) 0%, transparent 65%),
+      radial-gradient(ellipse 50% 50% at 55% 85%, rgba(219,39,119,0.12) 0%, transparent 65%),
+      radial-gradient(ellipse 40% 40% at 70% 50%, rgba(124,58,237,0.08) 0%, transparent 60%);
   }
+  #hero-canvas {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0px) scale(1); opacity: 0.7; }
+    50% { transform: translateY(-18px) scale(1.05); opacity: 1; }
+    100% { transform: translateY(0px) scale(1); opacity: 0.7; }
+  }
+  @keyframes heroFadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero > * { animation: heroFadeIn 0.7s ease both; }
+  .hero .hero-badge { animation-delay: 0.1s; }
+  .hero h1 { animation-delay: 0.2s; }
+  .hero p { animation-delay: 0.3s; }
+  .hero-actions { animation-delay: 0.4s; }
+  .hero-stats { animation-delay: 0.5s; }
+  .hero-floating-cards {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    overflow: hidden;
+  }
+  .hero-float-card {
+    position: absolute; background: white; border: 1px solid rgba(109,40,217,0.15);
+    border-radius: 14px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 9px;
+    font-size: 12px; font-weight: 600; color: var(--text);
+    box-shadow: 0 8px 32px rgba(109,40,217,0.12);
+    white-space: nowrap;
+  }
+  .hero-float-card:nth-child(1) { top: 18%; left: 3%; animation: floatUp 4s ease-in-out infinite; }
+  .hero-float-card:nth-child(2) { top: 22%; right: 3%; animation: floatUp 4.5s ease-in-out infinite 0.5s; }
+  .hero-float-card:nth-child(3) { bottom: 20%; left: 5%; animation: floatUp 5s ease-in-out infinite 1s; }
+  .hero-float-card:nth-child(4) { bottom: 25%; right: 5%; animation: floatUp 3.8s ease-in-out infinite 1.5s; }
+  @media(max-width:900px) { .hero-float-card { display: none; } }
 
   .hero-badge {
     display: inline-flex; align-items: center; gap: 8px;
@@ -162,17 +203,17 @@
 
   .hero h1 {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: clamp(38px, 6vw, 72px);
-    font-weight: 800; line-height: 1.1;
-    letter-spacing: -2px;
+    font-size: clamp(36px, 5.5vw, 76px);
+    font-weight: 800; line-height: 1.08;
+    letter-spacing: -2.5px;
     position: relative; z-index: 1;
-    margin-bottom: 20px;
+    margin-bottom: 22px;
   }
 
   .hero p {
-    font-size: clamp(16px, 2vw, 20px);
-    color: var(--text2); max-width: 560px; margin: 0 auto 40px;
-    line-height: 1.6; position: relative; z-index: 1;
+    font-size: clamp(15px, 1.8vw, 19px);
+    color: var(--text2); max-width: 600px; margin: 0 auto 40px;
+    line-height: 1.65; position: relative; z-index: 1;
   }
 
   .hero-actions {
@@ -198,17 +239,75 @@
   .btn-hero-secondary:hover { background: rgba(109,40,217,0.12); }
 
   .hero-stats {
-    display: flex; gap: 40px; justify-content: center; flex-wrap: wrap;
+    display: flex; gap: 0; justify-content: center; flex-wrap: wrap;
     position: relative; z-index: 1;
+    background: rgba(255,255,255,0.7); border: 1px solid rgba(109,40,217,0.12);
+    border-radius: 20px; padding: 20px 32px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 24px rgba(109,40,217,0.08);
   }
-  .stat { text-align: center; }
+  .stat { text-align: center; padding: 0 28px; }
+  .stat-divider { width: 1px; background: var(--border); margin: 4px 0; align-self: stretch; }
   .stat-num {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 28px; font-weight: 800;
-    background: linear-gradient(135deg, #A78BFA, #60A5FA);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    font-size: 26px; font-weight: 800;
   }
-  .stat-label { font-size: 13px; color: var(--text3); margin-top: 2px; }
+  .stat-label { font-size: 12px; color: var(--text3); margin-top: 3px; }
+  .hero-trust {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    justify-content: center; position: relative; z-index: 1;
+    margin-top: 28px;
+  }
+  .hero-trust-label { font-size: 12px; color: var(--text3); white-space: nowrap; }
+  .hero-trust-logos { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .trust-logo {
+    font-size: 11px; font-weight: 600; color: var(--text2);
+    background: rgba(255,255,255,0.8); border: 1px solid var(--border);
+    padding: 5px 12px; border-radius: 100px;
+    transition: all 0.2s;
+  }
+  .trust-logo:hover { border-color: var(--grad1); color: var(--grad1); }
+
+  /* SCROLL INDICATOR */
+  .hero-scroll-indicator {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    margin-top: 32px; color: var(--text3); font-size: 11px;
+  }
+  .scroll-arrow {
+    width: 32px; height: 32px; border: 1.5px solid var(--border);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; animation: scrollBounce 1.8s ease-in-out infinite;
+  }
+  @keyframes scrollBounce {
+    0%, 100% { transform: translateY(0); opacity: 0.6; }
+    50% { transform: translateY(6px); opacity: 1; }
+  }
+  @media(max-width:600px) { .hero-scroll-indicator { display: none; } }
+
+  /* FOR TWO */
+  .for-two-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    max-width: 900px; margin: 0 auto;
+  }
+  .for-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 20px; padding: 32px 28px;
+    box-shadow: 0 4px 20px rgba(109,40,217,0.06);
+    transition: all 0.25s;
+  }
+  .for-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(109,40,217,0.12); }
+  .for-card-client { border-top: 3px solid #6D28D9; }
+  .for-card-freelancer { border-top: 3px solid #2563EB; }
+  .for-icon { font-size: 36px; margin-bottom: 14px; }
+  .for-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 10px; }
+  .for-desc { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 18px; }
+  .for-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+  .for-list li { font-size: 13px; font-weight: 500; }
+  @media(max-width:700px) {
+    .for-two-grid { grid-template-columns: 1fr; gap: 16px; }
+    .for-card { padding: 22px 18px; }
+  }
 
   /* CATEGORIES */
   .section { padding: 60px 5%; }
@@ -555,56 +654,124 @@
   }
 
   /* RESPONSIVE */
+  /* ===== RESPONSIVE — TABLET (≤900px) ===== */
   @media (max-width: 900px) {
+    /* Nav */
     .nav-links { display: none; }
+    .hamburger { display: block; }
+
+    /* Hero */
+    .hero { padding: 80px 5% 60px; min-height: 80vh; }
+    .hero h1 { font-size: clamp(30px, 6.5vw, 52px); letter-spacing: -1.5px; }
+
+    /* Layout grids */
     .jobs-page-layout { grid-template-columns: 1fr; }
     .filter-panel { position: static; }
     .profile-layout { grid-template-columns: 1fr; }
     .profile-card { position: static; }
-    .footer-grid { grid-template-columns: 1fr 1fr; }
-    .portfolio-grid { grid-template-columns: repeat(2, 1fr); }
-    .hero { padding: 70px 5% 50px; }
-    .hero h1 { font-size: clamp(30px, 7vw, 52px); }
     .how-grid { grid-template-columns: 1fr 1fr; }
     .freelancers-grid { grid-template-columns: repeat(2, 1fr); }
+    .categories-grid { grid-template-columns: repeat(3, 1fr); }
+    .portfolio-grid { grid-template-columns: repeat(2, 1fr); }
+
+    /* Footer */
+    .footer-grid { grid-template-columns: 1fr 1fr; }
   }
+
+  /* ===== RESPONSIVE — MOBILE (≤600px) ===== */
   @media (max-width: 600px) {
-    .hero { padding: 60px 4% 40px; }
-    .hero h1 { letter-spacing: -0.5px; font-size: 32px; }
-    .hero p { font-size: 15px; }
-    .hero-actions { flex-direction: column; align-items: center; }
-    .btn-hero { width: 100%; justify-content: center; }
-    .hero-stats { gap: 16px; }
-    .stat-num { font-size: 22px; }
-    .footer-grid { grid-template-columns: 1fr; }
-    .categories-grid { grid-template-columns: repeat(2, 1fr); }
-    .jobs-grid { grid-template-columns: 1fr; }
-    .form-row { grid-template-columns: 1fr; }
-    .hamburger { display: block; }
-    .section { padding: 40px 4%; }
-    .section-title { font-size: 22px; }
-    .how-grid { grid-template-columns: 1fr; }
-    .freelancers-grid { grid-template-columns: repeat(2, 1fr); }
-    .modal { padding: 24px 18px; margin: 12px; border-radius: 16px; }
-    .jobs-page-layout { padding: 20px 4%; }
-    .profile-layout { padding: 20px 4%; }
+    /* Nav */
     .nav-right .btn { display: none; }
     .nav-right .btn:last-child { display: inline-flex; padding: 8px 14px; font-size: 13px; }
     .lang-switch { gap: 1px; }
     .lang-btn { padding: 4px 8px; font-size: 11px; }
-    .job-card { padding: 16px; }
+
+    /* Hero */
+    .hero { padding: 70px 4% 50px; min-height: 100svh; }
+    .hero h1 { font-size: clamp(28px, 8vw, 38px); letter-spacing: -1px; }
+    .hero p { font-size: 14px; max-width: 100%; }
+    .hero-actions { flex-direction: column; align-items: stretch; width: 100%; max-width: 340px; margin: 0 auto 40px; }
+    .btn-hero { width: 100%; justify-content: center; padding: 14px 20px; font-size: 15px; }
+    .hero-stats { gap: 0; padding: 14px 16px; border-radius: 16px; }
+    .stat { padding: 0 14px; }
+    .stat-divider { margin: 2px 0; }
+    .stat-num { font-size: 20px; }
+    .hero-trust { margin-top: 20px; gap: 10px; }
+    .trust-logo { font-size: 10px; padding: 4px 10px; }
+    .stat-num { font-size: 20px; }
+    .stat-label { font-size: 11px; }
+    .hero-badge { font-size: 11px; padding: 5px 12px; }
+
+    /* Sections */
+    .section { padding: 36px 4%; }
+    .section-title { font-size: 20px; }
+    .section-sub { font-size: 13px; }
+
+    /* Grids */
+    .how-grid { grid-template-columns: 1fr; gap: 12px; }
+    .freelancers-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .categories-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .jobs-grid { grid-template-columns: 1fr; }
+
+    /* Job cards */
+    .job-card { padding: 14px; }
     .job-header { flex-wrap: wrap; gap: 6px; }
     .job-budget { margin-left: 0; }
+    .job-title { font-size: 14px; }
+    .job-tags { flex-wrap: wrap; gap: 5px; }
+
+    /* Freelancer cards */
+    .freelancer-card { padding: 16px 12px; }
+    .fc-name { font-size: 14px; }
+    .fc-avatar { width: 46px; height: 46px; font-size: 18px; }
+
+    /* Category cards */
+    .cat-card { padding: 16px 12px; }
+    .cat-icon { font-size: 24px; }
+    .cat-name { font-size: 12px; }
+    .cat-count { font-size: 11px; }
+
+    /* How-it-works */
+    .how-card { padding: 20px 16px; }
+
+    /* Profile page */
+    .profile-layout { padding: 16px 4%; gap: 14px; }
     .profile-stats { grid-template-columns: 1fr 1fr 1fr; }
-    .portfolio-grid { grid-template-columns: repeat(3, 1fr); }
-    .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
-    .filter-panel { border-radius: 12px; }
-    .search-bar { flex-direction: column; }
+    .portfolio-grid { grid-template-columns: repeat(2, 1fr); }
+
+    /* Jobs page */
+    .jobs-page-layout { padding: 16px 4%; gap: 14px; }
+    .search-bar { flex-direction: column; gap: 8px; }
     .search-bar .btn { width: 100%; justify-content: center; }
+    .search-bar input { font-size: 14px; }
+    .filter-panel { border-radius: 12px; padding: 14px; }
+    .filter-panel h3 { font-size: 14px; }
+
+    /* Modal */
+    .modal-overlay { align-items: flex-end; }
+    .modal { padding: 22px 16px; margin: 0; border-radius: 20px 20px 0 0; width: 100%; max-width: 100%; }
+
+    /* Auth form */
+    .form-row { grid-template-columns: 1fr; }
+
+    /* Footer */
+    .footer-grid { grid-template-columns: 1fr; gap: 24px; }
+    .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    footer { padding: 40px 4% 24px; }
+  }
+
+  /* ===== VERY SMALL PHONES (≤380px) ===== */
+  @media (max-width: 380px) {
+    .hero h1 { font-size: 26px; }
+    .freelancers-grid { grid-template-columns: 1fr; }
+    .categories-grid { grid-template-columns: repeat(2, 1fr); }
+    .nav-logo { font-size: 18px; }
   }
 
   /* ACTIVE NAV STATES */
-  .nav-links a.active-page { color: #A78BFA; }
+  .nav-links a.active-page { color: var(--grad1); font-weight: 600; }
+  .nav-links a.active-page::after { content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); width: 20px; height: 2px; background: var(--grad1); border-radius: 2px; }
+  .nav-links a { position: relative; }
 
   /* SECTION DIVIDER */
   .divider {
@@ -697,18 +864,42 @@
   <!-- HERO -->
   <section class="hero">
     <div class="hero-bg"></div>
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-floating-cards">
+      <div class="hero-float-card">🎨 <span>Dizayn — <b>₼350</b></span></div>
+      <div class="hero-float-card">⭐ <span>4.9 reytinq · 2,400+ freelancer</span></div>
+      <div class="hero-float-card">✅ <span>Escrow ödəniş — <b>100% təhlükəsiz</b></span></div>
+      <div class="hero-float-card">🚀 <span>Yeni elan · <b>Proqramlaşdırma</b></span></div>
+    </div>
     <div class="hero-badge"><span></span> <span data-i18n="badge_text">Azərbaycanın #1 Freelance Platforması</span></div>
-    <h1 data-i18n="hero_h1">İşini tap.<br><span class="grad-text">Müstəqil qazanın.</span></h1>
-    <p data-i18n="hero_p">Dizaynerlər, kopirayterlər, proqramçılar — bütün yaradıcı peşələr üçün Azərbaycanda ilk freelance bazarı.</p>
+    <h1 data-i18n="hero_h1">Azərbaycanda<br><span class="grad-text">Azad Karyeranı</span><br>Buradan Başla.</h1>
+    <p data-i18n="hero_p">Dizaynerlər, proqramçılar, kopirayterlər — bütün peşəkarlar üçün etibarlı, sürətli, şəffaf freelance bazarı. Hər layihə, hər büdcə, hər sahə.</p>
     <div class="hero-actions">
       <button class="btn-hero btn-hero-primary" onclick="openModal('register')" data-i18n="hero_cta1">🚀 İşə başla — Pulsuz</button>
       <button class="btn-hero btn-hero-secondary" onclick="showPage('jobs')" data-i18n="hero_cta2">📋 Tapşırıqlara bax</button>
     </div>
     <div class="hero-stats">
-      <div class="stat"><div class="stat-num">2,400+</div><div class="stat-label" data-i18n="stat1">Freelancer</div></div>
-      <div class="stat"><div class="stat-num">850+</div><div class="stat-label" data-i18n="stat2">Aktiv tapşırıq</div></div>
-      <div class="stat"><div class="stat-num">₼4.2M+</div><div class="stat-label" data-i18n="stat3">Ödənilmiş</div></div>
-      <div class="stat"><div class="stat-num">98%</div><div class="stat-label" data-i18n="stat4">Məmnun müştəri</div></div>
+      <div class="stat"><div class="stat-num grad-text">2,400+</div><div class="stat-label" data-i18n="stat1">Freelancer</div></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><div class="stat-num grad-text">850+</div><div class="stat-label" data-i18n="stat2">Aktiv tapşırıq</div></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><div class="stat-num grad-text">₼4.2M+</div><div class="stat-label" data-i18n="stat3">Ödənilmiş</div></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><div class="stat-num grad-text">98%</div><div class="stat-label" data-i18n="stat4">Məmnun müştəri</div></div>
+    </div>
+    <div class="hero-trust">
+      <span class="hero-trust-label">Güvənilən şirkətlər:</span>
+      <div class="hero-trust-logos">
+        <span class="trust-logo">🏢 TechAZ</span>
+        <span class="trust-logo">🏦 FinGroup</span>
+        <span class="trust-logo">🛒 ShopAZ</span>
+        <span class="trust-logo">📱 MediaHub</span>
+        <span class="trust-logo">🎓 EduCenter</span>
+      </div>
+    </div>
+    <div class="hero-scroll-indicator">
+      <span data-i18n="scroll_down">Aşağı dayan</span>
+      <div class="scroll-arrow">↓</div>
     </div>
   </section>
 
@@ -758,6 +949,38 @@
         <div class="how-icon">⭐</div>
         <div class="how-title" data-i18n="how4_title">Rəy yaz</div>
         <div class="how-desc" data-i18n="how4_desc">İşi bitir, rəy qoy. Platformanı birlikdə gücləndirik.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- FOR CLIENTS / FOR FREELANCERS -->
+  <section class="section" style="background: linear-gradient(135deg, rgba(109,40,217,0.04) 0%, rgba(37,99,235,0.04) 100%);">
+    <div class="for-two-grid">
+      <div class="for-card for-card-client">
+        <div class="for-icon">🏢</div>
+        <h3 class="for-title" data-i18n="for_client_title">Müştərilər üçün</h3>
+        <p class="for-desc" data-i18n="for_client_desc">Layihənizi yerləşdirin, onlarca peşəkar freelancerdan təklif alın. Escrow sistemi ilə pulunuz qorunur.</p>
+        <ul class="for-list">
+          <li>✅ Pulsuz elan yükləmə</li>
+          <li>✅ Doğrulanmış freelancerlər</li>
+          <li>✅ Escrow ödəniş qoruması</li>
+          <li>✅ 24/7 dəstək</li>
+        </ul>
+        <button class="btn btn-primary" onclick="openModal('register')" data-i18n="for_client_cta">Elan Yerləşdir →</button>
+      </div>
+      <div class="for-card for-card-freelancer">
+        <div class="for-icon">💼</div>
+        <h3 class="for-title" data-i18n="for_fl_title">Freelancerlər üçün</h3>
+        <p class="for-desc" data-i18n="for_fl_desc">Profil yaradın, tapşırıqlara təklif verin, azad vaxt cədvəlinizlə qazanın. Karyeranızı özünüz idarə edin.</p>
+        <ul class="for-list">
+          <li>✅ Pulsuz profil yaratma</li>
+          <li>✅ Sürətli ödəniş çıxarışı</li>
+          <li>✅ Portfolio showcase</li>
+          <li>✅ Reytinq sistemi</li>
+        </ul>
+        <button class="btn btn-outline" onclick="openModal('register')" data-i18n="for_fl_cta">İndi Qeydiyyatdan Keç →</button>
       </div>
     </div>
   </section>
@@ -889,7 +1112,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2025 Freelan.az. Bütün hüquqlar qorunur.</span>
+      <span>© 2026 Freelan.az. Bütün hüquqlar qorunur.</span>
       <span>By <a href="https://instagram.com/s_akhundoff" target="_blank">@s_akhundoff</a></span>
     </div>
   </footer>
@@ -1554,7 +1777,7 @@
         <div class="footer-col"><h4 data-i18n="footer_col2">Şirkət</h4><a href="#" data-i18n="footer_about">Haqqımızda</a><a href="#" data-i18n="footer_contact">Əlaqə</a></div>
         <div class="footer-col"><h4 data-i18n="footer_col3">Hüquqi</h4><a href="#" data-i18n="footer_terms">İstifadə şərtləri</a><a href="#" data-i18n="footer_privacy">Gizlilik siyasəti</a></div>
       </div>
-      <div class="footer-bottom"><span>© 2025 Freelan.az</span><span>By <a href="https://instagram.com/s_akhundoff" target="_blank">@s_akhundoff</a></span></div>
+      <div class="footer-bottom"><span>© 2026 Freelan.az</span><span>By <a href="https://instagram.com/s_akhundoff" target="_blank">@s_akhundoff</a></span></div>
     </footer>
   </div>
 </div>
@@ -1675,8 +1898,80 @@
   .dash-layout{grid-template-columns:1fr;}.dash-sidebar{flex-direction:row;flex-wrap:wrap;padding:10px 14px;border-right:none;border-bottom:1px solid var(--border);}.dash-user-info{display:none;}.dash-nav{flex-direction:row;flex-wrap:wrap;gap:4px;flex:none;}.dash-nav-item{font-size:12px;padding:7px 10px;}
   .dash-main{padding:14px;}.msg-layout{grid-template-columns:200px 1fr;}.bids-table-header,.bids-table-row{grid-template-columns:2fr 1fr 1fr;}.bids-table-header span:last-child,.bids-table-row span:last-child{display:none;}.fl-grid{grid-template-columns:repeat(2,1fr);}
 }
+@media(max-width:900px){
+  /* Job detail */
+  .jd-layout{grid-template-columns:1fr;}
+  /* Freelancers list */
+  .fl-grid{grid-template-columns:repeat(2,1fr);}
+  /* Pricing */
+  .pricing-grid{grid-template-columns:1fr;max-width:380px;}
+  .pricing-featured{transform:none;}
+  /* Dashboard */
+  .dash-layout{grid-template-columns:1fr;}
+  .dash-sidebar{flex-direction:row;flex-wrap:wrap;padding:10px 14px;border-right:none;border-bottom:1px solid var(--border);}
+  .dash-user-info{display:none;}
+  .dash-nav{flex-direction:row;flex-wrap:wrap;gap:4px;flex:none;}
+  .dash-nav-item{font-size:12px;padding:7px 10px;}
+  .dash-main{padding:14px;}
+  .dash-stats-grid{grid-template-columns:repeat(2,1fr);}
+  /* Messages */
+  .msg-layout{grid-template-columns:220px 1fr;}
+  /* Bids table */
+  .bids-table-header,.bids-table-row{grid-template-columns:2fr 1fr 1fr;}
+  .bids-table-header span:last-child,.bids-table-row span:last-child{display:none;}
+}
 @media(max-width:600px){
-  .jd-layout{padding:12px 4%;}.jd-card{padding:16px;}.jd-title{font-size:17px;}.bid-actions{flex-direction:column;}.bid-header-row{flex-wrap:wrap;}.msg-layout{grid-template-columns:1fr;}.msg-sidebar{height:180px;overflow-x:auto;overflow-y:hidden;display:flex;flex-direction:row;border-right:none;border-bottom:1px solid var(--border);}.msg-contact{min-width:200px;border-bottom:none;border-right:1px solid var(--border);}.msg-bubble{max-width:85%;}.dash-stats-grid{grid-template-columns:1fr 1fr;}.bids-table-header,.bids-table-row{grid-template-columns:2fr 1fr 1fr;font-size:12px;padding:9px 10px;}.fl-grid{grid-template-columns:1fr;}.cat-pills{gap:6px;}.cat-pill{padding:6px 12px;font-size:12px;}.active-job-item{flex-direction:column;gap:8px;}.pricing-grid{padding:0 4%;}.settings-card{padding:14px;}.msg-chat-header{padding:10px 12px;}.msg-input-area{padding:9px 10px;}
+  /* Job detail */
+  .jd-layout{padding:12px 4%;}
+  .jd-card{padding:16px;}
+  .jd-title{font-size:17px;}
+  .jd-sidebar-card{padding:16px;}
+  .bid-actions{flex-direction:column;gap:8px;}
+  .bid-header-row{flex-wrap:wrap;gap:8px;}
+
+  /* Messages — full width with horizontal contact scroll */
+  .msg-layout{grid-template-columns:1fr;height:auto;}
+  .msg-sidebar{height:auto;max-height:120px;overflow-x:auto;overflow-y:hidden;display:flex;flex-direction:row;border-right:none;border-bottom:1px solid var(--border);}
+  .msg-contact{min-width:160px;border-bottom:none;border-right:1px solid var(--border);flex-shrink:0;}
+  .msg-contact-last{display:none;}
+  .msg-chat{height:calc(100vh - 240px);min-height:300px;}
+  .msg-bubble{max-width:88%;}
+  .msg-chat-header{padding:10px 12px;}
+  .msg-input-area{padding:9px 10px;gap:7px;}
+
+  /* Dashboard */
+  .dash-stats-grid{grid-template-columns:1fr 1fr;}
+  .dash-nav-item{font-size:11px;padding:6px 8px;}
+  .dash-nav-item svg,.dash-nav-item span:first-child{display:none;}
+  .dash-main{padding:12px;}
+
+  /* Bids table */
+  .bids-table-header,.bids-table-row{grid-template-columns:2fr 1fr 1fr;font-size:12px;padding:9px 10px;}
+
+  /* Freelancers list */
+  .fl-grid{grid-template-columns:1fr;}
+
+  /* Category pills */
+  .cat-pills{gap:6px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;}
+  .cat-pill{padding:6px 12px;font-size:12px;flex-shrink:0;}
+
+  /* Active job item */
+  .active-job-item{flex-direction:column;gap:8px;align-items:flex-start;}
+
+  /* Pricing */
+  .pricing-grid{padding:0 4%;}
+
+  /* Settings */
+  .settings-card{padding:14px;}
+
+  /* Earnings */
+  .earnings-row{flex-wrap:wrap;gap:8px;}
+}
+@media(max-width:380px){
+  .msg-contact{min-width:130px;}
+  .dash-stats-grid{grid-template-columns:1fr 1fr;}
+  .bids-table-header,.bids-table-row{grid-template-columns:2fr 1fr;}
+  .bids-table-header span:nth-child(3),.bids-table-row span:nth-child(3){display:none;}
 }
 </style>
 
@@ -1853,8 +2148,8 @@
       nav_jobs: 'Tapşırıqlar', nav_freelancers: 'Freelancerlər', nav_how: 'Necə işləyir?',
       btn_login: 'Giriş', btn_register: 'Qeydiyyat',
       badge_text: 'Azərbaycanın #1 Freelance Platforması',
-      hero_h1: 'İşini tap.<br><span class="grad-text">Müstəqil qazanın.</span>',
-      hero_p: 'Dizaynerlər, kopirayterlər, proqramçılar — bütün yaradıcı peşələr üçün Azərbaycanda ilk freelance bazarı.',
+      hero_h1: 'Azərbaycanda<br><span class="grad-text">Azad Karyeranı</span><br>Buradan Başla.',
+      hero_p: 'Dizaynerlər, proqramçılar, kopirayterlər — bütün peşəkarlar üçün etibarlı, sürətli, şəffaf freelance bazarı. Hər layihə, hər büdcə, hər sahə.',
       hero_cta1: '🚀 İşə başla — Pulsuz', hero_cta2: '📋 Tapşırıqlara bax',
       stat1: 'Freelancer', stat2: 'Aktiv tapşırıq', stat3: 'Ödənilmiş', stat4: 'Məmnun müştəri',
       cat_title: 'Kateqoriyalar', cat_sub: 'Hansı sahədə kömək lazımdır?',
@@ -2091,6 +2386,62 @@
       if (t[key] !== undefined) el.placeholder = t[key];
     });
   }
+
+  // ========== HERO CANVAS PARTICLES ==========
+  (function() {
+    const canvas = document.getElementById('hero-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const colors = ['rgba(109,40,217,', 'rgba(37,99,235,', 'rgba(219,39,119,', 'rgba(124,58,237,'];
+
+    function resize() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
+
+    function createParticle() {
+      return {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 3 + 1,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        alpha: Math.random() * 0.4 + 0.1,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        life: 0,
+        maxLife: Math.random() * 200 + 100
+      };
+    }
+
+    function init() {
+      resize();
+      particles = [];
+      for (let i = 0; i < 60; i++) particles.push(createParticle());
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.life++;
+        if (p.life > p.maxLife || p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) {
+          particles[i] = createParticle();
+          return;
+        }
+        const fade = p.life < 20 ? p.life / 20 : p.life > p.maxLife - 20 ? (p.maxLife - p.life) / 20 : 1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color + (p.alpha * fade) + ')';
+        ctx.fill();
+      });
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', init);
+    window.addEventListener('DOMContentLoaded', () => { init(); draw(); });
+    if (document.readyState !== 'loading') { init(); draw(); }
+  })();
+
 </script>
 </body>
 </html>
