@@ -1616,108 +1616,94 @@
     <div class="dash-layout">
       <aside class="dash-sidebar">
         <div class="dash-user-info">
-          <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6D28D9,#2563EB);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:white;margin-bottom:10px;">A</div>
-          <div style="font-weight:700;font-size:15px;">Aytən M.</div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:10px;" data-i18n="role_design">UI/UX Dizayner</div>
-          <span style="padding:3px 10px;background:rgba(109,40,217,0.08);color:#6D28D9;border-radius:20px;font-size:11px;font-weight:600;" data-i18n="role_freelancer">Freelancer</span>
+          <div id="dash-avatar" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6D28D9,#2563EB);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:white;margin:0 auto 10px;">?</div>
+          <div id="dash-name" style="font-weight:700;font-size:15px;">—</div>
+          <div id="dash-role-label" style="font-size:12px;color:var(--text3);margin-bottom:10px;">—</div>
+          <span id="dash-role-badge" style="padding:3px 10px;background:rgba(109,40,217,0.08);color:#6D28D9;border-radius:20px;font-size:11px;font-weight:600;">—</span>
         </div>
         <nav class="dash-nav">
-          <a class="dash-nav-item active" onclick="showDash('overview')">📊 <span data-i18n="dash_overview">İcmal</span></a>
-          <a class="dash-nav-item" onclick="showDash('my-jobs')">💼 <span data-i18n="dash_my_jobs">Tapşırıqlarım</span></a>
-          <a class="dash-nav-item" onclick="showDash('my-bids')">📋 <span data-i18n="dash_my_bids">Təkliflərim</span></a>
-          <a class="dash-nav-item" onclick="showPage('messages')">💬 <span data-i18n="dash_messages">Mesajlar</span><span class="dash-badge">3</span></a>
-          <a class="dash-nav-item" onclick="showDash('earnings')">💰 <span data-i18n="dash_earnings">Qazanc</span></a>
-          <a class="dash-nav-item" onclick="showDash('settings')">⚙️ <span data-i18n="dash_settings">Parametrlər</span></a>
-          <a class="dash-nav-item" style="color:#DC2626;" onclick="showPage('home')">← <span data-i18n="dash_logout">Çıxış</span></a>
+          <a class="dash-nav-item active" onclick="showDash('overview')">📊 <span>İcmal</span></a>
+          <a class="dash-nav-item" onclick="showDash('my-jobs')">💼 <span>Tapşırıqlarım</span></a>
+          <a class="dash-nav-item" onclick="showDash('my-bids')">📋 <span>Təkliflərim</span></a>
+          <a class="dash-nav-item" onclick="showPage('messages')">💬 <span>Mesajlar</span></a>
+          <a class="dash-nav-item" onclick="showDash('earnings')">💰 <span>Qazanc</span></a>
+          <a class="dash-nav-item" onclick="showDash('settings')">⚙️ <span>Parametrlər</span></a>
+          <a class="dash-nav-item" style="color:#DC2626;margin-top:auto;" onclick="fbLogout()">→ <span>Çıxış</span></a>
         </nav>
       </aside>
       <main class="dash-main">
+
+        <!-- OVERVIEW -->
         <div id="dash-overview" class="dash-section active">
-          <h2 class="dash-title" data-i18n="dash_hello">Salam, Aytən! 👋</h2>
+          <h2 class="dash-title" id="dash-hello">Salam! 👋</h2>
           <div class="dash-stats-grid">
-            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(109,40,217,0.1);color:#6D28D9;">💰</div><div class="dash-stat-val">₼2,840</div><div class="dash-stat-label" data-i18n="stat_earned">Bu ay qazanc</div></div>
-            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(37,99,235,0.1);color:#2563EB;">✅</div><div class="dash-stat-val">12</div><div class="dash-stat-label" data-i18n="stat_completed">Tamamlanan iş</div></div>
-            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(219,39,119,0.1);color:#DB2777;">⏳</div><div class="dash-stat-val">3</div><div class="dash-stat-label" data-i18n="stat_active">Aktiv iş</div></div>
-            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(5,150,105,0.1);color:#059669;">⭐</div><div class="dash-stat-val">4.9</div><div class="dash-stat-label" data-i18n="stat_rating">Reytinq</div></div>
+            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(109,40,217,0.1);">💰</div><div class="dash-stat-val" id="ds-balance">₼0</div><div class="dash-stat-label">Balans</div></div>
+            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(37,99,235,0.1);">✅</div><div class="dash-stat-val" id="ds-done">0</div><div class="dash-stat-label">Tamamlanan</div></div>
+            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(219,39,119,0.1);">📋</div><div class="dash-stat-val" id="ds-jobs">0</div><div class="dash-stat-label">Elanlarım</div></div>
+            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(5,150,105,0.1);">⭐</div><div class="dash-stat-val" id="ds-rating">—</div><div class="dash-stat-label">Reytinq</div></div>
           </div>
-          <h3 class="dash-subtitle" data-i18n="active_jobs_title">Aktiv tapşırıqlar</h3>
-          <div class="active-job-item">
-            <div style="flex:1;"><div style="font-size:14px;font-weight:600;margin-bottom:4px;">Mobil tətbiq UI dizaynı</div><div style="font-size:12px;color:var(--text2);">Müştəri: Kamran A. · 3 gün qalıb</div><div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div><div style="font-size:11px;color:var(--text3);">65% tamamlanıb</div></div>
-            <div style="text-align:right;"><div style="font-size:16px;font-weight:700;color:#059669;">₼800</div><span class="status-badge status-progress" data-i18n="in_progress">Davam edir</span></div>
+          <h3 class="dash-subtitle">Mənim Elanlarım</h3>
+          <div id="dash-my-jobs-overview">
+            <p style="color:var(--text3);font-size:13px;text-align:center;padding:24px;">Yüklənir...</p>
           </div>
-          <div class="active-job-item">
-            <div style="flex:1;"><div style="font-size:14px;font-weight:600;margin-bottom:4px;">E-commerce saytı dizaynı</div><div style="font-size:12px;color:var(--text2);">Müştəri: Nigar H. · 6 gün qalıb</div><div class="progress-bar"><div class="progress-fill" style="width:30%"></div></div><div style="font-size:11px;color:var(--text3);">30% tamamlanıb</div></div>
-            <div style="text-align:right;"><div style="font-size:16px;font-weight:700;color:#059669;">₼600</div><span class="status-badge status-progress" data-i18n="in_progress">Davam edir</span></div>
-          </div>
-          <h3 class="dash-subtitle" data-i18n="recommended_title">Tövsiyə olunan tapşırıqlar</h3>
-          <div class="job-card-list" onclick="showJobDetail()" style="cursor:pointer;">
-            <div class="job-header"><div class="job-title">Dashboard UI dizaynı — SaaS</div><div class="job-budget">₼950</div></div>
-            <div class="job-desc">Analitika dashboardu üçün tam UI kit. Figma source file daxil.</div>
-            <div class="job-tags"><span class="tag">Figma</span><span class="tag">UI/UX</span><span class="tag">SaaS</span></div>
+          <div style="text-align:center;margin-top:16px;">
+            <button class="btn btn-primary" onclick="openModal('postjob')">+ Yeni Elan Ver</button>
           </div>
         </div>
+
+        <!-- MY JOBS -->
+        <div id="dash-my-jobs" class="dash-section">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+            <h2 class="dash-title" style="margin:0;">Tapşırıqlarım</h2>
+            <button class="btn btn-primary" onclick="openModal('postjob')">+ Yeni Elan</button>
+          </div>
+          <div id="dash-jobs-list">
+            <p style="color:var(--text3);font-size:13px;text-align:center;padding:24px;">Yüklənir...</p>
+          </div>
+        </div>
+
+        <!-- MY BIDS -->
         <div id="dash-my-bids" class="dash-section">
-          <h2 class="dash-title" data-i18n="dash_my_bids">Təkliflərim</h2>
-          <div class="bids-table">
-            <div class="bids-table-header"><span data-i18n="col_job">Tapşırıq</span><span data-i18n="col_price">Məbləğ</span><span data-i18n="col_status">Status</span><span data-i18n="col_date">Tarix</span></div>
-            <div class="bids-table-row"><span style="font-weight:500;">Restoran logo dizaynı</span><span style="color:#059669;font-weight:700;">₼320</span><span><span class="status-badge status-pending">Gözləyir</span></span><span style="color:var(--text3);font-size:13px;">2 saat əvvəl</span></div>
-            <div class="bids-table-row"><span style="font-weight:500;">Landing page dizaynı</span><span style="color:#059669;font-weight:700;">₼450</span><span><span class="status-badge status-won">Qazanıldı</span></span><span style="color:var(--text3);font-size:13px;">1 gün əvvəl</span></div>
-            <div class="bids-table-row"><span style="font-weight:500;">Mobile app UI kit</span><span style="color:#059669;font-weight:700;">₼800</span><span><span class="status-badge status-won">Qazanıldı</span></span><span style="color:var(--text3);font-size:13px;">3 gün əvvəl</span></div>
-            <div class="bids-table-row"><span style="font-weight:500;">E-commerce dizayn</span><span style="color:#059669;font-weight:700;">₼1,200</span><span><span class="status-badge" style="background:rgba(220,38,38,0.1);color:#DC2626;">İtirildi</span></span><span style="color:var(--text3);font-size:13px;">5 gün əvvəl</span></div>
+          <h2 class="dash-title">Təkliflərim</h2>
+          <div id="dash-bids-list">
+            <p style="color:var(--text3);font-size:13px;text-align:center;padding:24px;">Hələ heç bir təklif verməmisiniz.</p>
           </div>
         </div>
+
+        <!-- EARNINGS -->
         <div id="dash-earnings" class="dash-section">
-          <h2 class="dash-title" data-i18n="dash_earnings">Qazanc</h2>
-          <div class="dash-stats-grid" style="grid-template-columns:1fr 1fr;">
-            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(109,40,217,0.1);color:#6D28D9;">💵</div><div class="dash-stat-val">₼14,280</div><div class="dash-stat-label" data-i18n="total_earned">Ümumi qazanc</div></div>
-            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(5,150,105,0.1);color:#059669;">🏦</div><div class="dash-stat-val">₼1,240</div><div class="dash-stat-label" data-i18n="withdrawable">Çəkilə bilər</div></div>
+          <h2 class="dash-title">Qazanc</h2>
+          <div class="dash-stats-grid" style="grid-template-columns:1fr 1fr;margin-bottom:20px;">
+            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(109,40,217,0.1);">💵</div><div class="dash-stat-val" id="ds-total-earn">₼0</div><div class="dash-stat-label">Ümumi qazanc</div></div>
+            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(5,150,105,0.1);">🏦</div><div class="dash-stat-val" id="ds-withdraw">₼0</div><div class="dash-stat-label">Çəkilə bilər</div></div>
           </div>
-          <div class="earn-table">
-            <div class="bids-table-header"><span data-i18n="col_job">İş</span><span data-i18n="col_price">Məbləğ</span><span data-i18n="col_status">Status</span><span data-i18n="col_date">Tarix</span></div>
-            <div class="bids-table-row"><span>Mobil tətbiq UI</span><span style="color:#059669;font-weight:700;">+₼800</span><span><span class="status-badge status-won">Ödənildi</span></span><span style="color:var(--text3);font-size:13px;">İyun 2025</span></div>
-            <div class="bids-table-row"><span>Landing page</span><span style="color:#059669;font-weight:700;">+₼450</span><span><span class="status-badge status-won">Ödənildi</span></span><span style="color:var(--text3);font-size:13px;">May 2025</span></div>
-            <div class="bids-table-row"><span>SaaS Dashboard</span><span style="color:#059669;font-weight:700;">+₼950</span><span><span class="status-badge status-won">Ödənildi</span></span><span style="color:var(--text3);font-size:13px;">May 2025</span></div>
-          </div>
-          <button class="btn btn-primary" style="margin-top:20px;" onclick="showToast('Çıxarış sorğusu göndərildi!')" data-i18n="withdraw_btn">💳 Pul çıxar</button>
+          <p style="color:var(--text3);font-size:13px;text-align:center;padding:32px 0;">Ödəniş sistemi tezliklə aktiv olacaq 🔜</p>
         </div>
+
+        <!-- SETTINGS -->
         <div id="dash-settings" class="dash-section">
-          <h2 class="dash-title" data-i18n="dash_settings">Parametrlər</h2>
+          <h2 class="dash-title">Parametrlər</h2>
           <div class="settings-card">
-            <div class="settings-section-title" data-i18n="settings_profile">Profil məlumatları</div>
+            <div class="settings-section-title">Profil məlumatları</div>
             <div class="form-row">
-              <div class="form-group"><label class="form-label" data-i18n="form_name">Ad, Soyad</label><input class="form-input" value="Aytən Məmmədova"></div>
-              <div class="form-group"><label class="form-label" data-i18n="form_email">E-poçt</label><input class="form-input" value="ayten@example.com"></div>
+              <div class="form-group"><label class="form-label">Ad, Soyad</label><input class="form-input" id="settings-name" placeholder="Adınız"></div>
+              <div class="form-group"><label class="form-label">E-poçt</label><input class="form-input" id="settings-email" placeholder="email" readonly style="opacity:0.6;"></div>
             </div>
-            <div class="form-group"><label class="form-label">Bio</label><textarea class="form-textarea" style="min-height:80px;">5 illik UI/UX dizayner.</textarea></div>
-            <div class="form-group"><label class="form-label">Saatlıq qiymət (₼)</label><input class="form-input" type="number" value="45"></div>
-            <button class="btn btn-primary" onclick="showToast('Məlumatlar yeniləndi!')" data-i18n="save_btn">Yadda saxla</button>
+            <div class="form-group"><label class="form-label">Bio</label><textarea class="form-textarea" id="settings-bio" style="min-height:80px;" placeholder="Özünüz haqqında qısa məlumat..."></textarea></div>
+            <div class="form-group"><label class="form-label">Saatlıq qiymət (₼)</label><input class="form-input" id="settings-rate" type="number" placeholder="0"></div>
+            <button class="btn btn-primary" onclick="saveSettings()">Yadda saxla</button>
           </div>
           <div class="settings-card" style="margin-top:16px;">
-            <div class="settings-section-title" data-i18n="settings_security">Təhlükəsizlik</div>
-            <div class="form-group"><label class="form-label">Mövcud şifrə</label><input class="form-input" type="password" placeholder="••••••••"></div>
-            <div class="form-group"><label class="form-label">Yeni şifrə</label><input class="form-input" type="password" placeholder="••••••••"></div>
-            <button class="btn btn-outline" onclick="showToast('Şifrə dəyişdirildi!')">Şifrəni dəyiş</button>
+            <div class="settings-section-title">Hesabı sil</div>
+            <p style="font-size:13px;color:var(--text3);margin-bottom:14px;">Bu əməliyyat geri alına bilməz.</p>
+            <button class="btn" style="background:#FEE2E2;color:#DC2626;border:none;padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer;" onclick="showToast('Bu funksiya tezliklə aktiv olacaq')">Hesabı sil</button>
           </div>
         </div>
-        <div id="dash-my-jobs" class="dash-section">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-            <h2 class="dash-title" style="margin:0" data-i18n="dash_my_jobs">Tapşırıqlarım</h2>
-            <button class="btn btn-primary" onclick="openModal('postjob')" data-i18n="post_job_btn">+ Elan ver</button>
-          </div>
-          <div class="active-job-item">
-            <div style="flex:1;"><div style="font-size:14px;font-weight:600;">Restoran logo dizaynı</div><div style="font-size:12px;color:var(--text2);margin-top:3px;">8 təklif · 2 saat əvvəl</div></div>
-            <div style="text-align:right;"><div style="font-size:15px;font-weight:700;">₼350</div><span class="status-badge badge-open" data-i18n="badge_open">Açıq</span></div>
-          </div>
-          <div class="active-job-item">
-            <div style="flex:1;"><div style="font-size:14px;font-weight:600;">E-ticarət məhsul təsviri</div><div style="font-size:12px;color:var(--text2);margin-top:3px;">12 təklif · 1 gün əvvəl</div></div>
-            <div style="text-align:right;"><div style="font-size:15px;font-weight:700;">₼180</div><span class="status-badge status-progress" data-i18n="in_progress">Davam edir</span></div>
-          </div>
-        </div>
+
       </main>
     </div>
   </div>
 </div>
-
 <!-- ===== MESSAGES PAGE ===== -->
 <div id="page-messages" class="page">
   <div style="padding-top:68px;">
@@ -2108,6 +2094,20 @@
       if (snap.exists()) window._fb.currentUserData = snap.data();
       updateNavForUser(user);
       loadJobs();
+      // pre-fill settings
+      setTimeout(() => {
+        const d = window._fb.currentUserData;
+        if (d) {
+          const sName = document.getElementById('settings-name');
+          const sEmail = document.getElementById('settings-email');
+          const sBio = document.getElementById('settings-bio');
+          const sRate = document.getElementById('settings-rate');
+          if (sName) sName.value = d.name || '';
+          if (sEmail) sEmail.value = user.email || '';
+          if (sBio) sBio.value = d.bio || '';
+          if (sRate) sRate.value = d.rate || '';
+        }
+      }, 500);
     } else {
       window._fb.currentUser = null;
       window._fb.currentUserData = null;
@@ -2375,6 +2375,98 @@
     } catch(e) { showToast('Xəta: ' + e.message); }
   };
 
+  // ======= LOAD DASHBOARD =======
+  window.loadDashboard = async function() {
+    const user = window._fb.currentUser;
+    if (!user) return;
+    const data = window._fb.currentUserData;
+    if (!data) {
+      // try reload
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) {
+        window._fb.currentUserData = snap.data();
+        window.loadDashboard();
+      }
+      return;
+    }
+
+    const name = data.name || user.email.split('@')[0];
+    const role = data.role || 'client';
+    const initial = name[0].toUpperCase();
+
+    // Update sidebar
+    const avatarEl = document.getElementById('dash-avatar');
+    const nameEl = document.getElementById('dash-name');
+    const roleLabel = document.getElementById('dash-role-label');
+    const roleBadge = document.getElementById('dash-role-badge');
+    const helloEl = document.getElementById('dash-hello');
+
+    if (avatarEl) avatarEl.textContent = initial;
+    if (nameEl) nameEl.textContent = name;
+    if (roleLabel) roleLabel.textContent = role === 'freelancer' ? 'Freelancer' : role === 'admin' ? 'Admin' : 'Müştəri';
+    if (roleBadge) roleBadge.textContent = role === 'freelancer' ? 'Freelancer' : role === 'admin' ? '👑 Admin' : 'Müştəri';
+    if (helloEl) helloEl.textContent = 'Salam, ' + name + '! 👋';
+
+    // Stats
+    const balEl = document.getElementById('ds-balance');
+    const ratingEl = document.getElementById('ds-rating');
+    if (balEl) balEl.textContent = '₼' + (data.balance || 0);
+    if (ratingEl) ratingEl.textContent = data.rating > 0 ? data.rating : '—';
+
+    // Load user's jobs
+    try {
+      const q = query(collection(db, 'jobs'), where('clientId', '==', user.uid), orderBy('createdAt', 'desc'));
+      const snap = await getDocs(q);
+      const jobs = [];
+      snap.forEach(d => jobs.push({ id: d.id, ...d.data() }));
+
+      const jobsEl = document.getElementById('ds-jobs');
+      const doneEl = document.getElementById('ds-done');
+      if (jobsEl) jobsEl.textContent = jobs.length;
+      if (doneEl) doneEl.textContent = jobs.filter(j => j.status === 'closed').length;
+
+      // Render in overview
+      const overviewList = document.getElementById('dash-my-jobs-overview');
+      const jobsList = document.getElementById('dash-jobs-list');
+      const jobsHtml = jobs.length === 0
+        ? '<p style="color:var(--text3);font-size:13px;text-align:center;padding:24px 0;">Hələ heç bir elan yoxdur. <a onclick="openModal('postjob')" style="color:var(--grad1);cursor:pointer;">İlk elanı ver →</a></p>'
+        : jobs.map(j => `
+          <div class="active-job-item">
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;">${j.title}</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:3px;">${j.category} · ₼${j.budget} · ${j.bids || 0} təklif</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <span class="status-badge ${j.status === 'approved' ? 'badge-open' : j.status === 'pending' ? 'status-pending' : 'status-progress'}" style="display:block;margin-bottom:4px;">
+                ${j.status === 'approved' ? 'Aktiv' : j.status === 'pending' ? 'Gözləyir' : j.status === 'rejected' ? 'Rədd edildi' : j.status}
+              </span>
+            </div>
+          </div>
+        `).join('');
+
+      if (overviewList) overviewList.innerHTML = jobsHtml;
+      if (jobsList) jobsList.innerHTML = jobsHtml;
+    } catch(e) {
+      console.log('Dashboard jobs error:', e);
+    }
+  };
+
+  // ======= SAVE SETTINGS =======
+  window.saveSettings = async function() {
+    const user = window._fb.currentUser;
+    if (!user) return;
+    const name = document.getElementById('settings-name')?.value.trim();
+    const bio = document.getElementById('settings-bio')?.value.trim();
+    const rate = document.getElementById('settings-rate')?.value;
+    if (!name) { showToast('Ad boş ola bilməz'); return; }
+    try {
+      await updateDoc(doc(db, 'users', user.uid), { name, bio: bio || '', rate: parseInt(rate) || 0 });
+      window._fb.currentUserData = { ...window._fb.currentUserData, name, bio, rate };
+      showToast('Məlumatlar yeniləndi ✅');
+      loadDashboard();
+    } catch(e) { showToast('Xəta: ' + e.message); }
+  };
+
   // ======= HELPERS =======
   function showFbError(id, msg) {
     const el = document.getElementById(id);
@@ -2401,6 +2493,7 @@
     if (el) { el.classList.add('active'); window.scrollTo(0,0); }
     closeMobileMenu();
     if (name === 'admin' && window.loadAdminData) window.loadAdminData();
+    if (name === 'dashboard' && window.loadDashboard) window.loadDashboard();
     // nav active state
     document.querySelectorAll('.nav-links a[data-page]').forEach(a => a.classList.remove('active-page'));
     const activeLink = document.querySelector('.nav-links a[data-page="'+name+'"]');
@@ -2470,15 +2563,13 @@
   }
 
   function loginSuccess() {
+    // Legacy fallback - real login handled by fbLogin()
     closeModal('auth');
-    showToast(translations[currentLang].toast_login || 'Xoş gəldiniz! 🎉');
-    setTimeout(() => showPage('dashboard'), 600);
   }
 
   function postJobSuccess() {
+    // Legacy fallback - real post handled by fbPostJob()
     closeModal('postjob');
-    showToast(translations[currentLang].toast_job || 'Elanınız paylaşıldı! 🚀');
-    setTimeout(() => showPage('jobs'), 600);
   }
 
   // ========== FILTERS ==========
