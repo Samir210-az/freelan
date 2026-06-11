@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mesajlar — Freelan.az</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header id="app-header"></header>
+
+<div class="msg-grid" id="msg-wrap" style="display:none;">
+  <aside class="msg-side" id="contacts">
+    <div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div>
+  </aside>
+  <main class="msg-main">
+    <div class="msg-head" id="chat-head">
+      <span style="color:var(--ink3);font-size:14px;">Söhbət seçin</span>
+    </div>
+    <div class="msg-list" id="chat-list">
+      <div class="empty"><div class="ico">💬</div><p>Söhbət başlatmaq üçün sol tərəfdən kontakt seçin</p></div>
+    </div>
+    <div class="msg-input-row" id="chat-input-row" style="display:none;">
+      <input type="text" id="msg-text" placeholder="Mesaj yazın..." onkeydown="if(event.key==='Enter')sendMsg()">
+      <button class="btn btn-green" onclick="sendMsg()">Göndər</button>
+    </div>
+  </main>
+</div>
+
+<div id="auth-required" class="container" style="display:none;">
+  <div class="empty" style="padding:100px 20px;">
+    <div class="ico">🔐</div>
+    <p style="margin-bottom:18px;">Mesajlara baxmaq üçün hesabınıza daxil olun</p>
+    <button class="btn btn-green" onclick="openAuth('login')">Daxil ol</button>
+  </div>
+</div>
+
+<footer id="app-footer"></footer>
+
+<script type="module" src="js/app.js"></script>
+<script type="module">
+import { onSnapshot, orderBy, query as fsQuery, collection as fsCollection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+let activeChatId = null;
+let unsub = null;
+
+document.addEventListener('fb-ready', init);
+
+async function init() {
+  if (!FB.user) {
+    document.getElementById('auth-required').style.display = 'block';
+    return;
+  }
+  document.getElementById('msg-wrap').style.display = 'grid';
+  loadContacts();
+}
+
+// Contacts: all users this person has a chat with OR can chat with (bids/jobs relationships)
+async function loadContacts() {
+  const { db, collection, getDocs, query, where } = FB;
+  const el = document.getElementById('contacts');
+  try {
+    const snap = await getDocs(query(collection(db, 'chats'), where('members', 'array-contains', FB.user.uid)));
+    const chats = [];
+    snap.forEach(d => chats.push({ id: d.id, ...d.data() }));
+    chats.sort((a,b) => (b.lastAt?.seconds||0) - (a.lastAt?.seconds||0));
+    if (!chats.length) {
+      el.innerHTML = '<div class="empty"><div class="ico">💬</div><p style="font-size:13px;">Hələ söhbət yoxdur.<br>Elan səhifəsindən freelancerlə əlaqə qura bilərsiniz.</p></div>';
+      return;
+    }
+    el.innerHTML = chats.map(c => {
+      const otherName = c.memberNames?.[c.members.find(m => m !== FB.user.uid)] || 'İstifadəçi';
+      return `
+      <div class="msg-contact" data-chat="${c.id}" onclick="openChat('${c.id}','${esc(otherName)}')">
+        <div class="avatar">${esc(otherName[0].toUpperCase())}</div>
+        <div>
+          <div class="nm">${esc(otherName)}</div>
+          <div class="lst">${esc(c.lastMsg || '')}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p style="font-size:12px;">' + esc(e.message) + '</p></div>';
+  }
+}
+
+window.openChat = function(chatId, name) {
+  activeChatId = chatId;
+  document.querySelectorAll('.msg-contact').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.msg-contact[data-chat="${chatId}"]`)?.classList.add('active');
+  document.getElementById('chat-head').innerHTML = `<div class="avatar">${esc(name[0].toUpperCase())}</div><b>${esc(name)}</b>`;
+  document.getElementById('chat-input-row').style.display = 'flex';
+
+  if (unsub) unsub();
+  const q = fsQuery(fsCollection(FB.db, 'chats', chatId, 'messages'), orderBy('at', 'asc'));
+  unsub = onSnapshot(q, snap => {
+    const list = document.getElementById('chat-list');
+    const msgs = [];
+    snap.forEach(d => msgs.push(d.data()));
+    list.innerHTML = msgs.length
+      ? msgs.map(m => `<div class="bubble ${m.from === FB.user.uid ? 'b-out' : 'b-in'}">${esc(m.text)}</div>`).join('')
+      : '<div class="empty"><div class="ico">👋</div><p>İlk mesajı göndərin</p></div>';
+    list.scrollTop = list.scrollHeight;
+  });
+};
+
+window.sendMsg = async function() {
+  const input = document.getElementById('msg-text');
+  const text = input.value.trim();
+  if (!text || !activeChatId) return;
+  input.value = '';
+  const { db, collection, addDoc, doc, updateDoc, serverTimestamp } = FB;
+  try {
+    await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
+      from: FB.user.uid, text, at: serverTimestamp()
+    });
+    await updateDoc(doc(db, 'chats', activeChatId), { lastMsg: text, lastAt: serverTimestamp() });
+  } catch(e) { showToast('Göndərilmədi: ' + e.message); }
+};
+</script>
+</body>
+</html>
