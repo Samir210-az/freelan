@@ -2267,15 +2267,21 @@
         budget: parseInt(budget), deadline: parseInt(deadline) || 7,
         clientId: window._fb.currentUser.uid,
         clientName: userData?.name || 'İstifadəçi',
-        status: 'pending', // pending → approved → closed
+        status: 'pending',
         bids: 0,
         createdAt: serverTimestamp()
       });
       closeModal('postjob');
       showToast('Elanınız moderasiyaya göndərildi! ⏳');
-      loadJobs();
+      if (window._fb.currentUserData?.role === 'admin') {
+        loadAdminData();
+      }
     } catch(e) {
-      showFbError('pj-error', 'Xəta: ' + e.message);
+      let msg = 'Xəta: ' + e.message;
+      if (e.code === 'permission-denied') {
+        msg = 'İcazə xətası — Firebase Security Rules icazə vermir. Firebase Console → Firestore → Rules-u yoxlayın.';
+      }
+      showFbError('pj-error', msg);
       btn.disabled = false; btn.textContent = 'Elanı paylaş 🚀';
     }
   };
@@ -2374,6 +2380,134 @@
       `).join('');
     }
   }
+
+  // ======= LOAD ADMIN USERS =======
+  window.loadAdminUsers = async function() {
+    const el = document.getElementById('admin-users-list');
+    if (!el) return;
+    el.innerHTML = '<p style="color:var(--text3);text-align:center;padding:32px;">Yüklənir...</p>';
+    try {
+      const snap = await getDocs(collection(db, 'users'));
+      const users = [];
+      snap.forEach(d => users.push({ id: d.id, ...d.data() }));
+      users.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+      if (users.length === 0) {
+        el.innerHTML = '<p style="color:var(--text3);text-align:center;padding:32px;">İstifadəçi yoxdur</p>';
+        return;
+      }
+      el.innerHTML = `
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="background:var(--bg3);text-align:left;">
+                <th style="padding:10px 14px;color:var(--text3);font-weight:700;text-transform:uppercase;font-size:11px;">Ad</th>
+                <th style="padding:10px 14px;color:var(--text3);font-weight:700;text-transform:uppercase;font-size:11px;">E-poçt</th>
+                <th style="padding:10px 14px;color:var(--text3);font-weight:700;text-transform:uppercase;font-size:11px;">Rol</th>
+                <th style="padding:10px 14px;color:var(--text3);font-weight:700;text-transform:uppercase;font-size:11px;">Status</th>
+                <th style="padding:10px 14px;color:var(--text3);font-weight:700;text-transform:uppercase;font-size:11px;">Əməliyyat</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${users.map(u => `
+                <tr style="border-top:1px solid var(--border);" id="urow-${u.id}">
+                  <td style="padding:12px 14px;font-weight:600;">${u.name||'—'}</td>
+                  <td style="padding:12px 14px;color:var(--text2);">${u.email||'—'}</td>
+                  <td style="padding:12px 14px;">
+                    <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${u.role==='admin'?'rgba(109,40,217,0.1)':u.role==='freelancer'?'rgba(5,150,105,0.1)':'rgba(37,99,235,0.1)'};color:${u.role==='admin'?'#6D28D9':u.role==='freelancer'?'#059669':'#2563EB'};">
+                      ${u.role==='admin'?'👑 Admin':u.role==='freelancer'?'Freelancer':'Müştəri'}
+                    </span>
+                  </td>
+                  <td style="padding:12px 14px;">
+                    <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${u.status==='banned'?'rgba(220,38,38,0.1)':'rgba(5,150,105,0.1)'};color:${u.status==='banned'?'#DC2626':'#059669'};">
+                      ${u.status==='banned'?'🚫 Bloklanıb':'✅ Aktiv'}
+                    </span>
+                  </td>
+                  <td style="padding:12px 14px;">
+                    ${u.role !== 'admin' ? `
+                      <button onclick="window.toggleBanUser('${u.id}','${u.status}')" style="padding:5px 12px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:${u.status==='banned'?'rgba(5,150,105,0.1)':'rgba(220,38,38,0.1)'};color:${u.status==='banned'?'#059669':'#DC2626'};">
+                        ${u.status==='banned'?'Bloku aç':'Blokla'}
+                      </button>
+                    ` : '<span style="color:var(--text3);font-size:12px;">—</span>'}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    } catch(e) {
+      el.innerHTML = `<p style="color:#DC2626;text-align:center;padding:32px;">Xəta: ${e.message}</p>`;
+    }
+  };
+
+  window.toggleBanUser = async function(uid, currentStatus) {
+    try {
+      const newStatus = currentStatus === 'banned' ? 'active' : 'banned';
+      await updateDoc(doc(db, 'users', uid), { status: newStatus });
+      showToast(newStatus === 'banned' ? 'İstifadəçi bloklandı' : 'Blok açıldı ✅');
+      window.loadAdminUsers();
+    } catch(e) { showToast('Xəta: ' + e.message); }
+  };
+
+  // ======= LOAD ADMIN ALL JOBS =======
+  window.loadAdminAllJobs = async function() {
+    const el = document.getElementById('admin-alljobs-list');
+    if (!el) return;
+    el.innerHTML = '<p style="color:var(--text3);text-align:center;padding:32px;">Yüklənir...</p>';
+    try {
+      const snap = await getDocs(collection(db, 'jobs'));
+      const jobs = [];
+      snap.forEach(d => jobs.push({ id: d.id, ...d.data() }));
+      jobs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+      if (jobs.length === 0) {
+        el.innerHTML = '<p style="color:var(--text3);text-align:center;padding:32px;">Elan yoxdur</p>';
+        return;
+      }
+      const statusLabel = s => s==='approved'?'✅ Aktiv':s==='pending'?'⏳ Gözləyir':s==='rejected'?'❌ Rədd edildi':s==='in_progress'?'🔄 Davam edir':'—';
+      const statusColor = s => s==='approved'?'rgba(5,150,105,0.1)':s==='pending'?'rgba(217,119,6,0.1)':s==='rejected'?'rgba(220,38,38,0.1)':'rgba(37,99,235,0.1)';
+      const statusTxtColor = s => s==='approved'?'#059669':s==='pending'?'#D97706':s==='rejected'?'#DC2626':'#2563EB';
+      el.innerHTML = `
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="background:var(--bg3);">
+                <th style="padding:10px 14px;color:var(--text3);font-weight:700;text-transform:uppercase;font-size:11px;text-align:left;">Başlıq</th>
+                <th style="padding:10px 14px;color:var(--text3);font-weight:700;text-transform:uppercase;font-size:11px;text-align:left;">Müştəri</th>
+                <th style="padding:10px 14px;color:var(--text3);font-weight:700;text-transform:uppercase;font-size:11px;text-align:left;">Büdcə</th>
+                <th style="padding:10px 14px;color:var(--text3);font-weight:700;text-transform:uppercase;font-size:11px;text-align:left;">Status</th>
+                <th style="padding:10px 14px;color:var(--text3);font-weight:700;text-transform:uppercase;font-size:11px;text-align:left;">Əməliyyat</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${jobs.map(j => `
+                <tr style="border-top:1px solid var(--border);">
+                  <td style="padding:12px 14px;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${j.title}</td>
+                  <td style="padding:12px 14px;color:var(--text2);">${j.clientName||'—'}</td>
+                  <td style="padding:12px 14px;font-weight:700;color:var(--grad1);">₼${j.budget}</td>
+                  <td style="padding:12px 14px;">
+                    <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${statusColor(j.status)};color:${statusTxtColor(j.status)};">${statusLabel(j.status)}</span>
+                  </td>
+                  <td style="padding:12px 14px;display:flex;gap:6px;">
+                    ${j.status==='pending'?`<button onclick="window.approveJob('${j.id}')" style="padding:5px 10px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:rgba(5,150,105,0.1);color:#059669;">✅ Təsdiqlə</button>`:''}
+                    <button onclick="window.deleteJob('${j.id}')" style="padding:5px 10px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:rgba(220,38,38,0.1);color:#DC2626;">🗑 Sil</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    } catch(e) {
+      el.innerHTML = `<p style="color:#DC2626;text-align:center;padding:32px;">Xəta: ${e.message}</p>`;
+    }
+  };
+
+  window.deleteJob = async function(jobId) {
+    if (!confirm('Bu elanı silmək istədiyinizə əminsiniz?')) return;
+    try {
+      await updateDoc(doc(db, 'jobs', jobId), { status: 'deleted' });
+      showToast('Elan silindi');
+      window.loadAdminAllJobs();
+    } catch(e) { showToast('Xəta: ' + e.message); }
+  };
 
   // ======= APPROVE / REJECT JOB =======
   window.approveJob = async function(jobId) {
@@ -2734,6 +2868,8 @@
     if (tab === 'overview' || tab === 'pending') {
       if (window.loadAdminData) window.loadAdminData();
     }
+    if (tab === 'users') window.loadAdminUsers && window.loadAdminUsers();
+    if (tab === 'alljobs') window.loadAdminAllJobs && window.loadAdminAllJobs();
   }
 
   // ========== DASHBOARD TABS ==========
