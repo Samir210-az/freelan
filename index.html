@@ -2287,41 +2287,77 @@
   };
 
   // ======= LOAD JOBS =======
+  // All loaded jobs cache for search
+  window._allJobs = [];
+
   window.loadJobs = async function() {
     try {
-      const q = query(collection(db, 'jobs'), where('status', '==', 'approved'), limit(20));
+      const q = query(collection(db, 'jobs'), where('status', '==', 'approved'), limit(50));
       const snap = await getDocs(q);
       const jobs = [];
       snap.forEach(d => jobs.push({ id: d.id, ...d.data() }));
       jobs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+      window._allJobs = jobs;
       renderJobs(jobs);
     } catch(e) {
-      console.log('Jobs load error:', e);
+      console.log('Jobs load error:', e.message);
     }
   };
 
-  function renderJobs(jobs) {
-    const grids = document.querySelectorAll('.jobs-grid');
-    if (!grids.length || !jobs.length) return;
-    grids.forEach(grid => {
-      // Keep first 3 demo cards if no real jobs
-      if (jobs.length === 0) return;
-      const html = jobs.map(j => `
-        <div class="job-card" onclick="showJobDetail('${j.id}')" style="cursor:pointer;">
-          <div class="job-header">
-            <div class="job-title">${j.title}</div>
-            <div class="job-budget">₼${j.budget}</div>
-          </div>
-          <div class="job-desc">${j.description.substring(0,120)}${j.description.length>120?'...':''}</div>
-          <div class="job-tags"><span class="tag">${j.category}</span></div>
-          <div class="job-footer">
-            <div class="job-meta"><span>⏱ ${j.deadline} gün</span><span>💬 ${j.bids} təklif</span></div>
-            <button class="bid-btn" onclick="event.stopPropagation();smartBid(this)" data-i18n="bid_btn">Təklif ver</button>
-          </div>
+  function jobCardHtml(j) {
+    return `
+      <div class="job-card" onclick="showJobDetail('${j.id}')" style="cursor:pointer;">
+        <div class="job-header">
+          <div class="job-title">${j.title}</div>
+          <div class="job-budget">₼${j.budget}</div>
         </div>
-      `).join('');
-      grid.innerHTML = html;
-    });
+        <div class="job-desc">${j.description.substring(0,120)}${j.description.length>120?'...':''}</div>
+        <div class="job-tags"><span class="tag">${j.category}</span></div>
+        <div class="job-footer">
+          <div class="job-meta"><span>⏱ ${j.deadline} gün</span><span>💬 ${j.bids||0} təklif</span></div>
+          <button class="bid-btn" onclick="event.stopPropagation();smartBid(this)" data-i18n="bid_btn">Təklif ver</button>
+        </div>
+      </div>`;
+  }
+
+  function jobListItemHtml(j) {
+    return `
+      <div class="job-card-list" onclick="showJobDetail('${j.id}')" style="cursor:pointer;">
+        <div class="job-header">
+          <div class="job-title">${j.title}</div>
+          <div class="job-budget">₼${j.budget}</div>
+        </div>
+        <div class="job-desc">${j.description.substring(0,160)}${j.description.length>160?'...':''}</div>
+        <div class="job-tags"><span class="tag">${j.category}</span></div>
+        <div class="job-footer">
+          <div class="job-meta"><span>⏱ ${j.deadline} gün</span><span>💬 ${j.bids||0} təklif</span><span>₼${j.budget}</span></div>
+          <button class="bid-btn" onclick="event.stopPropagation();openBidModal('${j.id}','${j.title.replace(/'/g,"&#39;")}')" data-i18n="bid_btn">Təklif ver</button>
+        </div>
+      </div>`;
+  }
+
+  function renderJobs(jobs) {
+    // HOME PAGE: .jobs-grid
+    const grid = document.querySelector('.jobs-grid');
+    if (grid) {
+      if (jobs.length > 0) {
+        grid.innerHTML = jobs.slice(0,6).map(jobCardHtml).join('');
+      }
+      // else keep demo cards
+    }
+
+    // JOBS PAGE: .jobs-list
+    const list = document.querySelector('#page-jobs .jobs-list');
+    if (list) {
+      if (jobs.length > 0) {
+        list.innerHTML = jobs.map(jobListItemHtml).join('');
+        // update count label
+        const countEl = document.querySelector('#page-jobs [data-i18n="jobs_found"]');
+        if (countEl) countEl.textContent = jobs.length + ' tapşırıq tapıldı';
+      } else {
+        list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);"><div style="font-size:40px;margin-bottom:12px;">📭</div><p>Hələ heç bir təsdiqlənmiş elan yoxdur</p></div>';
+      }
+    }
   }
 
   // ======= LOAD ADMIN PANEL =======
@@ -2825,6 +2861,44 @@
 
 <script>
 
+  // ========== SEARCH & FILTER ==========
+  function searchJobs() {
+    const input = document.querySelector('#page-jobs .search-input');
+    const keyword = input ? input.value.trim().toLowerCase() : '';
+    const jobs = window._allJobs || [];
+    const filtered = keyword
+      ? jobs.filter(j =>
+          j.title.toLowerCase().includes(keyword) ||
+          j.description.toLowerCase().includes(keyword) ||
+          (j.category||'').toLowerCase().includes(keyword))
+      : jobs;
+    const list = document.querySelector('#page-jobs .jobs-list');
+    if (!list) return;
+    if (filtered.length === 0) {
+      list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);"><div style="font-size:40px;margin-bottom:12px;">🔍</div><p>"<b>${keyword}</b>" üzrə nəticə tapılmadı</p><button class="btn btn-outline" style="margin-top:12px;" onclick="clearSearch()">Axtarışı sıfırla</button></div>`;
+    } else {
+      list.innerHTML = filtered.map(j => `<div class="job-card-list" onclick="showJobDetail('${j.id}')" style="cursor:pointer;"><div class="job-header"><div class="job-title">${j.title}</div><div class="job-budget">₼${j.budget}</div></div><div class="job-desc">${j.description.substring(0,160)}${j.description.length>160?'...':''}</div><div class="job-tags"><span class="tag">${j.category}</span></div><div class="job-footer"><div class="job-meta"><span>⏱ ${j.deadline} gün</span><span>💬 ${j.bids||0} təklif</span></div><button class="bid-btn" onclick="event.stopPropagation();openBidModal('${j.id}','${j.title.replace(/'/g,String.fromCharCode(39))}')" data-i18n="bid_btn">Təklif ver</button></div></div>`).join('');
+    }
+    const countEl = document.querySelector('#page-jobs [data-i18n="jobs_found"]');
+    if (countEl) countEl.textContent = filtered.length + ' tapşırıq tapıldı';
+  }
+
+  function clearSearch() {
+    const input = document.querySelector('#page-jobs .search-input');
+    if (input) { input.value = ''; searchJobs(); }
+  }
+
+  function initSearch() {
+    const input = document.querySelector('#page-jobs .search-input');
+    const btn = document.querySelector('#page-jobs .search-bar .btn');
+    if (input && !input._sb) {
+      input._sb = true;
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') searchJobs(); });
+      input.addEventListener('input', () => { if (!input.value) searchJobs(); });
+    }
+    if (btn && !btn._sb) { btn._sb = true; btn.addEventListener('click', searchJobs); }
+  }
+
   // ========== SMART BID (demo cards) ==========
   function smartBid(btn) {
     const user = window._fb?.currentUser;
@@ -2843,6 +2917,7 @@
     closeMobileMenu();
     if (name === 'admin' && window.loadAdminData) window.loadAdminData();
     if (name === 'dashboard' && window.loadDashboard) window.loadDashboard();
+    if (name === 'jobs') { if (window.loadJobs) window.loadJobs(); setTimeout(initSearch, 100); }
     // nav active state
     document.querySelectorAll('.nav-links a[data-page]').forEach(a => a.classList.remove('active-page'));
     const activeLink = document.querySelector('.nav-links a[data-page="'+name+'"]');
