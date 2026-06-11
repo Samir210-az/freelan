@@ -769,6 +769,46 @@
     .nav-logo { font-size: 18px; }
   }
 
+  /* FIREBASE ERROR */
+  .fb-error {
+    background: #FEF2F2; border: 1px solid #FECACA; color: #DC2626;
+    padding: 10px 14px; border-radius: 10px; font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  /* USER NAV BTN */
+  .user-nav-btn {
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer; padding: 6px 12px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; color: var(--text);
+    transition: background 0.2s;
+  }
+  .user-nav-btn:hover { background: var(--bg3); }
+  .user-avatar-sm {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--grad1), var(--grad2));
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; flex-shrink: 0;
+  }
+
+  /* ADMIN JOB CARD */
+  .admin-job-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px;
+    display: flex; gap: 16px; align-items: flex-start;
+    margin-bottom: 12px; transition: box-shadow 0.2s;
+  }
+  .admin-job-card:hover { box-shadow: var(--shadow); }
+  .admin-job-info { flex: 1; }
+  .admin-job-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .admin-job-meta { font-size: 12px; color: var(--text3); margin-bottom: 8px; }
+  .admin-job-desc { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .admin-job-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+  @media(max-width:600px) {
+    .admin-job-card { flex-direction: column; }
+    .admin-job-actions { flex-direction: row; }
+  }
+
   /* ACTIVE NAV STATES */
   .nav-links a.active-page { color: var(--grad1); font-weight: 600; }
   .nav-links a.active-page::after { content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); width: 20px; height: 2px; background: var(--grad1); border-radius: 2px; }
@@ -854,8 +894,8 @@
       <button class="lang-btn" onclick="setLang('ru')">RU</button>
       <button class="lang-btn" onclick="setLang('en')">EN</button>
     </div>
-    <button class="btn btn-outline" onclick="openModal('login')" data-i18n="btn_login">Giriş</button>
-    <button class="btn btn-primary" onclick="openModal('register')" data-i18n="btn_register">Qeydiyyat</button>
+    <button class="btn btn-outline" data-action="login" onclick="openModal('login')" data-i18n="btn_login">Giriş</button>
+    <button class="btn btn-primary" data-action="register" onclick="openModal('register')" data-i18n="btn_register">Qeydiyyat</button>
   </div>
 </nav>
 
@@ -1293,41 +1333,45 @@
 <div class="modal-overlay" id="modal-auth">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('auth')">✕</button>
+    <!-- LOGIN -->
     <div id="auth-login">
-      <h2 data-i18n="login_title">Xoş gəldiniz 👋</h2>
-      <p class="modal-sub" data-i18n="login_sub">Hesabınıza daxil olun</p>
+      <h2>Xoş gəldiniz 👋</h2>
+      <p class="modal-sub">Hesabınıza daxil olun</p>
+      <div id="login-error" class="fb-error" style="display:none;"></div>
       <div class="form-group">
-        <label class="form-label" data-i18n="form_email">E-poçt</label>
-        <input class="form-input" type="email" data-i18n-placeholder="email_ph" placeholder="sizin@email.com">
+        <label class="form-label">E-poçt</label>
+        <input class="form-input" id="login-email" type="email" placeholder="sizin@email.com" oninput="clearFbError('login-error')">
       </div>
       <div class="form-group">
-        <label class="form-label" data-i18n="form_pass">Şifrə</label>
-        <input class="form-input" type="password" data-i18n-placeholder="pass_ph" placeholder="••••••••">
+        <label class="form-label">Şifrə</label>
+        <input class="form-input" id="login-pass" type="password" placeholder="••••••••" oninput="clearFbError('login-error')" onkeydown="if(event.key==='Enter')fbLogin()">
       </div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px;" onclick="loginSuccess()" data-i18n="btn_login">Daxil ol</button>
-      <div class="auth-switch" data-i18n="login_switch">Hesabınız yoxdur? <a onclick="switchAuth('register')">Qeydiyyat</a></div>
+      <button class="btn btn-primary" id="login-btn" style="width:100%;justify-content:center;margin-top:8px;" onclick="fbLogin()">Daxil ol</button>
+      <div class="auth-switch">Hesabınız yoxdur? <a onclick="switchAuth('register')" style="cursor:pointer;">Qeydiyyat</a></div>
     </div>
+    <!-- REGISTER -->
     <div id="auth-register" style="display:none;">
-      <h2 data-i18n="reg_title">Qeydiyyat 🚀</h2>
-      <p class="modal-sub" data-i18n="reg_sub">Hansı rolda qatılırsınız?</p>
+      <h2>Qeydiyyat 🚀</h2>
+      <p class="modal-sub">Hansı rolda qatılırsınız?</p>
       <div class="role-tabs">
-        <button class="role-tab active" onclick="selectRole(this)" data-i18n="role_client">Müştəri</button>
-        <button class="role-tab" onclick="selectRole(this)" data-i18n="role_freelancer">Freelancer</button>
+        <button class="role-tab active" onclick="selectRole(this)" data-role="client">Müştəri</button>
+        <button class="role-tab" onclick="selectRole(this)" data-role="freelancer">Freelancer</button>
+      </div>
+      <div id="reg-error" class="fb-error" style="display:none;"></div>
+      <div class="form-group">
+        <label class="form-label">Ad, Soyad</label>
+        <input class="form-input" id="reg-name" type="text" placeholder="Adınız Soyadınız" oninput="clearFbError('reg-error')">
       </div>
       <div class="form-group">
-        <label class="form-label" data-i18n="form_name">Ad, Soyad</label>
-        <input class="form-input" type="text" data-i18n-placeholder="name_ph" placeholder="Adınız">
+        <label class="form-label">E-poçt</label>
+        <input class="form-input" id="reg-email" type="email" placeholder="sizin@email.com" oninput="clearFbError('reg-error')">
       </div>
       <div class="form-group">
-        <label class="form-label" data-i18n="form_email">E-poçt</label>
-        <input class="form-input" type="email" data-i18n-placeholder="email_ph" placeholder="sizin@email.com">
+        <label class="form-label">Şifrə <span style="font-size:11px;color:var(--text3);">(min. 6 simvol)</span></label>
+        <input class="form-input" id="reg-pass" type="password" placeholder="••••••••" oninput="clearFbError('reg-error')" onkeydown="if(event.key==='Enter')fbRegister()">
       </div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="form_pass">Şifrə</label>
-        <input class="form-input" type="password" data-i18n-placeholder="pass_ph" placeholder="••••••••">
-      </div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px;" onclick="loginSuccess()" data-i18n="btn_register">Qeydiyyatdan keç</button>
-      <div class="auth-switch" data-i18n="reg_switch">Artıq hesabınız var? <a onclick="switchAuth('login')">Daxil ol</a></div>
+      <button class="btn btn-primary" id="reg-btn" style="width:100%;justify-content:center;margin-top:8px;" onclick="fbRegister()">Qeydiyyatdan keç</button>
+      <div class="auth-switch">Artıq hesabınız var? <a onclick="switchAuth('login')" style="cursor:pointer;">Daxil ol</a></div>
     </div>
   </div>
 </div>
@@ -1340,11 +1384,11 @@
     <p class="modal-sub" data-i18n="postjob_sub">Tapşırığınızı ətraflı təsvir edin</p>
     <div class="form-group">
       <label class="form-label" data-i18n="pj_title">Başlıq</label>
-      <input class="form-input" type="text" data-i18n-placeholder="pj_title_ph" placeholder="Məs: Logo dizaynı lazımdır">
+      <input class="form-input" id="pj-title" type="text" placeholder="Məs: Logo dizaynı lazımdır">
     </div>
     <div class="form-group">
       <label class="form-label" data-i18n="pj_cat">Kateqoriya</label>
-      <select class="form-select">
+      <select class="form-select" id="pj-cat">
         <option data-i18n="cat_design">Dizayn</option>
         <option data-i18n="cat_copy">Kopiraytinq</option>
         <option data-i18n="cat_dev">Proqramlaşdırma</option>
@@ -1355,19 +1399,20 @@
     </div>
     <div class="form-group">
       <label class="form-label" data-i18n="pj_desc">Təsvir</label>
-      <textarea class="form-textarea" data-i18n-placeholder="pj_desc_ph" placeholder="Nə istədiyinizi ətraflı yazın..."></textarea>
+      <textarea class="form-textarea" id="pj-desc" placeholder="Nə istədiyinizi ətraflı yazın..."></textarea>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label" data-i18n="pj_budget">Büdcə (₼)</label>
-        <input class="form-input" type="number" placeholder="500">
+        <input class="form-input" id="pj-budget" type="number" placeholder="500">
       </div>
       <div class="form-group">
         <label class="form-label" data-i18n="pj_deadline">Son tarix (gün)</label>
-        <input class="form-input" type="number" placeholder="7">
+        <input class="form-input" id="pj-deadline" type="number" placeholder="7">
       </div>
     </div>
-    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="postJobSuccess()" data-i18n="pj_submit">Elanı paylaş 🚀</button>
+    <div id="pj-error" class="fb-error" style="display:none;margin-bottom:10px;"></div>
+    <button class="btn btn-primary" id="pj-btn" style="width:100%;justify-content:center;" onclick="fbPostJob()">Elanı paylaş 🚀</button>
   </div>
 </div>
 
@@ -1783,6 +1828,62 @@
   </div>
 </div>
 
+<!-- ===== ADMIN PAGE ===== -->
+<div id="page-admin" class="page">
+  <div class="dash-layout">
+    <!-- Admin Sidebar -->
+    <div class="dash-sidebar">
+      <div class="dash-user-info">
+        <div class="fc-avatar" style="background:linear-gradient(135deg,#DC2626,#7C3AED);width:54px;height:54px;font-size:22px;margin:0 auto 10px;">👑</div>
+        <div style="font-weight:700;font-size:14px;">Admin Panel</div>
+        <div style="font-size:12px;color:var(--text3);">Freelan.az</div>
+      </div>
+      <nav class="dash-nav">
+        <a class="dash-nav-item active" onclick="adminTab('overview')" data-tab="overview">📊 İcmal</a>
+        <a class="dash-nav-item" onclick="adminTab('pending')" data-tab="pending">⏳ Moderasiya <span class="dash-badge" id="pending-count">0</span></a>
+        <a class="dash-nav-item" onclick="adminTab('users')" data-tab="users">👥 İstifadəçilər</a>
+        <a class="dash-nav-item" onclick="adminTab('alljobs')" data-tab="alljobs">📋 Bütün Elanlar</a>
+        <a class="dash-nav-item" style="margin-top:auto;color:#DC2626;" onclick="fbLogout()">→ Çıxış</a>
+      </nav>
+    </div>
+    <!-- Admin Main -->
+    <div class="dash-main">
+      <!-- Overview -->
+      <div id="admin-tab-overview" class="dash-section active">
+        <h2 class="dash-title">📊 Admin İcmalı</h2>
+        <div class="dash-stats-grid" id="admin-stats">
+          <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(109,40,217,0.1)">👥</div><div class="dash-stat-val">—</div><div class="dash-stat-label">İstifadəçilər</div></div>
+          <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(37,99,235,0.1)">📋</div><div class="dash-stat-val">—</div><div class="dash-stat-label">Elanlar</div></div>
+          <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(220,38,38,0.1)">⏳</div><div class="dash-stat-val">—</div><div class="dash-stat-label">Gözləyən</div></div>
+          <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(5,150,105,0.1)">✅</div><div class="dash-stat-val">—</div><div class="dash-stat-label">Aktiv Elan</div></div>
+        </div>
+        <p style="color:var(--text3);font-size:13px;margin-top:16px;">Son yeniləmə üçün səhifəni yeniləyin</p>
+      </div>
+      <!-- Pending Moderation -->
+      <div id="admin-tab-pending" class="dash-section">
+        <h2 class="dash-title">⏳ Moderasiya gözləyən elanlar</h2>
+        <div id="admin-pending-list">
+          <p style="color:var(--text3);text-align:center;padding:32px;">Yüklənir...</p>
+        </div>
+      </div>
+      <!-- Users -->
+      <div id="admin-tab-users" class="dash-section">
+        <h2 class="dash-title">👥 İstifadəçilər</h2>
+        <div id="admin-users-list">
+          <p style="color:var(--text3);text-align:center;padding:32px;">Yüklənir...</p>
+        </div>
+      </div>
+      <!-- All Jobs -->
+      <div id="admin-tab-alljobs" class="dash-section">
+        <h2 class="dash-title">📋 Bütün Elanlar</h2>
+        <div id="admin-alljobs-list">
+          <p style="color:var(--text3);text-align:center;padding:32px;">Yüklənir...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 404 PAGE ===== -->
 <div id="page-404" class="page page-404-inner">
   <div style="font-size:80px;margin-bottom:16px;">🔍</div>
@@ -1976,13 +2077,330 @@
 }
 </style>
 
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, query, orderBy, limit, where, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCDhahbyEM5IsLLWrRz7_haxJIH0WWyBec",
+    authDomain: "freelan-8e5b4.firebaseapp.com",
+    projectId: "freelan-8e5b4",
+    storageBucket: "freelan-8e5b4.firebasestorage.app",
+    messagingSenderId: "1044012909081",
+    appId: "1:1044012909081:web:3c74e34edc5b3dd1be2088",
+    measurementId: "G-JTHEDBG86Y"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ======= GLOBAL STATE =======
+  window._fb = { auth, db, currentUser: null, currentUserData: null };
+
+  // ======= AUTH STATE =======
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      window._fb.currentUser = user;
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) window._fb.currentUserData = snap.data();
+      updateNavForUser(user);
+      loadJobs();
+    } else {
+      window._fb.currentUser = null;
+      window._fb.currentUserData = null;
+      updateNavForGuest();
+    }
+  });
+
+  // ======= UPDATE NAV =======
+  function updateNavForUser(user) {
+    const data = window._fb.currentUserData;
+    const name = data?.name || user.email.split('@')[0];
+    const role = data?.role || 'client';
+    // Nav right buttons → user info
+    const navRight = document.querySelector('.nav-right');
+    if (navRight) {
+      const existing = navRight.querySelector('.user-nav-btn');
+      if (!existing) {
+        const btnLogin = navRight.querySelector('[data-action="login"]');
+        const btnReg = navRight.querySelector('[data-action="register"]');
+        if (btnLogin) btnLogin.style.display = 'none';
+        if (btnReg) btnReg.style.display = 'none';
+
+        const userBtn = document.createElement('div');
+        userBtn.className = 'user-nav-btn';
+        userBtn.innerHTML = `<div class="user-avatar-sm">${name[0].toUpperCase()}</div><span>${name}</span>`;
+        userBtn.onclick = () => {
+          if (role === 'admin') { showPage('admin'); }
+          else { showPage('dashboard'); }
+        };
+        const logoutBtn = document.createElement('button');
+        logoutBtn.className = 'btn btn-outline';
+        logoutBtn.style.cssText = 'padding:7px 14px;font-size:13px;';
+        logoutBtn.textContent = '→ Çıxış';
+        logoutBtn.onclick = () => window.fbLogout();
+        navRight.appendChild(userBtn);
+        navRight.appendChild(logoutBtn);
+      }
+    }
+
+    // Show/hide admin nav item
+    if (role === 'admin') {
+      const adminLink = document.getElementById('admin-nav-link');
+      if (adminLink) adminLink.style.display = 'flex';
+    }
+  }
+
+  function updateNavForGuest() {
+    const navRight = document.querySelector('.nav-right');
+    if (navRight) {
+      const userBtn = navRight.querySelector('.user-nav-btn');
+      const logoutBtn = navRight.querySelector('.btn-logout');
+      if (userBtn) userBtn.remove();
+      if (logoutBtn) logoutBtn.remove();
+    }
+  }
+
+  // ======= REGISTER =======
+  window.fbRegister = async function() {
+    const name = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const pass = document.getElementById('reg-pass').value;
+    const role = document.querySelector('.role-tab.active')?.dataset.role || 'client';
+
+    if (!name || !email || !pass) { showFbError('reg-error', 'Bütün xanaları doldurun'); return; }
+    if (pass.length < 6) { showFbError('reg-error', 'Şifrə ən az 6 simvol olmalıdır'); return; }
+
+    const btn = document.getElementById('reg-btn');
+    btn.disabled = true; btn.textContent = '⏳ Gözləyin...';
+
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await setDoc(doc(db, 'users', cred.user.uid), {
+        name, email, role,
+        createdAt: serverTimestamp(),
+        rating: 0, jobsDone: 0, balance: 0,
+        status: 'active'
+      });
+      closeModal('auth');
+      showToast('Xoş gəldiniz, ' + name + '! 🎉');
+      setTimeout(() => showPage(role === 'admin' ? 'admin' : 'dashboard'), 600);
+    } catch(e) {
+      const msg = e.code === 'auth/email-already-in-use' ? 'Bu e-poçt artıq qeydiyyatdadır' :
+                  e.code === 'auth/invalid-email' ? 'E-poçt düzgün deyil' : 'Xəta baş verdi: ' + e.message;
+      showFbError('reg-error', msg);
+      btn.disabled = false; btn.textContent = 'Qeydiyyatdan keç';
+    }
+  };
+
+  // ======= LOGIN =======
+  window.fbLogin = async function() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-pass').value;
+
+    if (!email || !pass) { showFbError('login-error', 'E-poçt və şifrəni daxil edin'); return; }
+
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true; btn.textContent = '⏳ Gözləyin...';
+
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+      closeModal('auth');
+      showToast('Xoş gəldiniz! 🎉');
+      const role = window._fb.currentUserData?.role;
+      setTimeout(() => showPage(role === 'admin' ? 'admin' : 'dashboard'), 600);
+    } catch(e) {
+      const msg = e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
+        ? 'E-poçt və ya şifrə yanlışdır' : 'Giriş xətası: ' + e.message;
+      showFbError('login-error', msg);
+      btn.disabled = false; btn.textContent = 'Daxil ol';
+    }
+  };
+
+  // ======= LOGOUT =======
+  window.fbLogout = async function() {
+    await signOut(auth);
+    showPage('home');
+    showToast('Çıxış edildi');
+    location.reload();
+  };
+
+  // ======= POST JOB =======
+  window.fbPostJob = async function() {
+    if (!window._fb.currentUser) { openModal('login'); return; }
+    const title = document.getElementById('pj-title').value.trim();
+    const cat = document.getElementById('pj-cat').value;
+    const desc = document.getElementById('pj-desc').value.trim();
+    const budget = document.getElementById('pj-budget').value;
+    const deadline = document.getElementById('pj-deadline').value;
+
+    if (!title || !desc || !budget) { showFbError('pj-error', 'Başlıq, təsvir və büdcə mütləqdir'); return; }
+
+    const btn = document.getElementById('pj-btn');
+    btn.disabled = true; btn.textContent = '⏳ Göndərilir...';
+
+    try {
+      const userData = window._fb.currentUserData;
+      await addDoc(collection(db, 'jobs'), {
+        title, category: cat, description: desc,
+        budget: parseInt(budget), deadline: parseInt(deadline) || 7,
+        clientId: window._fb.currentUser.uid,
+        clientName: userData?.name || 'İstifadəçi',
+        status: 'pending', // pending → approved → closed
+        bids: 0,
+        createdAt: serverTimestamp()
+      });
+      closeModal('postjob');
+      showToast('Elanınız moderasiyaya göndərildi! ⏳');
+      loadJobs();
+    } catch(e) {
+      showFbError('pj-error', 'Xəta: ' + e.message);
+      btn.disabled = false; btn.textContent = 'Elanı paylaş 🚀';
+    }
+  };
+
+  // ======= LOAD JOBS =======
+  window.loadJobs = async function() {
+    try {
+      const q = query(collection(db, 'jobs'), where('status', '==', 'approved'), orderBy('createdAt', 'desc'), limit(20));
+      const snap = await getDocs(q);
+      const jobs = [];
+      snap.forEach(d => jobs.push({ id: d.id, ...d.data() }));
+      renderJobs(jobs);
+    } catch(e) {
+      console.log('Jobs load error:', e);
+    }
+  };
+
+  function renderJobs(jobs) {
+    const grids = document.querySelectorAll('.jobs-grid');
+    if (!grids.length || !jobs.length) return;
+    grids.forEach(grid => {
+      // Keep first 3 demo cards if no real jobs
+      if (jobs.length === 0) return;
+      const html = jobs.map(j => `
+        <div class="job-card" onclick="showJobDetail('${j.id}')" style="cursor:pointer;">
+          <div class="job-header">
+            <div class="job-title">${j.title}</div>
+            <div class="job-budget">₼${j.budget}</div>
+          </div>
+          <div class="job-desc">${j.description.substring(0,120)}${j.description.length>120?'...':''}</div>
+          <div class="job-tags"><span class="tag">${j.category}</span></div>
+          <div class="job-footer">
+            <div class="job-meta"><span>⏱ ${j.deadline} gün</span><span>💬 ${j.bids} təklif</span></div>
+            <button class="bid-btn" onclick="event.stopPropagation();openModal('register')" data-i18n="bid_btn">Təklif ver</button>
+          </div>
+        </div>
+      `).join('');
+      grid.innerHTML = html;
+    });
+  }
+
+  // ======= LOAD ADMIN PANEL =======
+  window.loadAdminData = async function() {
+    try {
+      // Pending jobs
+      const pendingQ = query(collection(db, 'jobs'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
+      const pendingSnap = await getDocs(pendingQ);
+      const pendingJobs = [];
+      pendingSnap.forEach(d => pendingJobs.push({ id: d.id, ...d.data() }));
+
+      // All users count
+      const usersSnap = await getDocs(collection(db, 'users'));
+      const usersCount = usersSnap.size;
+
+      // All jobs count
+      const allJobsSnap = await getDocs(collection(db, 'jobs'));
+      const jobsCount = allJobsSnap.size;
+
+      renderAdminPanel(pendingJobs, usersCount, jobsCount);
+    } catch(e) {
+      console.log('Admin load error:', e);
+    }
+  };
+
+  function renderAdminPanel(pendingJobs, usersCount, jobsCount) {
+    const statsEl = document.getElementById('admin-stats');
+    if (statsEl) {
+      statsEl.innerHTML = `
+        <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(109,40,217,0.1)">👥</div><div class="dash-stat-val">${usersCount}</div><div class="dash-stat-label">İstifadəçilər</div></div>
+        <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(37,99,235,0.1)">📋</div><div class="dash-stat-val">${jobsCount}</div><div class="dash-stat-label">Elanlar</div></div>
+        <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(220,38,38,0.1)">⏳</div><div class="dash-stat-val">${pendingJobs.length}</div><div class="dash-stat-label">Gözləyən</div></div>
+        <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(5,150,105,0.1)">✅</div><div class="dash-stat-val">${jobsCount - pendingJobs.length}</div><div class="dash-stat-label">Təsdiqlənmiş</div></div>
+      `;
+    }
+
+    const listEl = document.getElementById('admin-pending-list');
+    if (listEl) {
+      if (pendingJobs.length === 0) {
+        listEl.innerHTML = '<p style="color:var(--text3);text-align:center;padding:32px;">Gözləyən elan yoxdur ✅</p>';
+        return;
+      }
+      listEl.innerHTML = pendingJobs.map(j => `
+        <div class="admin-job-card" id="ajc-${j.id}">
+          <div class="admin-job-info">
+            <div class="admin-job-title">${j.title}</div>
+            <div class="admin-job-meta">₼${j.budget} · ${j.category} · <b>${j.clientName}</b></div>
+            <div class="admin-job-desc">${j.description.substring(0,150)}...</div>
+          </div>
+          <div class="admin-job-actions">
+            <button class="btn btn-primary" style="padding:8px 16px;font-size:13px;" onclick="window.approveJob('${j.id}')">✅ Təsdiqlə</button>
+            <button class="btn" style="padding:8px 16px;font-size:13px;background:#FEE2E2;color:#DC2626;border:none;" onclick="window.rejectJob('${j.id}')">❌ Rədd et</button>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+
+  // ======= APPROVE / REJECT JOB =======
+  window.approveJob = async function(jobId) {
+    try {
+      await updateDoc(doc(db, 'jobs', jobId), { status: 'approved' });
+      document.getElementById('ajc-' + jobId)?.remove();
+      showToast('Elan təsdiqləndi ✅');
+      loadAdminData();
+      loadJobs();
+    } catch(e) { showToast('Xəta: ' + e.message); }
+  };
+
+  window.rejectJob = async function(jobId) {
+    try {
+      await updateDoc(doc(db, 'jobs', jobId), { status: 'rejected' });
+      document.getElementById('ajc-' + jobId)?.remove();
+      showToast('Elan rədd edildi');
+      loadAdminData();
+    } catch(e) { showToast('Xəta: ' + e.message); }
+  };
+
+  // ======= HELPERS =======
+  function showFbError(id, msg) {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = msg; el.style.display = 'block'; }
+  }
+
+  window.clearFbError = function(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  };
+
+  // Init on load
+  window.addEventListener('DOMContentLoaded', () => {
+    loadJobs();
+  });
+</script>
+
 <script>
+
   // ========== PAGES ==========
   function showPage(name) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const el = document.getElementById('page-' + name);
     if (el) { el.classList.add('active'); window.scrollTo(0,0); }
     closeMobileMenu();
+    if (name === 'admin' && window.loadAdminData) window.loadAdminData();
     // nav active state
     document.querySelectorAll('.nav-links a[data-page]').forEach(a => a.classList.remove('active-page'));
     const activeLink = document.querySelector('.nav-links a[data-page="'+name+'"]');
@@ -1991,6 +2409,19 @@
 
   function showJobDetail() {
     showPage('job-detail');
+  }
+
+  // ========== ADMIN TABS ==========
+  function adminTab(tab) {
+    document.querySelectorAll('#page-admin .dash-section').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById('admin-tab-' + tab);
+    if (el) el.classList.add('active');
+    document.querySelectorAll('#page-admin .dash-nav-item').forEach(a => a.classList.remove('active'));
+    const activeLink = document.querySelector('#page-admin .dash-nav-item[data-tab="'+tab+'"]');
+    if (activeLink) activeLink.classList.add('active');
+    if (tab === 'overview' || tab === 'pending') {
+      if (window.loadAdminData) window.loadAdminData();
+    }
   }
 
   // ========== DASHBOARD TABS ==========
