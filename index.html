@@ -2077,7 +2077,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, query, orderBy, limit, where, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, query, orderBy, limit, where, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCDhahbyEM5IsLLWrRz7_haxJIH0WWyBec",
@@ -2539,9 +2539,11 @@
   window.deleteJob = async function(jobId) {
     if (!confirm('Bu elanı silmək istədiyinizə əminsiniz?')) return;
     try {
-      await updateDoc(doc(db, 'jobs', jobId), { status: 'deleted' });
-      showToast('Elan silindi');
+      await deleteDoc(doc(db, 'jobs', jobId));
+      showToast('Elan silindi 🗑');
       window.loadAdminAllJobs();
+      window.loadAdminData();
+      window.loadJobs();
     } catch(e) { showToast('Xəta: ' + e.message); }
   };
 
