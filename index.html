@@ -678,7 +678,7 @@
   <div class="nav-links">
     <a href="#" onclick="showPage('jobs')" data-page="jobs" data-i18n="nav_jobs">Tapşırıqlar</a>
     <a href="#" onclick="showPage('freelancers')" data-page="freelancers" data-i18n="nav_freelancers">Freelancerlər</a>
-    <a href="#" data-i18n="nav_how">Necə işləyir?</a>
+    <a href="#" onclick="showPage('pricing')" data-page="pricing" data-i18n="nav_pricing">Tariflər</a>
   </div>
   <div class="nav-right">
     <div class="lang-switch">
@@ -769,7 +769,7 @@
     <h2 class="section-title" data-i18n="recent_title">Son elanlar</h2>
     <p class="section-sub" data-i18n="recent_sub">İndi aktiv tapşırıqlar</p>
     <div class="jobs-grid">
-      <div class="job-card">
+      <div class="job-card" onclick="showJobDetail()" style="cursor:pointer;">
         <div class="job-header">
           <div class="job-title">Restoran üçün logo və brendinq paketi</div>
           <div class="job-budget">₼350</div>
@@ -778,10 +778,10 @@
         <div class="job-tags"><span class="tag">Logo</span><span class="tag">Brendinq</span><span class="tag">Illustrator</span></div>
         <div class="job-footer">
           <div class="job-meta"><span>⏱ 7 gün</span><span>💬 8 təklif</span></div>
-          <button class="bid-btn" onclick="openModal('register')" data-i18n="bid_btn">Təklif ver</button>
+          <button class="bid-btn" onclick="event.stopPropagation();openModal('register')" data-i18n="bid_btn">Təklif ver</button>
         </div>
       </div>
-      <div class="job-card">
+      <div class="job-card" onclick="showJobDetail()" style="cursor:pointer;">
         <div class="job-header">
           <div class="job-title">E-ticarət saytı üçün məhsul təsviri</div>
           <div class="job-budget">₼180</div>
@@ -790,10 +790,10 @@
         <div class="job-tags"><span class="tag">Kopiraytinq</span><span class="tag">SEO</span><span class="tag">AZ/RU</span></div>
         <div class="job-footer">
           <div class="job-meta"><span>⏱ 5 gün</span><span>💬 12 təklif</span></div>
-          <button class="bid-btn" onclick="openModal('register')" data-i18n="bid_btn">Təklif ver</button>
+          <button class="bid-btn" onclick="event.stopPropagation();openModal('register')" data-i18n="bid_btn">Təklif ver</button>
         </div>
       </div>
-      <div class="job-card">
+      <div class="job-card" onclick="showJobDetail()" style="cursor:pointer;">
         <div class="job-header">
           <div class="job-title">Instagram üçün 30 günlük kontent planı</div>
           <div class="job-budget">₼220</div>
@@ -802,7 +802,7 @@
         <div class="job-tags"><span class="tag">SMM</span><span class="tag">Instagram</span><span class="tag">Dizayn</span></div>
         <div class="job-footer">
           <div class="job-meta"><span>⏱ 10 gün</span><span>💬 6 təklif</span></div>
-          <button class="bid-btn" onclick="openModal('register')" data-i18n="bid_btn">Təklif ver</button>
+          <button class="bid-btn" onclick="event.stopPropagation();openModal('register')" data-i18n="bid_btn">Təklif ver</button>
         </div>
       </div>
     </div>
@@ -1150,12 +1150,569 @@
 <!-- TOAST -->
 <div class="toast" id="toast">✅ <span id="toast-msg">Uğurla icra edildi!</span></div>
 
+<!-- ===== MOBILE MENU ===== -->
+<div id="mobile-menu" style="display:none;position:fixed;top:68px;left:0;right:0;z-index:99;background:rgba(245,244,255,0.98);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:16px 5%;box-shadow:0 8px 32px rgba(109,40,217,0.10);">
+  <a href="#" onclick="showPage('home');closeMobileMenu()" style="display:block;padding:12px 0;color:var(--text);text-decoration:none;font-weight:500;border-bottom:1px solid var(--border);" data-i18n="nav_home">Ana Səhifə</a>
+  <a href="#" onclick="showPage('jobs');closeMobileMenu()" style="display:block;padding:12px 0;color:var(--text);text-decoration:none;font-weight:500;border-bottom:1px solid var(--border);" data-i18n="nav_jobs">Tapşırıqlar</a>
+  <a href="#" onclick="showPage('freelancers');closeMobileMenu()" style="display:block;padding:12px 0;color:var(--text);text-decoration:none;font-weight:500;border-bottom:1px solid var(--border);" data-i18n="nav_freelancers">Freelancerlər</a>
+  <a href="#" onclick="showPage('pricing');closeMobileMenu()" style="display:block;padding:12px 0;color:var(--text);text-decoration:none;font-weight:500;" data-i18n="nav_pricing">Tariflər</a>
+  <div style="display:flex;gap:8px;margin-top:14px;">
+    <button class="btn btn-outline" style="flex:1;justify-content:center;" onclick="openModal('login');closeMobileMenu()" data-i18n="btn_login">Giriş</button>
+    <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="openModal('register');closeMobileMenu()" data-i18n="btn_register">Qeydiyyat</button>
+  </div>
+</div>
+
+<!-- ===== JOB DETAIL PAGE ===== -->
+<div id="page-job-detail" class="page">
+  <div style="padding-top:68px;">
+    <div class="jd-layout">
+      <div>
+        <div class="jd-card">
+          <div class="jd-breadcrumb"><a href="#" onclick="showPage('jobs')" data-i18n="nav_jobs">Tapşırıqlar</a> <span>›</span> <span id="jd-cat-label">Dizayn</span></div>
+          <h1 class="jd-title" id="jd-title">Restoran üçün logo və brendinq paketi</h1>
+          <div class="jd-meta-row">
+            <span class="jd-badge badge-open" data-i18n="badge_open">Açıq</span>
+            <span class="jd-meta-item">⏱ 7 gün</span>
+            <span class="jd-meta-item">👁 124 baxış</span>
+            <span class="jd-meta-item">💬 8 təklif</span>
+          </div>
+          <div class="jd-desc">
+            <p>Bakıda yeni açılan türk restoranı üçün tam brendinq paketi lazımdır. Aşağıdakılar daxil olmalıdır:</p>
+            <ul><li>Loqo dizaynı (3 variant + final)</li><li>Vizit kart dizaynı (ön və arxa)</li><li>Menyu dizaynı (2 səhifəlik)</li><li>Instagram profil şablonu</li></ul>
+            <p style="margin-top:12px;">Stil: Müasir, minimal, premium. Vektor formatda (.ai, .eps, .pdf) teslim olunmalıdır.</p>
+          </div>
+          <div class="jd-tags-section">
+            <div class="jd-section-label" data-i18n="skills_label">Tələb olunan bacarıqlar</div>
+            <div class="job-tags"><span class="tag">Logo Dizayn</span><span class="tag">Brendinq</span><span class="tag">Illustrator</span><span class="tag">Vektoral</span><span class="tag">Photoshop</span></div>
+          </div>
+        </div>
+        <div class="jd-card" style="margin-top:16px;">
+          <div style="font-size:16px;font-weight:700;margin-bottom:16px;" data-i18n="bids_title">Təkliflər (8)</div>
+          <div class="bid-item">
+            <div class="bid-avatar" style="background:linear-gradient(135deg,#7C3AED,#2563EB)">A</div>
+            <div class="bid-body">
+              <div class="bid-header-row">
+                <div><div class="bid-name">Aytən M. <span class="bid-stars">★ 4.9</span></div><div class="bid-role">UI/UX Dizayner · 120 iş</div></div>
+                <div class="bid-price">₼320</div>
+              </div>
+              <div class="bid-text">Salam! Bu layihə üçün çox maraqlı idealarım var. 5 illik brendinq təcrübəm var. 3 gün ərzində ilkin konsept göndərə bilərəm.</div>
+              <div class="bid-actions">
+                <button class="btn btn-primary" style="padding:8px 16px;font-size:13px;" onclick="openModal('register')" data-i18n="accept_bid">Qəbul et</button>
+                <button class="btn btn-outline" style="padding:8px 14px;font-size:13px;" onclick="showPage('messages')" data-i18n="send_msg">Mesaj göndər</button>
+              </div>
+            </div>
+          </div>
+          <div class="bid-item">
+            <div class="bid-avatar" style="background:linear-gradient(135deg,#059669,#2563EB)">N</div>
+            <div class="bid-body">
+              <div class="bid-header-row">
+                <div><div class="bid-name">Nicat B. <span class="bid-stars">★ 4.8</span></div><div class="bid-role">Qrafik Dizayner · 85 iş</div></div>
+                <div class="bid-price">₼380</div>
+              </div>
+              <div class="bid-text">Restoran brendinqi sahəsində 20+ uğurlu layihəm var. Sürətli çatdırılma təmin edirəm.</div>
+              <div class="bid-actions">
+                <button class="btn btn-primary" style="padding:8px 16px;font-size:13px;" onclick="openModal('register')" data-i18n="accept_bid">Qəbul et</button>
+                <button class="btn btn-outline" style="padding:8px 14px;font-size:13px;" onclick="showPage('messages')" data-i18n="send_msg">Mesaj göndər</button>
+              </div>
+            </div>
+          </div>
+          <div class="bid-item">
+            <div class="bid-avatar" style="background:linear-gradient(135deg,#D97706,#DB2777)">S</div>
+            <div class="bid-body">
+              <div class="bid-header-row">
+                <div><div class="bid-name">Sevinc A. <span class="bid-stars">★ 4.7</span></div><div class="bid-role">Qrafik Dizayner · 42 iş</div></div>
+                <div class="bid-price">₼290</div>
+              </div>
+              <div class="bid-text">Minimal brendinq üzrə ixtisaslaşmışam. Türk restoranları üçün xüsusi konsept hazırlaya bilərəm.</div>
+              <div class="bid-actions">
+                <button class="btn btn-primary" style="padding:8px 16px;font-size:13px;" onclick="openModal('register')" data-i18n="accept_bid">Qəbul et</button>
+                <button class="btn btn-outline" style="padding:8px 14px;font-size:13px;" onclick="showPage('messages')" data-i18n="send_msg">Mesaj göndər</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="jd-sidebar-card">
+          <div class="jd-price-big">₼350</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:16px;" data-i18n="fixed_price">Sabit qiymət</div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:13px;" onclick="openModal('register')"><span data-i18n="bid_now">Təklif ver</span> →</button>
+          <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:10px;" onclick="openModal('register')" data-i18n="save_job">♡ Saxla</button>
+          <div class="jd-info-list">
+            <div class="jd-info-item"><span data-i18n="cat_label">Kateqoriya</span><strong>Dizayn</strong></div>
+            <div class="jd-info-item"><span data-i18n="deadline_label2">Müddət</span><strong>7 gün</strong></div>
+            <div class="jd-info-item"><span data-i18n="bids_count">Təkliflər</span><strong>8</strong></div>
+            <div class="jd-info-item"><span data-i18n="posted_label">Yerləşdirildi</span><strong data-i18n="time_ago">2 saat əvvəl</strong></div>
+          </div>
+        </div>
+        <div class="jd-sidebar-card" style="margin-top:16px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:14px;" data-i18n="client_info">Müştəri haqqında</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#6D28D9,#DB2777);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:white;">E</div>
+            <div><div style="font-size:14px;font-weight:600;">Elnur H.</div><div style="font-size:11px;color:var(--text3);">⭐ 4.7 · 12 elan</div></div>
+          </div>
+          <div class="jd-info-item"><span data-i18n="member_since">Üzv olub</span><strong>2024</strong></div>
+          <div class="jd-info-item"><span data-i18n="jobs_posted">Yerləşdirilən</span><strong>12 elan</strong></div>
+          <div class="jd-info-item"><span data-i18n="hire_rate">Seçim faizi</span><strong>89%</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FREELANCERS PAGE ===== -->
+<div id="page-freelancers" class="page">
+  <div style="padding-top:68px;padding-bottom:60px;">
+    <div style="padding:32px 5% 0;">
+      <h1 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800;margin-bottom:6px;" data-i18n="fl_page_title">Freelancerlər</h1>
+      <p style="color:var(--text2);margin-bottom:20px;" data-i18n="fl_page_sub">Azərbaycanın ən yaxşı mütəxəssisləri</p>
+      <div class="search-bar" style="max-width:560px;">
+        <input class="search-input" type="text" placeholder="Freelancer axtar...">
+        <button class="btn btn-primary" data-i18n="search_btn">Axtar</button>
+      </div>
+      <div class="cat-pills">
+        <button class="cat-pill active" onclick="filterPill(this)" data-i18n="all_btn">Hamısı</button>
+        <button class="cat-pill" onclick="filterPill(this)" data-i18n="cat_design">Dizayn</button>
+        <button class="cat-pill" onclick="filterPill(this)" data-i18n="cat_dev">Proqramlaşdırma</button>
+        <button class="cat-pill" onclick="filterPill(this)" data-i18n="cat_copy">Kopiraytinq</button>
+        <button class="cat-pill" onclick="filterPill(this)">SMM</button>
+        <button class="cat-pill" onclick="filterPill(this)" data-i18n="cat_video">Video</button>
+        <button class="cat-pill" onclick="filterPill(this)" data-i18n="cat_trans">Tərcümə</button>
+      </div>
+    </div>
+    <div style="padding:24px 5% 0;">
+      <div class="fl-grid">
+        <div class="fl-card" onclick="showPage('profile')">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#6D28D9,#2563EB);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:white;flex-shrink:0;">A</div>
+            <div><div style="font-size:15px;font-weight:700;">Aytən M.</div><div style="font-size:12px;color:var(--text2);" data-i18n="role_design">UI/UX Dizayner</div><div style="font-size:11px;color:#FBBF24;">★★★★★ 4.9 <span style="color:var(--text3)">(48)</span></div></div>
+          </div>
+          <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:12px;">Figma, Adobe XD, Webflow ilə 5 illik UI/UX təcrübəsi.</p>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;"><span class="tag" style="font-size:10px;">Figma</span><span class="tag" style="font-size:10px;">UI/UX</span><span class="tag" style="font-size:10px;">Webflow</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:15px;font-weight:700;color:#059669;">₼45/saat</span><button class="btn btn-primary" style="padding:7px 14px;font-size:12px;" data-i18n="hire_btn">İşə götür</button></div>
+        </div>
+        <div class="fl-card" onclick="showPage('profile')">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2563EB,#DB2777);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:white;flex-shrink:0;">R</div>
+            <div><div style="font-size:15px;font-weight:700;">Rəşad K.</div><div style="font-size:12px;color:var(--text2);" data-i18n="role_dev">Full-stack Developer</div><div style="font-size:11px;color:#FBBF24;">★★★★★ 5.0 <span style="color:var(--text3)">(62)</span></div></div>
+          </div>
+          <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:12px;">React, Node.js, Firebase ilə tam veb tətbiqləri.</p>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;"><span class="tag" style="font-size:10px;">React</span><span class="tag" style="font-size:10px;">Node.js</span><span class="tag" style="font-size:10px;">Firebase</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:15px;font-weight:700;color:#059669;">₼65/saat</span><button class="btn btn-primary" style="padding:7px 14px;font-size:12px;" data-i18n="hire_btn">İşə götür</button></div>
+        </div>
+        <div class="fl-card" onclick="showPage('profile')">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#DB2777,#6D28D9);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:white;flex-shrink:0;">L</div>
+            <div><div style="font-size:15px;font-weight:700;">Leyla H.</div><div style="font-size:12px;color:var(--text2);" data-i18n="role_copy">Kopirayter</div><div style="font-size:11px;color:#FBBF24;">★★★★☆ 4.8 <span style="color:var(--text3)">(31)</span></div></div>
+          </div>
+          <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:12px;">SEO məqalələr, məhsul təsvirləri. AZ, RU, EN dilləri.</p>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;"><span class="tag" style="font-size:10px;">SEO</span><span class="tag" style="font-size:10px;">Bloq</span><span class="tag" style="font-size:10px;">AZ/RU/EN</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:15px;font-weight:700;color:#059669;">₼20/saat</span><button class="btn btn-primary" style="padding:7px 14px;font-size:12px;" data-i18n="hire_btn">İşə götür</button></div>
+        </div>
+        <div class="fl-card" onclick="showPage('profile')">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#059669,#2563EB);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:white;flex-shrink:0;">N</div>
+            <div><div style="font-size:15px;font-weight:700;">Nicat B.</div><div style="font-size:12px;color:var(--text2);" data-i18n="role_video">Video Redaktor</div><div style="font-size:11px;color:#FBBF24;">★★★★★ 4.9 <span style="color:var(--text3)">(27)</span></div></div>
+          </div>
+          <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:12px;">Premiere Pro, After Effects. Reklam videoları, Reels.</p>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;"><span class="tag" style="font-size:10px;">Premiere</span><span class="tag" style="font-size:10px;">After Effects</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:15px;font-weight:700;color:#059669;">₼35/saat</span><button class="btn btn-primary" style="padding:7px 14px;font-size:12px;" data-i18n="hire_btn">İşə götür</button></div>
+        </div>
+        <div class="fl-card" onclick="showPage('profile')">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#D97706,#DB2777);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:white;flex-shrink:0;">S</div>
+            <div><div style="font-size:15px;font-weight:700;">Sevinc A.</div><div style="font-size:12px;color:var(--text2);" data-i18n="role_smm">SMM Mütəxəssisi</div><div style="font-size:11px;color:#FBBF24;">★★★★☆ 4.7 <span style="color:var(--text3)">(19)</span></div></div>
+          </div>
+          <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:12px;">Instagram, TikTok, Facebook. Kontent plan, analitika.</p>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;"><span class="tag" style="font-size:10px;">Instagram</span><span class="tag" style="font-size:10px;">TikTok</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:15px;font-weight:700;color:#059669;">₼25/saat</span><button class="btn btn-primary" style="padding:7px 14px;font-size:12px;" data-i18n="hire_btn">İşə götür</button></div>
+        </div>
+        <div class="fl-card" onclick="showPage('profile')">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#6D28D9,#DB2777);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:white;flex-shrink:0;">T</div>
+            <div><div style="font-size:15px;font-weight:700;">Tural İ.</div><div style="font-size:12px;color:var(--text2);">Qrafik Dizayner</div><div style="font-size:11px;color:#FBBF24;">★★★★★ 4.9 <span style="color:var(--text3)">(55)</span></div></div>
+          </div>
+          <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:12px;">Logo, identik, qablaşdırma dizaynı. Minimal estetika.</p>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;"><span class="tag" style="font-size:10px;">Logo</span><span class="tag" style="font-size:10px;">Brendinq</span><span class="tag" style="font-size:10px;">Print</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:15px;font-weight:700;color:#059669;">₼40/saat</span><button class="btn btn-primary" style="padding:7px 14px;font-size:12px;" data-i18n="hire_btn">İşə götür</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD PAGE ===== -->
+<div id="page-dashboard" class="page">
+  <div style="padding-top:68px;">
+    <div class="dash-layout">
+      <aside class="dash-sidebar">
+        <div class="dash-user-info">
+          <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6D28D9,#2563EB);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:white;margin-bottom:10px;">A</div>
+          <div style="font-weight:700;font-size:15px;">Aytən M.</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:10px;" data-i18n="role_design">UI/UX Dizayner</div>
+          <span style="padding:3px 10px;background:rgba(109,40,217,0.08);color:#6D28D9;border-radius:20px;font-size:11px;font-weight:600;" data-i18n="role_freelancer">Freelancer</span>
+        </div>
+        <nav class="dash-nav">
+          <a class="dash-nav-item active" onclick="showDash('overview')">📊 <span data-i18n="dash_overview">İcmal</span></a>
+          <a class="dash-nav-item" onclick="showDash('my-jobs')">💼 <span data-i18n="dash_my_jobs">Tapşırıqlarım</span></a>
+          <a class="dash-nav-item" onclick="showDash('my-bids')">📋 <span data-i18n="dash_my_bids">Təkliflərim</span></a>
+          <a class="dash-nav-item" onclick="showPage('messages')">💬 <span data-i18n="dash_messages">Mesajlar</span><span class="dash-badge">3</span></a>
+          <a class="dash-nav-item" onclick="showDash('earnings')">💰 <span data-i18n="dash_earnings">Qazanc</span></a>
+          <a class="dash-nav-item" onclick="showDash('settings')">⚙️ <span data-i18n="dash_settings">Parametrlər</span></a>
+          <a class="dash-nav-item" style="color:#DC2626;" onclick="showPage('home')">← <span data-i18n="dash_logout">Çıxış</span></a>
+        </nav>
+      </aside>
+      <main class="dash-main">
+        <div id="dash-overview" class="dash-section active">
+          <h2 class="dash-title" data-i18n="dash_hello">Salam, Aytən! 👋</h2>
+          <div class="dash-stats-grid">
+            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(109,40,217,0.1);color:#6D28D9;">💰</div><div class="dash-stat-val">₼2,840</div><div class="dash-stat-label" data-i18n="stat_earned">Bu ay qazanc</div></div>
+            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(37,99,235,0.1);color:#2563EB;">✅</div><div class="dash-stat-val">12</div><div class="dash-stat-label" data-i18n="stat_completed">Tamamlanan iş</div></div>
+            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(219,39,119,0.1);color:#DB2777;">⏳</div><div class="dash-stat-val">3</div><div class="dash-stat-label" data-i18n="stat_active">Aktiv iş</div></div>
+            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(5,150,105,0.1);color:#059669;">⭐</div><div class="dash-stat-val">4.9</div><div class="dash-stat-label" data-i18n="stat_rating">Reytinq</div></div>
+          </div>
+          <h3 class="dash-subtitle" data-i18n="active_jobs_title">Aktiv tapşırıqlar</h3>
+          <div class="active-job-item">
+            <div style="flex:1;"><div style="font-size:14px;font-weight:600;margin-bottom:4px;">Mobil tətbiq UI dizaynı</div><div style="font-size:12px;color:var(--text2);">Müştəri: Kamran A. · 3 gün qalıb</div><div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div><div style="font-size:11px;color:var(--text3);">65% tamamlanıb</div></div>
+            <div style="text-align:right;"><div style="font-size:16px;font-weight:700;color:#059669;">₼800</div><span class="status-badge status-progress" data-i18n="in_progress">Davam edir</span></div>
+          </div>
+          <div class="active-job-item">
+            <div style="flex:1;"><div style="font-size:14px;font-weight:600;margin-bottom:4px;">E-commerce saytı dizaynı</div><div style="font-size:12px;color:var(--text2);">Müştəri: Nigar H. · 6 gün qalıb</div><div class="progress-bar"><div class="progress-fill" style="width:30%"></div></div><div style="font-size:11px;color:var(--text3);">30% tamamlanıb</div></div>
+            <div style="text-align:right;"><div style="font-size:16px;font-weight:700;color:#059669;">₼600</div><span class="status-badge status-progress" data-i18n="in_progress">Davam edir</span></div>
+          </div>
+          <h3 class="dash-subtitle" data-i18n="recommended_title">Tövsiyə olunan tapşırıqlar</h3>
+          <div class="job-card-list" onclick="showJobDetail()" style="cursor:pointer;">
+            <div class="job-header"><div class="job-title">Dashboard UI dizaynı — SaaS</div><div class="job-budget">₼950</div></div>
+            <div class="job-desc">Analitika dashboardu üçün tam UI kit. Figma source file daxil.</div>
+            <div class="job-tags"><span class="tag">Figma</span><span class="tag">UI/UX</span><span class="tag">SaaS</span></div>
+          </div>
+        </div>
+        <div id="dash-my-bids" class="dash-section">
+          <h2 class="dash-title" data-i18n="dash_my_bids">Təkliflərim</h2>
+          <div class="bids-table">
+            <div class="bids-table-header"><span data-i18n="col_job">Tapşırıq</span><span data-i18n="col_price">Məbləğ</span><span data-i18n="col_status">Status</span><span data-i18n="col_date">Tarix</span></div>
+            <div class="bids-table-row"><span style="font-weight:500;">Restoran logo dizaynı</span><span style="color:#059669;font-weight:700;">₼320</span><span><span class="status-badge status-pending">Gözləyir</span></span><span style="color:var(--text3);font-size:13px;">2 saat əvvəl</span></div>
+            <div class="bids-table-row"><span style="font-weight:500;">Landing page dizaynı</span><span style="color:#059669;font-weight:700;">₼450</span><span><span class="status-badge status-won">Qazanıldı</span></span><span style="color:var(--text3);font-size:13px;">1 gün əvvəl</span></div>
+            <div class="bids-table-row"><span style="font-weight:500;">Mobile app UI kit</span><span style="color:#059669;font-weight:700;">₼800</span><span><span class="status-badge status-won">Qazanıldı</span></span><span style="color:var(--text3);font-size:13px;">3 gün əvvəl</span></div>
+            <div class="bids-table-row"><span style="font-weight:500;">E-commerce dizayn</span><span style="color:#059669;font-weight:700;">₼1,200</span><span><span class="status-badge" style="background:rgba(220,38,38,0.1);color:#DC2626;">İtirildi</span></span><span style="color:var(--text3);font-size:13px;">5 gün əvvəl</span></div>
+          </div>
+        </div>
+        <div id="dash-earnings" class="dash-section">
+          <h2 class="dash-title" data-i18n="dash_earnings">Qazanc</h2>
+          <div class="dash-stats-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(109,40,217,0.1);color:#6D28D9;">💵</div><div class="dash-stat-val">₼14,280</div><div class="dash-stat-label" data-i18n="total_earned">Ümumi qazanc</div></div>
+            <div class="dash-stat-card"><div class="dash-stat-icon" style="background:rgba(5,150,105,0.1);color:#059669;">🏦</div><div class="dash-stat-val">₼1,240</div><div class="dash-stat-label" data-i18n="withdrawable">Çəkilə bilər</div></div>
+          </div>
+          <div class="earn-table">
+            <div class="bids-table-header"><span data-i18n="col_job">İş</span><span data-i18n="col_price">Məbləğ</span><span data-i18n="col_status">Status</span><span data-i18n="col_date">Tarix</span></div>
+            <div class="bids-table-row"><span>Mobil tətbiq UI</span><span style="color:#059669;font-weight:700;">+₼800</span><span><span class="status-badge status-won">Ödənildi</span></span><span style="color:var(--text3);font-size:13px;">İyun 2025</span></div>
+            <div class="bids-table-row"><span>Landing page</span><span style="color:#059669;font-weight:700;">+₼450</span><span><span class="status-badge status-won">Ödənildi</span></span><span style="color:var(--text3);font-size:13px;">May 2025</span></div>
+            <div class="bids-table-row"><span>SaaS Dashboard</span><span style="color:#059669;font-weight:700;">+₼950</span><span><span class="status-badge status-won">Ödənildi</span></span><span style="color:var(--text3);font-size:13px;">May 2025</span></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="showToast('Çıxarış sorğusu göndərildi!')" data-i18n="withdraw_btn">💳 Pul çıxar</button>
+        </div>
+        <div id="dash-settings" class="dash-section">
+          <h2 class="dash-title" data-i18n="dash_settings">Parametrlər</h2>
+          <div class="settings-card">
+            <div class="settings-section-title" data-i18n="settings_profile">Profil məlumatları</div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label" data-i18n="form_name">Ad, Soyad</label><input class="form-input" value="Aytən Məmmədova"></div>
+              <div class="form-group"><label class="form-label" data-i18n="form_email">E-poçt</label><input class="form-input" value="ayten@example.com"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Bio</label><textarea class="form-textarea" style="min-height:80px;">5 illik UI/UX dizayner.</textarea></div>
+            <div class="form-group"><label class="form-label">Saatlıq qiymət (₼)</label><input class="form-input" type="number" value="45"></div>
+            <button class="btn btn-primary" onclick="showToast('Məlumatlar yeniləndi!')" data-i18n="save_btn">Yadda saxla</button>
+          </div>
+          <div class="settings-card" style="margin-top:16px;">
+            <div class="settings-section-title" data-i18n="settings_security">Təhlükəsizlik</div>
+            <div class="form-group"><label class="form-label">Mövcud şifrə</label><input class="form-input" type="password" placeholder="••••••••"></div>
+            <div class="form-group"><label class="form-label">Yeni şifrə</label><input class="form-input" type="password" placeholder="••••••••"></div>
+            <button class="btn btn-outline" onclick="showToast('Şifrə dəyişdirildi!')">Şifrəni dəyiş</button>
+          </div>
+        </div>
+        <div id="dash-my-jobs" class="dash-section">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h2 class="dash-title" style="margin:0" data-i18n="dash_my_jobs">Tapşırıqlarım</h2>
+            <button class="btn btn-primary" onclick="openModal('postjob')" data-i18n="post_job_btn">+ Elan ver</button>
+          </div>
+          <div class="active-job-item">
+            <div style="flex:1;"><div style="font-size:14px;font-weight:600;">Restoran logo dizaynı</div><div style="font-size:12px;color:var(--text2);margin-top:3px;">8 təklif · 2 saat əvvəl</div></div>
+            <div style="text-align:right;"><div style="font-size:15px;font-weight:700;">₼350</div><span class="status-badge badge-open" data-i18n="badge_open">Açıq</span></div>
+          </div>
+          <div class="active-job-item">
+            <div style="flex:1;"><div style="font-size:14px;font-weight:600;">E-ticarət məhsul təsviri</div><div style="font-size:12px;color:var(--text2);margin-top:3px;">12 təklif · 1 gün əvvəl</div></div>
+            <div style="text-align:right;"><div style="font-size:15px;font-weight:700;">₼180</div><span class="status-badge status-progress" data-i18n="in_progress">Davam edir</span></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MESSAGES PAGE ===== -->
+<div id="page-messages" class="page">
+  <div style="padding-top:68px;">
+    <div class="msg-layout">
+      <div class="msg-sidebar">
+        <div style="padding:12px 14px;border-bottom:1px solid var(--border);"><input class="search-input" style="width:100%;font-size:13px;" placeholder="Mesaj axtar..." type="text"></div>
+        <div class="msg-contact active" onclick="selectContact(this,'Aytən M.','A','#6D28D9,#2563EB')">
+          <div class="msg-avatar" style="background:linear-gradient(135deg,#6D28D9,#2563EB)">A</div>
+          <div class="msg-contact-info"><div class="msg-contact-name">Aytən M.</div><div class="msg-contact-last">Yaxşı, sabah göndərəcəm</div></div>
+          <div style="text-align:right;"><div style="font-size:10px;color:var(--text3);">14:22</div><div class="msg-unread">2</div></div>
+        </div>
+        <div class="msg-contact" onclick="selectContact(this,'Rəşad K.','R','#2563EB,#DB2777')">
+          <div class="msg-avatar" style="background:linear-gradient(135deg,#2563EB,#DB2777)">R</div>
+          <div class="msg-contact-info"><div class="msg-contact-name">Rəşad K.</div><div class="msg-contact-last">API hazırdır, test edə bilərsiniz</div></div>
+          <div style="text-align:right;"><div style="font-size:10px;color:var(--text3);">Dünən</div><div class="msg-unread">1</div></div>
+        </div>
+        <div class="msg-contact" onclick="selectContact(this,'Nicat B.','N','#059669,#2563EB')">
+          <div class="msg-avatar" style="background:linear-gradient(135deg,#059669,#2563EB)">N</div>
+          <div class="msg-contact-info"><div class="msg-contact-name">Nicat B.</div><div class="msg-contact-last">Videonu hazırladım</div></div>
+          <div style="text-align:right;"><div style="font-size:10px;color:var(--text3);">2 gün</div></div>
+        </div>
+      </div>
+      <div class="msg-chat">
+        <div class="msg-chat-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div id="chat-avatar" class="msg-avatar" style="background:linear-gradient(135deg,#6D28D9,#2563EB)">A</div>
+            <div><div id="chat-name" style="font-weight:700;font-size:15px;">Aytən M.</div><div style="font-size:11px;color:#059669;" data-i18n="online">● Onlayn</div></div>
+          </div>
+          <button class="btn btn-outline" style="font-size:12px;padding:7px 14px;" onclick="showPage('profile')" data-i18n="view_profile">Profil</button>
+        </div>
+        <div class="msg-messages" id="msg-list">
+          <div class="msg-bubble msg-in">Salam! Logo layihəniz üçün maraqlı fikirlərim var.</div>
+          <div class="msg-time-label">14:10</div>
+          <div class="msg-bubble msg-out">Salam Aytən xanım. Sabah saat 10-da zəng edə bilərsiniz.</div>
+          <div class="msg-time-label" style="text-align:right;">14:15</div>
+          <div class="msg-bubble msg-in">Yaxşı, sabah əlaqə saxlayacam. Şirkətin əsas rəngi varmı?</div>
+          <div class="msg-time-label">14:20</div>
+          <div class="msg-bubble msg-out">Bəli, qızılı-qara rəng kombinasiyası istəyirik.</div>
+          <div class="msg-time-label" style="text-align:right;">14:21</div>
+          <div class="msg-bubble msg-in">Yaxşı, sabah göndərəcəm 😊</div>
+          <div class="msg-time-label">14:22</div>
+        </div>
+        <div class="msg-input-area">
+          <input class="search-input" id="msg-input" style="flex:1;" placeholder="Mesaj yaz..." type="text" onkeydown="if(event.key==='Enter')sendMsg()">
+          <button class="btn btn-primary" style="padding:10px 18px;" onclick="sendMsg()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PRICING PAGE ===== -->
+<div id="page-pricing" class="page">
+  <div style="padding-top:68px;padding-bottom:80px;">
+    <div style="text-align:center;padding:60px 5% 40px;">
+      <div class="hero-badge" style="display:inline-flex;margin-bottom:20px;"><span></span><span data-i18n="pricing_badge">Şəffaf qiymətlər</span></div>
+      <h1 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;margin-bottom:12px;" data-i18n="pricing_title">Platformadan <span class="grad-text">pulsuz</span> istifadə et</h1>
+      <p style="color:var(--text2);font-size:15px;max-width:500px;margin:0 auto;" data-i18n="pricing_sub">Yalnız uğurlu işlər üçün komissiya alırıq.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-icon">👤</div>
+        <div class="pricing-name" data-i18n="plan_free">Pulsuz</div>
+        <div class="pricing-price">₼0<span style="font-size:14px;font-weight:400;color:var(--text2);" data-i18n="per_month">/ay</span></div>
+        <ul class="pricing-features">
+          <li>✅ Profil yarat</li><li>✅ Ayda 5 təklif</li><li>✅ Portfolio</li><li>✅ Mesajlaşma</li>
+          <li style="color:var(--text3);">❌ Top yerləşmə</li><li style="color:var(--text3);">❌ Analitika</li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%;justify-content:center;" onclick="openModal('register')" data-i18n="start_free">Pulsuz başla</button>
+      </div>
+      <div class="pricing-card pricing-featured">
+        <div class="pricing-popular" data-i18n="popular">Populyar</div>
+        <div class="pricing-icon">⚡</div>
+        <div class="pricing-name" data-i18n="plan_pro">Pro</div>
+        <div class="pricing-price">₼25<span style="font-size:14px;font-weight:400;opacity:0.7;" data-i18n="per_month">/ay</span></div>
+        <ul class="pricing-features">
+          <li>✅ Limitsiz təklif</li><li>✅ Top yerləşmə</li><li>✅ Ətraflı analitika</li>
+          <li>✅ Prioritet dəstək</li><li>✅ Pro nişan</li><li>✅ 10% komissiya</li>
+        </ul>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;background:white;color:#6D28D9;" onclick="openModal('register')" data-i18n="start_pro">Pro başla</button>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-icon">🏢</div>
+        <div class="pricing-name" data-i18n="plan_business">Business</div>
+        <div class="pricing-price">₼80<span style="font-size:14px;font-weight:400;color:var(--text2);" data-i18n="per_month">/ay</span></div>
+        <ul class="pricing-features">
+          <li>✅ 5 komanda üzvü</li><li>✅ Limitsiz elan</li><li>✅ API çıxışı</li>
+          <li>✅ Şəxsi menecer</li><li>✅ Müqavilə şablonları</li><li>✅ 5% komissiya</li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%;justify-content:center;" onclick="openModal('register')" data-i18n="start_business">Başla</button>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:32px;padding:0 5%;">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;display:inline-block;max-width:520px;">
+        <div style="font-size:17px;font-weight:700;margin-bottom:8px;">💡 Komissiya sistemimiz</div>
+        <p style="color:var(--text2);font-size:14px;line-height:1.6;">Pulsuz planda hər uğurlu işdən 15%, Pro planda 10%, Business planda 5% komissiya alırıq. Qeydiyyat tamamilə pulsuzdur.</p>
+      </div>
+    </div>
+    <footer style="margin-top:60px;">
+      <div class="footer-grid">
+        <div class="footer-brand"><a class="nav-logo" href="#">Freelan.az</a><p class="footer-desc" data-i18n="footer_desc">Azərbaycanın ilk freelance platforması.</p></div>
+        <div class="footer-col"><h4 data-i18n="footer_col1">Platform</h4><a href="#" onclick="showPage('jobs')" data-i18n="nav_jobs">Tapşırıqlar</a><a href="#" onclick="showPage('freelancers')" data-i18n="nav_freelancers">Freelancerlər</a><a href="#" onclick="showPage('pricing')">Tariflər</a></div>
+        <div class="footer-col"><h4 data-i18n="footer_col2">Şirkət</h4><a href="#" data-i18n="footer_about">Haqqımızda</a><a href="#" data-i18n="footer_contact">Əlaqə</a></div>
+        <div class="footer-col"><h4 data-i18n="footer_col3">Hüquqi</h4><a href="#" data-i18n="footer_terms">İstifadə şərtləri</a><a href="#" data-i18n="footer_privacy">Gizlilik siyasəti</a></div>
+      </div>
+      <div class="footer-bottom"><span>© 2025 Freelan.az</span><span>By <a href="https://instagram.com/s_akhundoff" target="_blank">@s_akhundoff</a></span></div>
+    </footer>
+  </div>
+</div>
+
+<!-- ===== 404 PAGE ===== -->
+<div id="page-404" class="page" style="display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:120px 5% 80px;">
+  <div style="font-size:80px;margin-bottom:16px;">🔍</div>
+  <h1 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(40px,8vw,80px);font-weight:800;margin-bottom:12px;" class="grad-text">404</h1>
+  <p style="color:var(--text2);font-size:18px;margin-bottom:28px;" data-i18n="not_found">Səhifə tapılmadı</p>
+  <button class="btn btn-primary" onclick="showPage('home')" data-i18n="go_home">Ana səhifəyə qayıt</button>
+</div>
+
+<style>
+/* JOB DETAIL */
+.jd-layout{display:grid;grid-template-columns:1fr 300px;gap:24px;padding:28px 5%;}
+.jd-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:26px;}
+.jd-breadcrumb{font-size:12px;color:var(--text3);margin-bottom:12px;}
+.jd-breadcrumb a{color:var(--grad1);text-decoration:none;}
+.jd-breadcrumb span{margin:0 5px;}
+.jd-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;margin-bottom:14px;line-height:1.3;}
+.jd-meta-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+.jd-badge{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
+.badge-open{background:rgba(5,150,105,0.1);color:#059669;border:1px solid rgba(5,150,105,0.2);}
+.jd-meta-item{font-size:13px;color:var(--text2);}
+.jd-desc{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:18px;}
+.jd-desc ul{padding-left:18px;margin-top:8px;}
+.jd-desc li{margin-bottom:4px;}
+.jd-tags-section{margin-top:14px;}
+.jd-section-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;}
+.jd-sidebar-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;}
+.jd-price-big{font-family:'Plus Jakarta Sans',sans-serif;font-size:34px;font-weight:800;background:linear-gradient(135deg,#6D28D9,#2563EB);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.jd-info-list{margin-top:16px;display:flex;flex-direction:column;gap:0;}
+.jd-info-item{display:flex;justify-content:space-between;font-size:13px;padding:9px 0;border-bottom:1px solid var(--border);}
+.jd-info-item:last-child{border-bottom:none;}
+.jd-info-item span{color:var(--text2);}
+.bid-item{display:flex;gap:12px;padding:16px 0;border-bottom:1px solid var(--border);}
+.bid-item:last-child{border-bottom:none;}
+.bid-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0;color:white;}
+.bid-body{flex:1;}
+.bid-header-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;gap:8px;}
+.bid-name{font-size:14px;font-weight:700;}
+.bid-stars{color:#FBBF24;font-size:12px;}
+.bid-role{font-size:11px;color:var(--text3);}
+.bid-price{font-size:17px;font-weight:800;color:#059669;white-space:nowrap;}
+.bid-text{font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px;}
+.bid-actions{display:flex;gap:8px;flex-wrap:wrap;}
+/* FREELANCERS */
+.cat-pills{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 0;}
+.cat-pill{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;}
+.cat-pill:hover,.cat-pill.active{background:linear-gradient(135deg,var(--grad1),var(--grad2));color:white;border-color:transparent;}
+.fl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;}
+.fl-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:all 0.25s;cursor:pointer;}
+.fl-card:hover{border-color:rgba(109,40,217,0.3);transform:translateY(-2px);box-shadow:0 8px 28px rgba(109,40,217,0.10);}
+/* DASHBOARD */
+.dash-layout{display:grid;grid-template-columns:230px 1fr;min-height:calc(100vh - 68px);}
+.dash-sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:4px;}
+.dash-user-info{text-align:center;padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:10px;}
+.dash-nav{display:flex;flex-direction:column;gap:2px;flex:1;}
+.dash-nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--text2);text-decoration:none;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;position:relative;}
+.dash-nav-item:hover{background:var(--bg3);color:var(--text);}
+.dash-nav-item.active{background:rgba(109,40,217,0.08);color:#6D28D9;font-weight:600;}
+.dash-badge{margin-left:auto;background:#DC2626;color:white;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;}
+.dash-main{padding:24px;background:var(--bg);overflow-y:auto;}
+.dash-section{display:none;}
+.dash-section.active{display:block;}
+.dash-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;margin-bottom:18px;}
+.dash-subtitle{font-size:15px;font-weight:700;margin:22px 0 10px;}
+.dash-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.dash-stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+.dash-stat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:10px;}
+.dash-stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;margin-bottom:3px;}
+.dash-stat-label{font-size:12px;color:var(--text3);}
+.active-job-item{display:flex;gap:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;}
+.progress-bar{height:4px;background:var(--bg3);border-radius:2px;margin:7px 0 3px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--grad1),var(--grad2));border-radius:2px;}
+.status-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.status-progress{background:rgba(37,99,235,0.1);color:#2563EB;}
+.status-pending{background:rgba(217,119,6,0.1);color:#D97706;}
+.status-won{background:rgba(5,150,105,0.1);color:#059669;}
+.bids-table,.earn-table{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.earn-table{margin-top:18px;}
+.bids-table-header{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;padding:11px 16px;background:var(--bg3);font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;}
+.bids-table-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;padding:13px 16px;border-top:1px solid var(--border);font-size:13px;align-items:center;}
+.bids-table-row:hover{background:var(--bg3);}
+.settings-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;}
+.settings-section-title{font-size:14px;font-weight:700;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+/* MESSAGES */
+.msg-layout{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 68px);}
+.msg-sidebar{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.msg-contact{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;transition:background 0.2s;border-bottom:1px solid var(--border);}
+.msg-contact:hover,.msg-contact.active{background:var(--bg3);}
+.msg-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0;color:white;}
+.msg-contact-info{flex:1;min-width:0;}
+.msg-contact-name{font-size:14px;font-weight:600;}
+.msg-contact-last{font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.msg-unread{background:var(--grad1);color:white;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-top:4px;display:inline-block;}
+.msg-chat{display:flex;flex-direction:column;background:var(--bg);}
+.msg-chat-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--bg2);border-bottom:1px solid var(--border);}
+.msg-messages{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:6px;}
+.msg-bubble{max-width:65%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;word-break:break-word;}
+.msg-in{background:var(--bg2);border:1px solid var(--border);border-radius:16px 16px 16px 4px;align-self:flex-start;}
+.msg-out{background:linear-gradient(135deg,var(--grad1),var(--grad2));color:white;border-radius:16px 16px 4px 16px;align-self:flex-end;}
+.msg-time-label{font-size:10px;color:var(--text3);}
+.msg-input-area{display:flex;gap:10px;padding:12px 14px;background:var(--bg2);border-top:1px solid var(--border);}
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:0 5%;max-width:860px;margin:0 auto;}
+.pricing-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:28px 22px;position:relative;}
+.pricing-featured{background:linear-gradient(135deg,#6D28D9,#2563EB);color:white;border:none;transform:scale(1.03);box-shadow:0 16px 48px rgba(109,40,217,0.25);}
+.pricing-popular{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:white;color:#6D28D9;padding:4px 16px;border-radius:20px;font-size:11px;font-weight:800;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+.pricing-icon{font-size:30px;margin-bottom:10px;}
+.pricing-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800;margin-bottom:5px;}
+.pricing-price{font-family:'Plus Jakarta Sans',sans-serif;font-size:38px;font-weight:800;margin-bottom:16px;}
+.pricing-features{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:22px;font-size:13px;line-height:1.4;}
+/* RESPONSIVE */
+@media(max-width:1024px){.dash-stats-grid{grid-template-columns:repeat(2,1fr);}  .jd-layout{grid-template-columns:1fr;}}
+@media(max-width:900px){
+  .pricing-grid{grid-template-columns:1fr;max-width:380px;}.pricing-featured{transform:none;}
+  .dash-layout{grid-template-columns:1fr;}.dash-sidebar{flex-direction:row;flex-wrap:wrap;padding:10px 14px;border-right:none;border-bottom:1px solid var(--border);}.dash-user-info{display:none;}.dash-nav{flex-direction:row;flex-wrap:wrap;gap:4px;flex:none;}.dash-nav-item{font-size:12px;padding:7px 10px;}
+  .dash-main{padding:14px;}.msg-layout{grid-template-columns:200px 1fr;}.bids-table-header,.bids-table-row{grid-template-columns:2fr 1fr 1fr;}.bids-table-header span:last-child,.bids-table-row span:last-child{display:none;}.fl-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:600px){
+  .jd-layout{padding:12px 4%;}.jd-card{padding:16px;}.jd-title{font-size:17px;}.bid-actions{flex-direction:column;}.bid-header-row{flex-wrap:wrap;}.msg-layout{grid-template-columns:1fr;}.msg-sidebar{height:180px;overflow-x:auto;overflow-y:hidden;display:flex;flex-direction:row;border-right:none;border-bottom:1px solid var(--border);}.msg-contact{min-width:200px;border-bottom:none;border-right:1px solid var(--border);}.msg-bubble{max-width:85%;}.dash-stats-grid{grid-template-columns:1fr 1fr;}.bids-table-header,.bids-table-row{grid-template-columns:2fr 1fr 1fr;font-size:12px;padding:9px 10px;}.fl-grid{grid-template-columns:1fr;}.cat-pills{gap:6px;}.cat-pill{padding:6px 12px;font-size:12px;}.active-job-item{flex-direction:column;gap:8px;}.pricing-grid{padding:0 4%;}.settings-card{padding:14px;}.msg-chat-header{padding:10px 12px;}.msg-input-area{padding:9px 10px;}
+}
+</style>
+
 <script>
   // ========== PAGES ==========
   function showPage(name) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const el = document.getElementById('page-' + name);
     if (el) { el.classList.add('active'); window.scrollTo(0,0); }
+    closeMobileMenu();
+    // nav active state
+    document.querySelectorAll('.nav-links a[data-page]').forEach(a => a.classList.remove('active-page'));
+    const activeLink = document.querySelector('.nav-links a[data-page="'+name+'"]');
+    if (activeLink) activeLink.classList.add('active-page');
+  }
+
+  function showJobDetail() {
+    showPage('job-detail');
+  }
+
+  // ========== DASHBOARD TABS ==========
+  function showDash(tab) {
+    document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById('dash-' + tab);
+    if (el) el.classList.add('active');
+    document.querySelectorAll('.dash-nav-item').forEach(a => a.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+  }
+
+  // ========== MOBILE MENU ==========
+  function toggleMobileMenu() {
+    const m = document.getElementById('mobile-menu');
+    m.style.display = m.style.display === 'none' ? 'block' : 'none';
+  }
+  function closeMobileMenu() {
+    document.getElementById('mobile-menu').style.display = 'none';
   }
 
   // ========== MODALS ==========
@@ -1188,15 +1745,21 @@
   function loginSuccess() {
     closeModal('auth');
     showToast(translations[currentLang].toast_login || 'Xoş gəldiniz! 🎉');
+    setTimeout(() => showPage('dashboard'), 600);
   }
 
   function postJobSuccess() {
     closeModal('postjob');
     showToast(translations[currentLang].toast_job || 'Elanınız paylaşıldı! 🚀');
+    setTimeout(() => showPage('jobs'), 600);
   }
 
   // ========== FILTERS ==========
   function toggleFilter(el) { el.classList.toggle('selected'); }
+  function filterPill(btn) {
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+  }
 
   // ========== TOAST ==========
   function showToast(msg) {
@@ -1205,6 +1768,84 @@
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3000);
   }
+
+  // ========== MESSAGES ==========
+  function sendMsg() {
+    const input = document.getElementById('msg-input');
+    const text = input.value.trim();
+    if (!text) return;
+    const list = document.getElementById('msg-list');
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble msg-out';
+    bubble.textContent = text;
+    const time = document.createElement('div');
+    time.className = 'msg-time-label';
+    time.style.textAlign = 'right';
+    const now = new Date();
+    time.textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    list.appendChild(bubble);
+    list.appendChild(time);
+    input.value = '';
+    list.scrollTop = list.scrollHeight;
+    // Auto reply after 1.2s
+    setTimeout(() => {
+      const replies = ['Yaxşı, anlayıram! 👍','Razıyam, davam edəcəyəm.','Mükəmməl, sabah cavab verəcəyəm.','Tamam, fikirləşərəm.','Təşəkkür edirəm! ✅'];
+      const reply = document.createElement('div');
+      reply.className = 'msg-bubble msg-in';
+      reply.textContent = replies[Math.floor(Math.random() * replies.length)];
+      list.appendChild(reply);
+      list.scrollTop = list.scrollHeight;
+    }, 1200);
+  }
+
+  function selectContact(el, name, initial, grad) {
+    document.querySelectorAll('.msg-contact').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('chat-name').textContent = name;
+    document.getElementById('chat-avatar').textContent = initial;
+    document.getElementById('chat-avatar').style.background = 'linear-gradient(135deg,' + grad + ')';
+    // remove unread badge
+    const badge = el.querySelector('.msg-unread');
+    if (badge) badge.remove();
+  }
+
+  // ========== NAV Hamburger ==========
+  // Add hamburger to nav on load
+  window.addEventListener('DOMContentLoaded', () => {
+    const navRight = document.querySelector('.nav-right');
+    if (navRight && !document.getElementById('hamburger-btn')) {
+      const hb = document.createElement('button');
+      hb.id = 'hamburger-btn';
+      hb.className = 'hamburger';
+      hb.setAttribute('onclick', 'toggleMobileMenu()');
+      hb.setAttribute('aria-label', 'Menu');
+      hb.innerHTML = '<span></span><span></span><span></span>';
+      navRight.insertBefore(hb, navRight.firstChild);
+    }
+    applyTranslations(currentLang);
+  });
+
+  // Close mobile menu on outside click
+  document.addEventListener('click', (e) => {
+    const menu = document.getElementById('mobile-menu');
+    const hb = document.getElementById('hamburger-btn');
+    if (menu && menu.style.display !== 'none') {
+      if (!menu.contains(e.target) && (!hb || !hb.contains(e.target))) {
+        closeMobileMenu();
+      }
+    }
+  });
+
+  // Keyboard: Escape closes modals
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeModal('auth');
+      closeModal('postjob');
+      closeMobileMenu();
+    }
+  });
+
+
 
   // ========== i18n ==========
   const translations = {
@@ -1256,7 +1897,30 @@
       portfolio_title:'Portfolio', reviews_title:'Rəylər (48)',
       review1:'Əla işdir! Gözləntilərimi aşdı.', review2:'Peşəkar münasibət, keyfiyyətli iş.',
       hire_btn:'İşə götür',
-      toast_login:'Xoş gəldiniz! 🎉', toast_job:'Elanınız paylaşıldı! 🚀'
+      toast_login:'Xoş gəldiniz! 🎉', toast_job:'Elanınız paylaşıldı! 🚀',
+      nav_home:'Ana Səhifə', nav_pricing:'Tariflər', all_btn:'Hamısı',
+      fl_page_title:'Freelancerlər', fl_page_sub:'Azərbaycanın ən yaxşı mütəxəssisləri', fl_search_ph:'Freelancer axtar...',
+      skills_label:'Tələb olunan bacarıqlar', bids_title:'Təkliflər', accept_bid:'Qəbul et', send_msg:'Mesaj göndər',
+      fixed_price:'Sabit qiymət', bid_now:'Təklif ver', save_job:'♡ Saxla',
+      cat_label:'Kateqoriya', deadline_label:'Son tarix', deadline_label2:'Müddət',
+      bids_count:'Təkliflər', posted_label:'Yerləşdirildi', time_ago:'2 saat əvvəl',
+      client_info:'Müştəri haqqında', member_since:'Üzv olub', jobs_posted:'Elanlar', hire_rate:'Seçim faizi',
+      dash_overview:'İcmal', dash_my_jobs:'Tapşırıqlarım', dash_my_bids:'Təkliflərim',
+      dash_messages:'Mesajlar', dash_earnings:'Qazanc', dash_settings:'Parametrlər', dash_logout:'Çıxış',
+      dash_hello:'Salam, Aytən! 👋', stat_earned:'Bu ay qazanc', stat_completed:'Tamamlanan',
+      stat_active:'Aktiv iş', stat_rating:'Reytinq', active_jobs_title:'Aktiv tapşırıqlar',
+      recommended_title:'Tövsiyə olunanlar', in_progress:'Davam edir',
+      col_job:'Tapşırıq', col_price:'Məbləğ', col_status:'Status', col_date:'Tarix',
+      total_earned:'Ümumi qazanc', withdrawable:'Çəkilə bilər', withdraw_btn:'💳 Pul çıxar',
+      settings_profile:'Profil məlumatları', settings_security:'Təhlükəsizlik',
+      save_btn:'Yadda saxla', form_bio:'Bio', form_rate:'Saatlıq qiymət',
+      online:'● Onlayn', view_profile:'Profil',
+      pricing_badge:'Şəffaf qiymətlər', pricing_title:'Platformadan pulsuz istifadə et',
+      pricing_sub:'Yalnız uğurlu işlər üçün komissiya alırıq.',
+      plan_free:'Pulsuz', plan_pro:'Pro', plan_business:'Business', per_month:'/ay',
+      popular:'Populyar', start_free:'Pulsuz başla', start_pro:'Pro başla', start_business:'Başla',
+      not_found:'Səhifə tapılmadı', go_home:'Ana səhifəyə qayıt',
+      badge_open:'Açıq', pending:'Gözləyir', won:'Qazanıldı', lost:'İtirildi'
     },
     ru: {
       nav_jobs:'Задания', nav_freelancers:'Фрилансеры', nav_how:'Как работает?',
@@ -1306,7 +1970,30 @@
       portfolio_title:'Портфолио', reviews_title:'Отзывы (48)',
       review1:'Отличная работа! Превзошла ожидания.', review2:'Профессиональный подход, качественно.',
       hire_btn:'Нанять',
-      toast_login:'Добро пожаловать! 🎉', toast_job:'Заказ размещён! 🚀'
+      toast_login:'Добро пожаловать! 🎉', toast_job:'Заказ размещён! 🚀',
+      nav_home:'Главная', nav_pricing:'Тарифы', all_btn:'Все',
+      fl_page_title:'Фрилансеры', fl_page_sub:'Лучшие специалисты Азербайджана', fl_search_ph:'Найти фрилансера...',
+      skills_label:'Требуемые навыки', bids_title:'Предложения', accept_bid:'Принять', send_msg:'Написать',
+      fixed_price:'Фиксированная цена', bid_now:'Откликнуться', save_job:'♡ Сохранить',
+      cat_label:'Категория', deadline_label:'Срок', deadline_label2:'Срок',
+      bids_count:'Предложения', posted_label:'Опубликовано', time_ago:'2 часа назад',
+      client_info:'О заказчике', member_since:'Зарегистрирован', jobs_posted:'Заказы', hire_rate:'Найм',
+      dash_overview:'Обзор', dash_my_jobs:'Мои заказы', dash_my_bids:'Мои отклики',
+      dash_messages:'Сообщения', dash_earnings:'Заработок', dash_settings:'Настройки', dash_logout:'Выход',
+      dash_hello:'Привет, Айтен! 👋', stat_earned:'Заработок за месяц', stat_completed:'Выполнено',
+      stat_active:'Активных', stat_rating:'Рейтинг', active_jobs_title:'Активные задания',
+      recommended_title:'Рекомендуемые', in_progress:'В работе',
+      col_job:'Задание', col_price:'Сумма', col_status:'Статус', col_date:'Дата',
+      total_earned:'Всего заработано', withdrawable:'Доступно', withdraw_btn:'💳 Вывести',
+      settings_profile:'Данные профиля', settings_security:'Безопасность',
+      save_btn:'Сохранить', form_bio:'О себе', form_rate:'Ставка в час',
+      online:'● Онлайн', view_profile:'Профиль',
+      pricing_badge:'Прозрачные цены', pricing_title:'Используй платформу бесплатно',
+      pricing_sub:'Комиссия только с успешных заказов.',
+      plan_free:'Бесплатно', plan_pro:'Pro', plan_business:'Бизнес', per_month:'/мес',
+      popular:'Популярно', start_free:'Начать бесплатно', start_pro:'Начать Pro', start_business:'Начать',
+      not_found:'Страница не найдена', go_home:'На главную',
+      badge_open:'Открыт', pending:'Ожидает', won:'Выиграно', lost:'Проиграно'
     },
     en: {
       nav_jobs:'Jobs', nav_freelancers:'Freelancers', nav_how:'How it works?',
@@ -1356,7 +2043,30 @@
       portfolio_title:'Portfolio', reviews_title:'Reviews (48)',
       review1:'Excellent work! Exceeded my expectations.', review2:'Professional approach, high quality.',
       hire_btn:'Hire',
-      toast_login:'Welcome! 🎉', toast_job:'Job posted! 🚀'
+      toast_login:'Welcome! 🎉', toast_job:'Job posted! 🚀',
+      nav_home:'Home', nav_pricing:'Pricing', all_btn:'All',
+      fl_page_title:'Freelancers', fl_page_sub:"Azerbaijan's best specialists", fl_search_ph:'Search freelancers...',
+      skills_label:'Required skills', bids_title:'Bids', accept_bid:'Accept', send_msg:'Message',
+      fixed_price:'Fixed price', bid_now:'Place Bid', save_job:'♡ Save',
+      cat_label:'Category', deadline_label:'Deadline', deadline_label2:'Duration',
+      bids_count:'Bids', posted_label:'Posted', time_ago:'2 hours ago',
+      client_info:'About client', member_since:'Member since', jobs_posted:'Jobs posted', hire_rate:'Hire rate',
+      dash_overview:'Overview', dash_my_jobs:'My Jobs', dash_my_bids:'My Bids',
+      dash_messages:'Messages', dash_earnings:'Earnings', dash_settings:'Settings', dash_logout:'Logout',
+      dash_hello:'Hello, Ayten! 👋', stat_earned:'This month', stat_completed:'Completed',
+      stat_active:'Active', stat_rating:'Rating', active_jobs_title:'Active jobs',
+      recommended_title:'Recommended', in_progress:'In progress',
+      col_job:'Job', col_price:'Amount', col_status:'Status', col_date:'Date',
+      total_earned:'Total earned', withdrawable:'Available', withdraw_btn:'💳 Withdraw',
+      settings_profile:'Profile info', settings_security:'Security',
+      save_btn:'Save changes', form_bio:'Bio', form_rate:'Hourly rate',
+      online:'● Online', view_profile:'Profile',
+      pricing_badge:'Transparent pricing', pricing_title:'Use the platform for free',
+      pricing_sub:'We only charge on successful jobs.',
+      plan_free:'Free', plan_pro:'Pro', plan_business:'Business', per_month:'/mo',
+      popular:'Popular', start_free:'Start free', start_pro:'Start Pro', start_business:'Start',
+      not_found:'Page not found', go_home:'Back to home',
+      badge_open:'Open', pending:'Pending', won:'Won', lost:'Lost'
     }
   };
 
