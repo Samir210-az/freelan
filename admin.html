@@ -22,6 +22,7 @@
       <a data-sec="pending" onclick="showSec('pending')">⏳ Moderasiya <span class="badge badge-orange" id="pending-count" style="margin-left:auto;">0</span></a>
       <a data-sec="jobs" onclick="showSec('jobs')">📋 Bütün elanlar</a>
       <a data-sec="users" onclick="showSec('users')">👥 İstifadəçilər</a>
+      <a data-sec="plans" onclick="showSec('plans')">💎 Tarif sorğuları <span class="badge badge-orange" id="plans-count" style="margin-left:auto;">0</span></a>
     </nav>
   </aside>
 
@@ -53,6 +54,13 @@
     <div class="dash-sec" id="sec-users">
       <h2 style="font-size:22px;margin-bottom:20px;">İstifadəçilər 👥</h2>
       <div class="tbl-wrap" id="users-table"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
+    </div>
+
+    <!-- PLAN UPGRADES -->
+    <div class="dash-sec" id="sec-plans">
+      <h2 style="font-size:22px;margin-bottom:20px;">Tarif sorğuları 💎</h2>
+      <p style="font-size:13px;color:var(--ink2);margin:-10px 0 18px;">Ödənişi qəbul etdikdən sonra sorğunu təsdiqləyin — istifadəçiyə tarif aktiv olunacaq.</p>
+      <div id="plans-list"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
     </div>
   </main>
 </div>
@@ -90,10 +98,11 @@ window.showSec = function(sec) {
 async function loadAll() {
   const { db, collection, getDocs } = FB;
   try {
-    const [jobsSnap, usersSnap, bidsSnap] = await Promise.all([
+    const [jobsSnap, usersSnap, bidsSnap, upgSnap] = await Promise.all([
       getDocs(collection(db, 'jobs')),
       getDocs(collection(db, 'users')),
-      getDocs(collection(db, 'bids'))
+      getDocs(collection(db, 'bids')),
+      getDocs(collection(db, 'upgrades'))
     ]);
 
     const jobs = []; jobsSnap.forEach(d => jobs.push({ id: d.id, ...d.data() }));
@@ -110,9 +119,15 @@ async function loadAll() {
     document.getElementById('st-bids').textContent = bidsSnap.size;
     document.getElementById('pending-count').textContent = pending.length;
 
+    const upgrades = []; upgSnap.forEach(d => upgrades.push({ id: d.id, ...d.data() }));
+    const pendingUpg = upgrades.filter(u => u.status === 'pending');
+    pendingUpg.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    document.getElementById('plans-count').textContent = pendingUpg.length;
+
     renderPending(pending);
     renderJobs(jobs);
     renderUsers(users);
+    renderUpgrades(pendingUpg);
   } catch(e) {
     showToast('Yükləmə xətası: ' + e.message);
   }
@@ -175,6 +190,52 @@ function renderUsers(list) {
         </tr>`).join('')}</tbody>
     </table>` : '<div class="empty"><div class="ico">👥</div><p>İstifadəçi yoxdur</p></div>';
 }
+
+function renderUpgrades(list) {
+  const el = document.getElementById('plans-list');
+  const pn = p => p === 'pro' ? '⭐ Pro Freelancer (₼19/ay)' : '💼 Biznes (₼49/ay)';
+  el.innerHTML = list.length ? list.map(u => `
+    <div class="prop-item">
+      <div class="prop-head">
+        <div style="display:flex;gap:11px;align-items:center;">
+          <div class="avatar">${esc((u.name||'?')[0].toUpperCase())}</div>
+          <div>
+            <div class="prop-name">${esc(u.name||'—')}</div>
+            <div class="prop-meta">${esc(u.email||'')} · ${u.role==='freelancer'?'🧑‍💻 Freelancer':'💼 Müştəri'} · ${timeAgo(u.createdAt)}</div>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-weight:700;font-size:14px;">${pn(u.plan)}</div>
+          <div style="display:flex;gap:6px;margin-top:10px;justify-content:flex-end;">
+            <button class="btn btn-green btn-sm" onclick="approvePlan('${u.id}','${u.userId}','${u.plan}')">✅ Təsdiqlə</button>
+            <button class="btn btn-danger btn-sm" onclick="rejectPlan('${u.id}')">❌ Rədd et</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('')
+  : '<div class="empty"><div class="ico">✨</div><p>Gözləyən tarif sorğusu yoxdur</p></div>';
+}
+
+window.approvePlan = async function(id, userId, plan) {
+  if (!confirm('Ödəniş qəbul olunub? Tarif aktiv ediləcək.')) return;
+  const { db, doc, updateDoc } = FB;
+  try {
+    await updateDoc(doc(db, 'users', userId), { plan });
+    await updateDoc(doc(db, 'upgrades', id), { status: 'approved' });
+    showToast('Tarif aktiv edildi ✅');
+    loadAll();
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
+
+window.rejectPlan = async function(id) {
+  if (!confirm('Bu tarif sorğusunu rədd etmək istəyirsiniz?')) return;
+  const { db, doc, updateDoc } = FB;
+  try {
+    await updateDoc(doc(db, 'upgrades', id), { status: 'rejected' });
+    showToast('Sorğu rədd edildi');
+    loadAll();
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
 
 window.approveJob = async function(id) {
   const { db, doc, updateDoc } = FB;
