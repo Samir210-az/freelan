@@ -14,7 +14,7 @@
 <div class="container">
   <div class="page-head">
     <h1 data-i18n="fl_h">Freelancerlər</h1>
-    <p id="fl-count">Yüklənir...</p>
+    <p id="fl-count" data-i18n="loading">Yüklənir...</p>
   </div>
 
   <div class="searchbar" style="margin-top:20px;">
@@ -23,13 +23,13 @@
   </div>
 
   <div class="grid-4" id="fl-grid" style="padding-bottom:60px;">
-    <div class="empty" style="grid-column:1/-1;"><div class="ico">⏳</div><p>Yüklənir...</p></div>
+    <div class="empty" style="grid-column:1/-1;"><div class="ico">⏳</div><p data-i18n="loading">Yüklənir...</p></div>
   </div>
 </div>
 
 <footer id="app-footer"></footer>
 
-<script type="module" src="js/app.js"></script>
+<script type="module" src="js/app.js?v=3"></script>
 <script type="module">
 let all = [];
 document.addEventListener('fb-ready', load);
@@ -55,7 +55,7 @@ window.applyFilter = function() {
   const list = kw
     ? all.filter(f => (f.name||'').toLowerCase().includes(kw) || (f.title||'').toLowerCase().includes(kw) || (f.skills||[]).join(' ').toLowerCase().includes(kw))
     : all;
-  document.getElementById('fl-count').textContent = list.length + ' freelancer';
+  document.getElementById('fl-count').textContent = list.length + ' ' + t('fl_word');
   const el = document.getElementById('fl-grid');
   el.innerHTML = list.length
     ? list.map(f => `
@@ -63,11 +63,11 @@ window.applyFilter = function() {
         <div class="avatar">${esc((f.name||'?')[0].toUpperCase())}</div>
         <h3>${esc(f.name)} ${planBadge(f.plan)}</h3>
         <div class="role">${esc(f.title || 'Freelancer')}</div>
-        <div class="stars">★ ${f.rating > 0 ? f.rating.toFixed(1) : 'Yeni'} · ${f.jobsDone||0} iş</div>
+        <div class="stars">★ ${f.rating > 0 ? f.rating.toFixed(1) : t('new_lbl')} · ${f.jobsDone||0} ${t('work_s')}</div>
         ${(f.skills||[]).length ? `<div class="tags" style="justify-content:center;margin-top:10px;">${f.skills.slice(0,3).map(s=>`<span class="tag">${esc(s)}</span>`).join('')}</div>` : ''}
-        ${f.rate > 0 ? `<div class="rate">₼${f.rate}/saat</div>` : ''}
+        ${f.rate > 0 ? `<div class="rate">₼${f.rate}${t('per_hour')}</div>` : ''}
       </div>`).join('')
-    : '<div class="empty" style="grid-column:1/-1;"><div class="ico">🔍</div><p>Nəticə tapılmadı</p></div>';
+    : '<div class="empty" style="grid-column:1/-1;"><div class="ico">🔍</div><p>'+t('no_results')+'</p></div>';
 };
 </script>
 </body>
