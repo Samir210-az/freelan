@@ -15,7 +15,7 @@
   <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;">
     <div>
       <h1 data-i18n="jobs_h">Tapşırıqlar</h1>
-      <p id="jobs-count">Yüklənir...</p>
+      <p id="jobs-count" data-i18n="loading">Yüklənir...</p>
     </div>
     <button class="btn btn-green" data-i18n="post_job" onclick="openPostJob()">+ Elan ver</button>
   </div>
@@ -38,13 +38,13 @@
   </div>
 
   <div style="display:flex;flex-direction:column;gap:14px;padding-bottom:60px;" id="jobs-list">
-    <div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div>
+    <div class="empty"><div class="ico">⏳</div><p data-i18n="loading">Yüklənir...</p></div>
   </div>
 </div>
 
 <footer id="app-footer"></footer>
 
-<script type="module" src="js/app.js"></script>
+<script type="module" src="js/app.js?v=3"></script>
 <script type="module">
 let allJobs = [];
 let activeCat = '';
@@ -98,10 +98,10 @@ window.applyFilters = function() {
     (j.description||'').toLowerCase().includes(kw) ||
     (j.category||'').toLowerCase().includes(kw));
   const el = document.getElementById('jobs-list');
-  document.getElementById('jobs-count').textContent = list.length + ' tapşırıq tapıldı';
+  document.getElementById('jobs-count').textContent = list.length + ' ' + t('jobs_found');
   if (!list.length) {
-    el.innerHTML = `<div class="empty"><div class="ico">🔍</div><p>${kw ? '"' + esc(kw) + '" üzrə nəticə tapılmadı' : 'Bu kateqoriyada elan yoxdur'}</p>
-      <button class="btn btn-line btn-sm" style="margin-top:14px;" onclick="resetFilters()">Filtri sıfırla</button></div>`;
+    el.innerHTML = `<div class="empty"><div class="ico">🔍</div><p>${kw ? '"' + esc(kw) + '" — ' + t('no_results') : t('no_cat')}</p>
+      <button class="btn btn-line btn-sm" style="margin-top:14px;" onclick="resetFilters()">${t('reset_filter')}</button></div>`;
     return;
   }
   el.innerHTML = list.map(jobCardHtml).join('');
