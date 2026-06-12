@@ -91,6 +91,19 @@
   </div>
 </div>
 
+<div class="modal-bg" id="modal-rate">
+  <div class="modal">
+    <button class="modal-x" onclick="closeRate()">✕</button>
+    <h2>Freelanceri qiymətləndirin ⭐</h2>
+    <p class="sub" id="rate-job-label" style="color:var(--green);font-weight:600;"></p>
+    <div id="rate-stars" style="font-size:36px;text-align:center;margin:14px 0;cursor:pointer;user-select:none;letter-spacing:4px;"></div>
+    <div class="form-group"><label class="form-label">Rəyiniz <small style="color:var(--ink3);">(istəyə bağlı)</small></label>
+      <textarea class="form-textarea" id="rate-comment" placeholder="İş haqqında təəssüratınız..."></textarea></div>
+    <button class="btn btn-green" id="rate-btn" style="width:100%;" onclick="submitRate()">Rəyi göndər ⭐</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px;" onclick="closeRate()">Keç</button>
+  </div>
+</div>
+
 <footer id="app-footer"></footer>
 
 <script type="module" src="js/app.js"></script>
@@ -262,8 +275,61 @@ window.completeJob = async function(jobId) {
       } catch(e) {}
     }
     showToast('İş tamamlandı! 🎉');
-    loadActive(); 
+    loadActive();
+    if (j.assignedTo) openRate(jobId, j.assignedTo, j.title);
   } catch(e) { showToast('Xəta: ' + e.message); }
+};
+
+// ===== RATING / REVIEW =====
+let _rate = { jobId: null, freelancerId: null, stars: 5 };
+
+window.openRate = function(jobId, freelancerId, title) {
+  _rate = { jobId, freelancerId, stars: 5 };
+  document.getElementById('rate-job-label').textContent = title || '';
+  document.getElementById('rate-comment').value = '';
+  drawStars();
+  const btn = document.getElementById('rate-btn');
+  btn.disabled = false; btn.textContent = 'Rəyi göndər ⭐';
+  document.getElementById('modal-rate').classList.add('open');
+};
+window.closeRate = function() {
+  document.getElementById('modal-rate').classList.remove('open');
+};
+function drawStars() {
+  document.getElementById('rate-stars').innerHTML = [1,2,3,4,5].map(i =>
+    `<span onclick="setStars(${i})" style="color:${i <= _rate.stars ? '#f5a623' : '#ddd'};">★</span>`).join('');
+}
+window.setStars = function(n) { _rate.stars = n; drawStars(); };
+
+window.submitRate = async function() {
+  const { db, collection, addDoc, doc, getDoc, updateDoc, serverTimestamp } = FB;
+  const btn = document.getElementById('rate-btn');
+  btn.disabled = true; btn.textContent = '⏳ Göndərilir...';
+  try {
+    await addDoc(collection(db, 'reviews'), {
+      jobId: _rate.jobId,
+      freelancerId: _rate.freelancerId,
+      clientId: FB.user.uid,
+      clientName: FB.userData?.name || 'Müştəri',
+      rating: _rate.stars,
+      comment: document.getElementById('rate-comment').value.trim(),
+      createdAt: serverTimestamp()
+    });
+    // Update freelancer average rating
+    const fs = await getDoc(doc(db, 'users', _rate.freelancerId));
+    const f = fs.data() || {};
+    const cnt = f.ratingCount || 0;
+    const newRating = ((f.rating || 0) * cnt + _rate.stars) / (cnt + 1);
+    await updateDoc(doc(db, 'users', _rate.freelancerId), {
+      rating: Math.round(newRating * 10) / 10,
+      ratingCount: cnt + 1
+    });
+    closeRate();
+    showToast('Rəyiniz göndərildi! ⭐');
+  } catch(e) {
+    showToast('Xəta: ' + e.message);
+    btn.disabled = false; btn.textContent = 'Rəyi göndər ⭐';
+  }
 };
 
 window.saveSettings = async function() {
