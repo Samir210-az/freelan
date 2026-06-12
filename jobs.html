@@ -14,19 +14,19 @@
 <div class="container">
   <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;">
     <div>
-      <h1>Tapşırıqlar</h1>
+      <h1 data-i18n="jobs_h">Tapşırıqlar</h1>
       <p id="jobs-count">Yüklənir...</p>
     </div>
-    <button class="btn btn-green" onclick="openPostJob()">+ Elan ver</button>
+    <button class="btn btn-green" data-i18n="post_job" onclick="openPostJob()">+ Elan ver</button>
   </div>
 
   <div class="searchbar" style="margin-top:20px;">
-    <input type="text" id="search-q" placeholder="Tapşırıq axtar... (başlıq, təsvir, kateqoriya)" onkeydown="if(event.key==='Enter')applyFilters()" oninput="if(!this.value)applyFilters()">
-    <button class="btn btn-green" onclick="applyFilters()">Axtar</button>
+    <input type="text" id="search-q" data-i18n-ph="jobs_q_ph" placeholder="Tapşırıq axtar... (başlıq, təsvir, kateqoriya)" onkeydown="if(event.key==='Enter')applyFilters()" oninput="if(!this.value)applyFilters()">
+    <button class="btn btn-green" data-i18n="search" onclick="applyFilters()">Axtar</button>
   </div>
 
   <div class="filter-pills" id="cat-pills">
-    <button class="pill active" data-cat="" onclick="pickCat(this)">Hamısı</button>
+    <button class="pill active" data-cat="" data-i18n="all_cat" onclick="pickCat(this)">Hamısı</button>
     <button class="pill" data-cat="Dizayn" onclick="pickCat(this)">Dizayn</button>
     <button class="pill" data-cat="Proqramlaşdırma" onclick="pickCat(this)">Proqramlaşdırma</button>
     <button class="pill" data-cat="Kopiraytinq" onclick="pickCat(this)">Kopiraytinq</button>
