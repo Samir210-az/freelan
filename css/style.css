@@ -303,3 +303,12 @@ footer{background:var(--ink);color:#cfe0cb;margin-top:80px;}
   .ftr-grid{grid-template-columns:1fr;}
   .ftr-bottom{flex-direction:column;text-align:center;}
 }
+
+/* ===== Google auth + email verification ===== */
+.btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1.5px solid var(--border);color:var(--ink);font-weight:600;}
+.btn-google:hover{border-color:var(--ink3);background:var(--bg2);}
+.auth-or{display:flex;align-items:center;gap:12px;margin:14px 0;color:var(--ink3);font-size:12.5px;}
+.auth-or::before,.auth-or::after{content:'';flex:1;height:1px;background:var(--border);}
+.verify-banner{background:#fff7e0;border-bottom:1px solid #f0dfa8;color:#7a5d00;font-size:13.5px;padding:9px 16px;text-align:center;}
+.verify-banner button{margin-left:8px;background:#7a5d00;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;}
+.verify-banner button:disabled{opacity:.6;cursor:default;}
