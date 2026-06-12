@@ -13,13 +13,13 @@
 
 <div class="container">
   <div class="jd-grid" id="jd-wrap">
-    <div class="empty" style="grid-column:1/-1;"><div class="ico">⏳</div><p>Yüklənir...</p></div>
+    <div class="empty" style="grid-column:1/-1;"><div class="ico">⏳</div><p data-i18n="loading">Yüklənir...</p></div>
   </div>
 </div>
 
 <footer id="app-footer"></footer>
 
-<script type="module" src="js/app.js"></script>
+<script type="module" src="js/app.js?v=3"></script>
 <script type="module">
 const jobId = new URLSearchParams(location.search).get('id');
 let job = null;
@@ -30,11 +30,11 @@ document.addEventListener('bid-sent', load);
 let loading = false;
 async function load() {
   if (loading) return; loading = true;
-  if (!jobId) { renderError('Elan tapılmadı'); loading = false; return; }
+  if (!jobId) { renderError(t('jd_nf')); loading = false; return; }
   const { db, doc, getDoc, getDocs, collection, query, where } = FB;
   try {
     const snap = await getDoc(doc(db, 'jobs', jobId));
-    if (!snap.exists()) { renderError('Bu elan mövcud deyil və ya silinib'); loading = false; return; }
+    if (!snap.exists()) { renderError(t('jd_nf')); loading = false; return; }
     job = { id: snap.id, ...snap.data() };
     document.title = job.title + ' — Freelan.az';
 
@@ -56,14 +56,14 @@ async function load() {
 function renderError(msg) {
   document.getElementById('jd-wrap').innerHTML =
     `<div class="empty" style="grid-column:1/-1;"><div class="ico">😕</div><p>${esc(msg)}</p>
-     <a class="btn btn-green btn-sm" style="margin-top:14px;" href="jobs.html">← Tapşırıqlara qayıt</a></div>`;
+     <a class="btn btn-green btn-sm" style="margin-top:14px;" href="jobs.html">${t('jd_back')}</a></div>`;
 }
 
 function statusBadge(s) {
-  return s === 'approved' ? '<span class="badge badge-green">Açıq</span>'
-       : s === 'in_progress' ? '<span class="badge badge-blue">Davam edir</span>'
-       : s === 'pending' ? '<span class="badge badge-orange">Moderasiyada</span>'
-       : s === 'completed' ? '<span class="badge badge-gray">Tamamlanıb</span>'
+  return s === 'approved' ? '<span class="badge badge-green">'+t('st_open')+'</span>'
+       : s === 'in_progress' ? '<span class="badge badge-blue">'+t('st_progress')+'</span>'
+       : s === 'pending' ? '<span class="badge badge-orange">'+t('st_pending')+'</span>'
+       : s === 'completed' ? '<span class="badge badge-gray">'+t('st_done')+'</span>'
        : '<span class="badge badge-gray">—</span>';
 }
 
@@ -82,17 +82,17 @@ function render(bids) {
       <div class="job-meta" style="margin:12px 0 18px;">
         <span>📁 ${esc(job.category)}</span>
         <span>🕐 ${timeAgo(job.createdAt)}</span>
-        <span>💬 ${bids.length} təklif</span>
+        <span>💬 ${bids.length} ${t('offers')}</span>
       </div>
-      <h3 style="font-size:15px;margin-bottom:8px;">Təsvir</h3>
+      <h3 style="font-size:15px;margin-bottom:8px;">${t('jd_desc')}</h3>
       <p style="font-size:14.5px;color:var(--ink2);line-height:1.7;white-space:pre-wrap;">${esc(job.description)}</p>
     </div>
 
     <div class="jd-card" style="margin-top:18px;">
-      <h3 style="font-size:17px;margin-bottom:16px;">Təkliflər (${bids.length})</h3>
+      <h3 style="font-size:17px;margin-bottom:16px;">${t('jd_props')} (${bids.length})</h3>
       <div id="bids-area">
         ${bids.length === 0
-          ? '<div class="empty"><div class="ico">🚀</div><p>Hələ təklif yoxdur — ilk sən ol!</p></div>'
+          ? '<div class="empty"><div class="ico">🚀</div><p>'+t('jd_no_props')+'</p></div>'
           : bids.map(b => bidHtml(b, isOwner)).join('')}
       </div>
     </div>
@@ -101,27 +101,27 @@ function render(bids) {
   <div class="jd-side">
     <div class="jd-card">
       <div class="jd-price">₼${esc(job.budget)}</div>
-      <div style="font-size:12px;color:var(--ink3);margin-bottom:16px;">Sabit qiymət</div>
+      <div style="font-size:12px;color:var(--ink3);margin-bottom:16px;">${t('jd_fixed')}</div>
       ${myBid
-        ? `<div class="ok-box" style="display:block;">✅ Təklifiniz göndərilib: <b>₼${myBid.amount}</b>${myBid.status==='accepted'?' — Qəbul edildi! 🎉':''}</div>`
+        ? `<div class="ok-box" style="display:block;">✅ ${t('jd_bid_sent')}: <b>₼${myBid.amount}</b>${myBid.status==='accepted'?' — '+t('st_accepted'):''}</div>`
         : (!isOwner && !isAdmin && job.status === 'approved')
-          ? `<button class="btn btn-green" style="width:100%;" onclick="openBid('${job.id}','${esc(job.title)}')">Təklif göndər →</button>`
+          ? `<button class="btn btn-green" style="width:100%;" onclick="openBid('${job.id}','${esc(job.title)}')">${t('jd_send')}</button>`
           : ''}
-      ${isOwner ? '<p style="font-size:12.5px;color:var(--ink3);text-align:center;">Bu sizin elanınızdır</p>' : ''}
+      ${isOwner ? '<p style="font-size:12.5px;color:var(--ink3);text-align:center;">'+t('jd_yours')+'</p>' : ''}
       <div style="margin-top:16px;">
-        <div class="info-row"><span>Kateqoriya</span><strong>${esc(job.category)}</strong></div>
-        <div class="info-row"><span>Müddət</span><strong>${esc(job.deadline)} gün</strong></div>
-        <div class="info-row"><span>Təkliflər</span><strong>${bids.length}</strong></div>
-        <div class="info-row"><span>Yerləşdirilib</span><strong>${timeAgo(job.createdAt)}</strong></div>
+        <div class="info-row"><span>${t('jd_cat')}</span><strong>${esc(job.category)}</strong></div>
+        <div class="info-row"><span>${t('jd_dur')}</span><strong>${esc(job.deadline)} ${t('day_s')}</strong></div>
+        <div class="info-row"><span>${t('jd_props')}</span><strong>${bids.length}</strong></div>
+        <div class="info-row"><span>${t('jd_posted')}</span><strong>${timeAgo(job.createdAt)}</strong></div>
       </div>
     </div>
     <div class="jd-card">
-      <h4 style="font-size:13px;margin-bottom:12px;color:var(--ink2);">MÜŞTƏRİ</h4>
+      <h4 style="font-size:13px;margin-bottom:12px;color:var(--ink2);">${t('jd_client')}</h4>
       <div style="display:flex;align-items:center;gap:11px;">
         <div class="avatar" style="width:42px;height:42px;font-size:16px;">${esc((job.clientName||'?')[0].toUpperCase())}</div>
-        <div style="font-weight:700;font-size:14.5px;">${esc(job.clientName||'Müştəri')}</div>
+        <div style="font-weight:700;font-size:14.5px;">${esc(job.clientName||t('db_client'))}</div>
       </div>
-      ${!isOwner ? `<button class="btn btn-line btn-sm" style="width:100%;margin-top:14px;" onclick="openMessage('${job.clientId}','${esc(job.clientName||'Müştəri')}')">💬 Mesaj göndər</button>` : ''}
+      ${!isOwner ? `<button class="btn btn-line btn-sm" style="width:100%;margin-top:14px;" onclick="openMessage('${job.clientId}','${esc(job.clientName||t('db_client'))}')">${t('msg_send')}</button>` : ''}
     </div>
   </div>`;
 }
@@ -134,17 +134,17 @@ function bidHtml(b, isOwner) {
         <div class="avatar">${esc((b.freelancerName||'?')[0].toUpperCase())}</div>
         <div>
           <div class="prop-name">${esc(b.freelancerName)} ${planBadge(b.freelancerPlan)}</div>
-          <div class="prop-meta">${esc(b.freelancerTitle||'Freelancer')} · ⭐ ${b.freelancerRating > 0 ? b.freelancerRating.toFixed(1) : 'Yeni'} · ⏱ ${b.days} gün</div>
+          <div class="prop-meta">${esc(b.freelancerTitle||'Freelancer')} · ⭐ ${b.freelancerRating > 0 ? b.freelancerRating.toFixed(1) : t('new_lbl')} · ⏱ ${b.days} ${t('day_s')}</div>
         </div>
       </div>
       <div style="text-align:right;">
         <div class="prop-amount">₼${b.amount}</div>
         ${b.status === 'accepted'
-          ? '<span class="badge badge-green" style="margin-top:4px;">✅ Qəbul edildi</span>'
+          ? '<span class="badge badge-green" style="margin-top:4px;">'+t('st_accepted')+'</span>'
           : (isOwner && job.status === 'approved')
-            ? `<button class="btn btn-green btn-sm" style="margin-top:6px;" onclick="acceptBid('${b.id}','${b.freelancerId}')">Qəbul et</button>`
+            ? `<button class="btn btn-green btn-sm" style="margin-top:6px;" onclick="acceptBid('${b.id}','${b.freelancerId}')">${t('accept')}</button>`
             : ''}
-        ${isOwner ? `<button class="btn btn-line btn-sm" style="margin-top:6px;" onclick="openMessage('${b.freelancerId}','${esc(b.freelancerName)}')">💬 Mesaj</button>` : ''}
+        ${isOwner ? `<button class="btn btn-line btn-sm" style="margin-top:6px;" onclick="openMessage('${b.freelancerId}','${esc(b.freelancerName)}')">${t('msg_btn')}</button>` : ''}
       </div>
     </div>
     <p class="prop-cover">${esc(b.cover)}</p>
@@ -152,7 +152,7 @@ function bidHtml(b, isOwner) {
 }
 
 window.acceptBid = async function(bidId, freelancerId) {
-  if (!confirm('Bu təklifi qəbul etmək istəyirsiniz? İş bu freelancerə tapşırılacaq.')) return;
+  if (!confirm(t('cf_bid'))) return;
   const { db, doc, updateDoc } = FB;
   try {
     await updateDoc(doc(db, 'bids', bidId), { status: 'accepted' });
