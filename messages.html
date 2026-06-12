@@ -17,14 +17,14 @@
   </aside>
   <main class="msg-main">
     <div class="msg-head" id="chat-head">
-      <span style="color:var(--ink3);font-size:14px;">Söhbət seçin</span>
+      <span style="color:var(--ink3);font-size:14px;" data-i18n="ms_pick">Söhbət seçin</span>
     </div>
     <div class="msg-list" id="chat-list">
-      <div class="empty"><div class="ico">💬</div><p>Söhbət başlatmaq üçün sol tərəfdən kontakt seçin</p></div>
+      <div class="empty"><div class="ico">💬</div><p data-i18n="ms_pick2">Söhbət başlatmaq üçün sol tərəfdən kontakt seçin</p></div>
     </div>
     <div class="msg-input-row" id="chat-input-row" style="display:none;">
-      <input type="text" id="msg-text" placeholder="Mesaj yazın..." onkeydown="if(event.key==='Enter')sendMsg()">
-      <button class="btn btn-green" onclick="sendMsg()">Göndər</button>
+      <input type="text" id="msg-text" data-i18n-ph="ms_ph" placeholder="Mesaj yazın..." onkeydown="if(event.key==='Enter')sendMsg()">
+      <button class="btn btn-green" data-i18n="ms_send" onclick="sendMsg()">Göndər</button>
     </div>
   </main>
 </div>
@@ -32,14 +32,14 @@
 <div id="auth-required" class="container" style="display:none;">
   <div class="empty" style="padding:100px 20px;">
     <div class="ico">🔐</div>
-    <p style="margin-bottom:18px;">Mesajlara baxmaq üçün hesabınıza daxil olun</p>
-    <button class="btn btn-green" onclick="openAuth('login')">Daxil ol</button>
+    <p style="margin-bottom:18px;" data-i18n="ms_auth">Mesajlara baxmaq üçün hesabınıza daxil olun</p>
+    <button class="btn btn-green" data-i18n="login" onclick="openAuth('login')">Daxil ol</button>
   </div>
 </div>
 
 <footer id="app-footer"></footer>
 
-<script type="module" src="js/app.js"></script>
+<script type="module" src="js/app.js?v=3"></script>
 <script type="module">
 import { onSnapshot, orderBy, query as fsQuery, collection as fsCollection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -67,11 +67,11 @@ async function loadContacts() {
     snap.forEach(d => chats.push({ id: d.id, ...d.data() }));
     chats.sort((a,b) => (b.lastAt?.seconds||0) - (a.lastAt?.seconds||0));
     if (!chats.length) {
-      el.innerHTML = '<div class="empty"><div class="ico">💬</div><p style="font-size:13px;">Hələ söhbət yoxdur.<br>Elan səhifəsindən freelancerlə əlaqə qura bilərsiniz.</p></div>';
+      el.innerHTML = '<div class="empty"><div class="ico">💬</div><p style="font-size:13px;">' + t('ms_none') + '</p></div>';
       return;
     }
     el.innerHTML = chats.map(c => {
-      const otherName = c.memberNames?.[c.members.find(m => m !== FB.user.uid)] || 'İstifadəçi';
+      const otherName = c.memberNames?.[c.members.find(m => m !== FB.user.uid)] || t('user_lbl');
       return `
       <div class="msg-contact" data-chat="${c.id}" onclick="openChat('${c.id}','${esc(otherName)}')">
         <div class="avatar">${esc(otherName[0].toUpperCase())}</div>
@@ -87,7 +87,7 @@ async function loadContacts() {
     if (want) {
       const c = chats.find(x => x.id === want);
       if (c) {
-        const otherName = c.memberNames?.[c.members.find(m => m !== FB.user.uid)] || 'İstifadəçi';
+        const otherName = c.memberNames?.[c.members.find(m => m !== FB.user.uid)] || t('user_lbl');
         openChat(c.id, otherName);
       }
     }
@@ -111,7 +111,7 @@ window.openChat = function(chatId, name) {
     snap.forEach(d => msgs.push(d.data()));
     list.innerHTML = msgs.length
       ? msgs.map(m => `<div class="bubble ${m.from === FB.user.uid ? 'b-out' : 'b-in'}">${esc(m.text)}</div>`).join('')
-      : '<div class="empty"><div class="ico">👋</div><p>İlk mesajı göndərin</p></div>';
+      : '<div class="empty"><div class="ico">👋</div><p>' + t('ms_first') + '</p></div>';
     list.scrollTop = list.scrollHeight;
   });
 };
