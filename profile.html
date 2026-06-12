@@ -13,13 +13,13 @@
 
 <div class="container" style="max-width:860px;">
   <div id="profile-wrap" style="padding:36px 0 70px;">
-    <div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div>
+    <div class="empty"><div class="ico">⏳</div><p data-i18n="loading">Yüklənir...</p></div>
   </div>
 </div>
 
 <footer id="app-footer"></footer>
 
-<script type="module" src="js/app.js"></script>
+<script type="module" src="js/app.js?v=3"></script>
 <script type="module">
 const uid = new URLSearchParams(location.search).get('id');
 document.addEventListener('fb-ready', load);
@@ -28,11 +28,11 @@ let loading = false;
 async function load() {
   if (loading) return; loading = true;
   const el = document.getElementById('profile-wrap');
-  if (!uid) { el.innerHTML = '<div class="empty"><div class="ico">😕</div><p>Profil tapılmadı</p></div>'; loading = false; return; }
+  if (!uid) { el.innerHTML = '<div class="empty"><div class="ico">😕</div><p>'+t('pf_nf')+'</p></div>'; loading = false; return; }
   const { db, doc, getDoc } = FB;
   try {
     const snap = await getDoc(doc(db, 'users', uid));
-    if (!snap.exists()) { el.innerHTML = '<div class="empty"><div class="ico">😕</div><p>Bu istifadəçi mövcud deyil</p></div>'; loading = false; return; }
+    if (!snap.exists()) { el.innerHTML = '<div class="empty"><div class="ico">😕</div><p>'+t('pf_nf')+'</p></div>'; loading = false; return; }
     const u = snap.data();
     document.title = u.name + ' — Freelan.az';
 
@@ -46,14 +46,14 @@ async function load() {
       revs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
       if (revs.length) {
         reviewsHtml = `<div class="jd-card" style="margin-top:18px;">
-          <h3 style="font-size:16px;margin-bottom:14px;">Rəylər (${revs.length})</h3>
+          <h3 style="font-size:16px;margin-bottom:14px;">${t('pf_reviews')} (${revs.length})</h3>
           ${revs.map(r => `
           <div class="prop-item">
             <div class="prop-head">
               <div style="display:flex;gap:10px;align-items:center;">
                 <div class="avatar">${esc((r.clientName||'?')[0].toUpperCase())}</div>
                 <div>
-                  <div class="prop-name">${esc(r.clientName||'Müştəri')}</div>
+                  <div class="prop-name">${esc(r.clientName||t('db_client'))}</div>
                   <div class="prop-meta" style="color:#f5a623;">${'★'.repeat(r.rating||0)}<span style="color:#ddd;">${'★'.repeat(5-(r.rating||0))}</span> <span style="color:var(--ink3);">· ${timeAgo(r.createdAt)}</span></div>
                 </div>
               </div>
@@ -68,20 +68,20 @@ async function load() {
     <div class="jd-card" style="text-align:center;padding:40px;">
       <div class="avatar" style="width:84px;height:84px;font-size:30px;margin:0 auto 16px;">${esc((u.name||'?')[0].toUpperCase())}</div>
       <h1 style="font-size:26px;">${esc(u.name)} ${planBadge(u.plan)}</h1>
-      <p style="color:var(--ink2);margin:4px 0 12px;">${esc(u.title || (u.role === 'freelancer' ? 'Freelancer' : 'Müştəri'))}</p>
-      <div class="stars" style="font-size:15px;">★ ${u.rating > 0 ? u.rating.toFixed(1) : 'Yeni'} · ${u.jobsDone||0} tamamlanmış iş</div>
-      ${u.rate > 0 ? `<div style="font-size:20px;font-weight:800;color:var(--green);margin-top:12px;">₼${u.rate}/saat</div>` : ''}
+      <p style="color:var(--ink2);margin:4px 0 12px;">${esc(u.title || (u.role === 'freelancer' ? 'Freelancer' : t('db_client')))}</p>
+      <div class="stars" style="font-size:15px;">★ ${u.rating > 0 ? u.rating.toFixed(1) : t('new_lbl')} · ${u.jobsDone||0} ${t('pf_done')}</div>
+      ${u.rate > 0 ? `<div style="font-size:20px;font-weight:800;color:var(--green);margin-top:12px;">₼${u.rate}${t('per_hour')}</div>` : ''}
       ${(u.skills||[]).length ? `<div class="tags" style="justify-content:center;margin-top:18px;">${u.skills.map(s=>`<span class="tag">${esc(s)}</span>`).join('')}</div>` : ''}
-      <button class="btn btn-green" style="margin-top:20px;" onclick="openMessage('${uid}','${esc(u.name)}')">💬 Mesaj göndər</button>
+      <button class="btn btn-green" style="margin-top:20px;" onclick="openMessage('${uid}','${esc(u.name)}')">${t('msg_send')}</button>
     </div>
     ${u.bio ? `
     <div class="jd-card" style="margin-top:18px;">
-      <h3 style="font-size:16px;margin-bottom:10px;">Haqqında</h3>
+      <h3 style="font-size:16px;margin-bottom:10px;">${t('pf_about')}</h3>
       <p style="font-size:14.5px;color:var(--ink2);line-height:1.7;white-space:pre-wrap;">${esc(u.bio)}</p>
     </div>` : ''}
     ${reviewsHtml}
     <div style="text-align:center;margin-top:24px;">
-      <a class="btn btn-line" href="freelancers.html">← Bütün freelancerlər</a>
+      <a class="btn btn-line" href="freelancers.html">${t('pf_all')}</a>
     </div>`;
   } catch(e) {
     el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>Xəta: ' + esc(e.message) + '</p></div>';
