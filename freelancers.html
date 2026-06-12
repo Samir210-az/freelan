@@ -13,13 +13,13 @@
 
 <div class="container">
   <div class="page-head">
-    <h1>Freelancerlər</h1>
+    <h1 data-i18n="fl_h">Freelancerlər</h1>
     <p id="fl-count">Yüklənir...</p>
   </div>
 
   <div class="searchbar" style="margin-top:20px;">
-    <input type="text" id="search-q" placeholder="Ad və ya ixtisas üzrə axtar..." onkeydown="if(event.key==='Enter')applyFilter()" oninput="if(!this.value)applyFilter()">
-    <button class="btn btn-green" onclick="applyFilter()">Axtar</button>
+    <input type="text" id="search-q" data-i18n-ph="fl_q_ph" placeholder="Ad və ya ixtisas üzrə axtar..." onkeydown="if(event.key==='Enter')applyFilter()" oninput="if(!this.value)applyFilter()">
+    <button class="btn btn-green" data-i18n="search" onclick="applyFilter()">Axtar</button>
   </div>
 
   <div class="grid-4" id="fl-grid" style="padding-bottom:60px;">
@@ -42,7 +42,7 @@ async function load() {
     const snap = await getDocs(query(collection(db, 'users'), where('role','==','freelancer'), limit(100)));
     all = [];
     snap.forEach(d => { const u = d.data(); if (u.status !== 'banned') all.push({ id: d.id, ...u }); });
-    all.sort((a,b) => (b.rating||0) - (a.rating||0));
+    all.sort((a,b) => ((b.plan==='pro')-(a.plan==='pro')) || (b.rating||0) - (a.rating||0));
     applyFilter();
   } catch(e) {
     document.getElementById('fl-grid').innerHTML = '<div class="empty" style="grid-column:1/-1;"><div class="ico">⚠️</div><p>Yüklənmədi: ' + esc(e.message) + '</p></div>';
@@ -61,7 +61,7 @@ window.applyFilter = function() {
     ? list.map(f => `
       <div class="fl-card" onclick="location.href='profile.html?id=${f.id}'">
         <div class="avatar">${esc((f.name||'?')[0].toUpperCase())}</div>
-        <h3>${esc(f.name)}</h3>
+        <h3>${esc(f.name)} ${planBadge(f.plan)}</h3>
         <div class="role">${esc(f.title || 'Freelancer')}</div>
         <div class="stars">★ ${f.rating > 0 ? f.rating.toFixed(1) : 'Yeni'} · ${f.jobsDone||0} iş</div>
         ${(f.skills||[]).length ? `<div class="tags" style="justify-content:center;margin-top:10px;">${f.skills.slice(0,3).map(s=>`<span class="tag">${esc(s)}</span>`).join('')}</div>` : ''}
