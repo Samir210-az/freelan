@@ -19,12 +19,12 @@
       <div style="font-size:12px;color:var(--ink2);" id="du-role">—</div>
     </div>
     <nav class="dash-nav" id="dash-nav">
-      <a class="active" data-sec="overview" onclick="showSec('overview')">📊 İcmal</a>
-      <a data-sec="myjobs" onclick="showSec('myjobs')" id="nav-myjobs" style="display:none;">📋 Elanlarım</a>
-      <a data-sec="mybids" onclick="showSec('mybids')" id="nav-mybids" style="display:none;">💼 Təkliflərim</a>
-      <a data-sec="active" onclick="showSec('active')">🔄 Aktiv işlər</a>
-      <a href="messages.html">💬 Mesajlar</a>
-      <a data-sec="settings" onclick="showSec('settings')">⚙️ Tənzimləmələr</a>
+      <a class="active" data-sec="overview" data-i18n="db_overview" onclick="showSec('overview')">📊 İcmal</a>
+      <a data-sec="myjobs" onclick="showSec('myjobs')" id="nav-myjobs" style="display:none;" data-i18n="db_myjobs">📋 Elanlarım</a>
+      <a data-sec="mybids" onclick="showSec('mybids')" id="nav-mybids" style="display:none;" data-i18n="db_mybids">💼 Təkliflərim</a>
+      <a data-sec="active" data-i18n="db_active" onclick="showSec('active')">🔄 Aktiv işlər</a>
+      <a href="messages.html" data-i18n="db_msgs">💬 Mesajlar</a>
+      <a data-sec="settings" data-i18n="db_set" onclick="showSec('settings')">⚙️ Tənzimləmələr</a>
     </nav>
   </aside>
 
@@ -33,10 +33,10 @@
     <div class="dash-sec active" id="sec-overview">
       <h2 style="font-size:22px;margin-bottom:20px;" id="ov-hello">Salam! 👋</h2>
       <div class="stat-grid">
-        <div class="stat-card"><div class="ico">💰</div><div class="val" id="st-balance">₼0</div><div class="lbl">Balans</div></div>
-        <div class="stat-card"><div class="ico">✅</div><div class="val" id="st-done">0</div><div class="lbl">Tamamlanan</div></div>
-        <div class="stat-card"><div class="ico">🔄</div><div class="val" id="st-active">0</div><div class="lbl">Aktiv iş</div></div>
-        <div class="stat-card"><div class="ico">⭐</div><div class="val" id="st-rating">—</div><div class="lbl">Reytinq</div></div>
+        <div class="stat-card"><div class="ico">💰</div><div class="val" id="st-balance">₼0</div><div class="lbl" data-i18n="db_balance">Balans</div></div>
+        <div class="stat-card"><div class="ico">✅</div><div class="val" id="st-done">0</div><div class="lbl" data-i18n="db_done">Tamamlanan</div></div>
+        <div class="stat-card"><div class="ico">🔄</div><div class="val" id="st-active">0</div><div class="lbl" data-i18n="db_activew">Aktiv iş</div></div>
+        <div class="stat-card"><div class="ico">⭐</div><div class="val" id="st-rating">—</div><div class="lbl" data-i18n="db_rating">Reytinq</div></div>
       </div>
       <div id="ov-cta"></div>
     </div>
@@ -44,40 +44,40 @@
     <!-- MY JOBS (client) -->
     <div class="dash-sec" id="sec-myjobs">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
-        <h2 style="font-size:22px;">Elanlarım</h2>
-        <button class="btn btn-green btn-sm" onclick="openPostJob()">+ Yeni elan</button>
+        <h2 style="font-size:22px;" data-i18n="db_myjobs">Elanlarım</h2>
+        <button class="btn btn-green btn-sm" data-i18n="db_newjob" onclick="openPostJob()">+ Yeni elan</button>
       </div>
       <div id="myjobs-list"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
     </div>
 
     <!-- MY BIDS (freelancer) -->
     <div class="dash-sec" id="sec-mybids">
-      <h2 style="font-size:22px;margin-bottom:20px;">Təkliflərim</h2>
+      <h2 style="font-size:22px;margin-bottom:20px;" data-i18n="db_mybids">Təkliflərim</h2>
       <div id="mybids-list"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
     </div>
 
     <!-- ACTIVE WORKS -->
     <div class="dash-sec" id="sec-active">
-      <h2 style="font-size:22px;margin-bottom:20px;">Aktiv işlər</h2>
+      <h2 style="font-size:22px;margin-bottom:20px;" data-i18n="db_active">Aktiv işlər</h2>
       <div id="active-list"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
     </div>
 
     <!-- SETTINGS -->
     <div class="dash-sec" id="sec-settings">
-      <h2 style="font-size:22px;margin-bottom:20px;">Tənzimləmələr</h2>
+      <h2 style="font-size:22px;margin-bottom:20px;" data-i18n="db_set">Tənzimləmələr</h2>
       <div class="jd-card" style="max-width:560px;">
-        <div class="form-group"><label class="form-label">Ad, Soyad</label>
+        <div class="form-group"><label class="form-label" data-i18n="au_name">Ad, Soyad</label>
           <input class="form-input" id="set-name"></div>
-        <div class="form-group" id="set-title-wrap"><label class="form-label">İxtisas başlığı <small style="color:var(--ink3);">(məs: UI/UX Dizayner)</small></label>
+        <div class="form-group" id="set-title-wrap"><label class="form-label"><span data-i18n="set_title">İxtisas başlığı</span> <small style="color:var(--ink3);" data-i18n="set_title_s">(məs: UI/UX Dizayner)</small></label>
           <input class="form-input" id="set-title"></div>
-        <div class="form-group" id="set-skills-wrap"><label class="form-label">Bacarıqlar <small style="color:var(--ink3);">(vergüllə ayırın)</small></label>
+        <div class="form-group" id="set-skills-wrap"><label class="form-label"><span data-i18n="set_skills">Bacarıqlar</span> <small style="color:var(--ink3);" data-i18n="set_skills_s">(vergüllə ayırın)</small></label>
           <input class="form-input" id="set-skills" placeholder="Figma, Photoshop, Illustrator"></div>
-        <div class="form-group" id="set-rate-wrap"><label class="form-label">Saatlıq qiymət (₼)</label>
+        <div class="form-group" id="set-rate-wrap"><label class="form-label" data-i18n="set_rate">Saatlıq qiymət (₼)</label>
           <input class="form-input" id="set-rate" type="number"></div>
-        <div class="form-group"><label class="form-label">Haqqında</label>
+        <div class="form-group"><label class="form-label" data-i18n="pf_about">Haqqında</label>
           <textarea class="form-textarea" id="set-bio" placeholder="Özünüz haqqında qısa məlumat..."></textarea></div>
         <div id="set-ok" class="ok-box"></div>
-        <button class="btn btn-green" onclick="saveSettings()">Yadda saxla</button>
+        <button class="btn btn-green" data-i18n="save" onclick="saveSettings()">Yadda saxla</button>
       </div>
     </div>
   </main>
@@ -86,27 +86,27 @@
 <div id="auth-required" class="container" style="display:none;">
   <div class="empty" style="padding:100px 20px;">
     <div class="ico">🔐</div>
-    <p style="margin-bottom:18px;">Panelə daxil olmaq üçün hesabınıza giriş edin</p>
-    <button class="btn btn-green" onclick="openAuth('login')">Daxil ol</button>
+    <p style="margin-bottom:18px;" data-i18n="auth_req">Panelə daxil olmaq üçün hesabınıza giriş edin</p>
+    <button class="btn btn-green" data-i18n="login" onclick="openAuth('login')">Daxil ol</button>
   </div>
 </div>
 
 <div class="modal-bg" id="modal-rate">
   <div class="modal">
     <button class="modal-x" onclick="closeRate()">✕</button>
-    <h2>Freelanceri qiymətləndirin ⭐</h2>
+    <h2 data-i18n="rate_t">Freelanceri qiymətləndirin ⭐</h2>
     <p class="sub" id="rate-job-label" style="color:var(--green);font-weight:600;"></p>
     <div id="rate-stars" style="font-size:36px;text-align:center;margin:14px 0;cursor:pointer;user-select:none;letter-spacing:4px;"></div>
-    <div class="form-group"><label class="form-label">Rəyiniz <small style="color:var(--ink3);">(istəyə bağlı)</small></label>
+    <div class="form-group"><label class="form-label"><span data-i18n="rate_c">Rəyiniz</span> <small style="color:var(--ink3);" data-i18n="rate_opt">(istəyə bağlı)</small></label>
       <textarea class="form-textarea" id="rate-comment" placeholder="İş haqqında təəssüratınız..."></textarea></div>
-    <button class="btn btn-green" id="rate-btn" style="width:100%;" onclick="submitRate()">Rəyi göndər ⭐</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px;" onclick="closeRate()">Keç</button>
+    <button class="btn btn-green" id="rate-btn" style="width:100%;" data-i18n="rate_send" onclick="submitRate()">Rəyi göndər ⭐</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px;" data-i18n="skip" onclick="closeRate()">Keç</button>
   </div>
 </div>
 
 <footer id="app-footer"></footer>
 
-<script type="module" src="js/app.js"></script>
+<script type="module" src="js/app.js?v=3"></script>
 <script type="module">
 document.addEventListener('fb-ready', init);
 
@@ -122,8 +122,8 @@ async function init() {
   const name = d.name || FB.user.email.split('@')[0];
   document.getElementById('du-avatar').textContent = name[0].toUpperCase();
   document.getElementById('du-name').textContent = name;
-  document.getElementById('du-role').textContent = (d.role === 'freelancer' ? '🧑‍💻 Freelancer' : '💼 Müştəri') + (d.plan === 'pro' ? ' · ⭐ PRO' : d.plan === 'business' ? ' · 💼 Biznes' : '');
-  document.getElementById('ov-hello').textContent = 'Salam, ' + name + '! 👋';
+  document.getElementById('du-role').textContent = (d.role === 'freelancer' ? '🧑‍💻 Freelancer' : '💼 ' + t('db_client')) + (d.plan === 'pro' ? ' · ⭐ PRO' : d.plan === 'business' ? ' · 💼 Biznes' : '');
+  document.getElementById('ov-hello').textContent = t('db_hello') + ', ' + name + '! 👋';
   document.getElementById('st-balance').textContent = '₼' + (d.balance || 0);
   document.getElementById('st-done').textContent = d.jobsDone || 0;
   document.getElementById('st-rating').textContent = d.rating > 0 ? d.rating.toFixed(1) : '—';
@@ -134,11 +134,11 @@ async function init() {
     document.getElementById('set-title-wrap').style.display = 'none';
     document.getElementById('set-skills-wrap').style.display = 'none';
     document.getElementById('set-rate-wrap').style.display = 'none';
-    document.getElementById('ov-cta').innerHTML = '<button class="btn btn-green" onclick="openPostJob()">+ Yeni elan ver</button>';
+    document.getElementById('ov-cta').innerHTML = '<button class="btn btn-green" onclick="openPostJob()">' + t('db_newjob_cta') + '</button>';
     loadMyJobs();
   } else {
     document.getElementById('nav-mybids').style.display = 'flex';
-    document.getElementById('ov-cta').innerHTML = '<a class="btn btn-green" href="jobs.html">İş axtar →</a>';
+    document.getElementById('ov-cta').innerHTML = '<a class="btn btn-green" href="jobs.html">' + t('db_find') + '</a>';
     loadMyBids();
   }
 
@@ -173,15 +173,15 @@ async function loadMyJobs() {
         <div class="prop-head">
           <div>
             <div class="prop-name">${esc(j.title)}</div>
-            <div class="prop-meta">💬 ${j.bids||0} təklif · ${timeAgo(j.createdAt)}</div>
+            <div class="prop-meta">💬 ${j.bids||0} ${t('offers')} · ${timeAgo(j.createdAt)}</div>
           </div>
           <div style="text-align:right;">
             <div class="prop-amount">₼${j.budget}</div>
-            ${j.status==='approved'?'<span class="badge badge-green">Açıq</span>':j.status==='pending'?'<span class="badge badge-orange">Moderasiyada</span>':j.status==='in_progress'?'<span class="badge badge-blue">Davam edir</span>':'<span class="badge badge-gray">'+esc(j.status)+'</span>'}
+            ${j.status==='approved'?'<span class="badge badge-green">'+t('st_open')+'</span>':j.status==='pending'?'<span class="badge badge-orange">'+t('st_pending')+'</span>':j.status==='in_progress'?'<span class="badge badge-blue">'+t('st_progress')+'</span>':'<span class="badge badge-gray">'+t('st_done')+'</span>'}
           </div>
         </div>
       </div>`).join('')
-    : '<div class="empty"><div class="ico">📋</div><p>Hələ elan verməmisiniz</p><button class="btn btn-green btn-sm" style="margin-top:14px;" onclick="openPostJob()">+ İlk elanı ver</button></div>';
+    : '<div class="empty"><div class="ico">📋</div><p>' + t('db_nojobs') + '</p><button class="btn btn-green btn-sm" style="margin-top:14px;" onclick="openPostJob()">' + t('db_first') + '</button></div>';
   } catch(e) {
     el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>' + esc(e.message) + '</p></div>';
   }
@@ -197,13 +197,13 @@ async function loadMyBids() {
     bids.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
     document.getElementById('st-active').textContent = bids.filter(b=>b.status==='accepted').length;
     if (!bids.length) {
-      el.innerHTML = '<div class="empty"><div class="ico">💼</div><p>Hələ təklif verməmisiniz</p><a class="btn btn-green btn-sm" style="margin-top:14px;" href="jobs.html">İş axtar →</a></div>';
+      el.innerHTML = '<div class="empty"><div class="ico">💼</div><p>' + t('db_nobids') + '</p><a class="btn btn-green btn-sm" style="margin-top:14px;" href="jobs.html">' + t('db_find') + '</a></div>';
       return;
     }
     const titles = {};
     for (const b of bids.slice(0,20)) {
       if (!titles[b.jobId]) {
-        try { const js = await getDoc(doc(db,'jobs',b.jobId)); titles[b.jobId] = js.exists() ? js.data().title : '(silinmiş elan)'; } catch(e) { titles[b.jobId] = '—'; }
+        try { const js = await getDoc(doc(db,'jobs',b.jobId)); titles[b.jobId] = js.exists() ? js.data().title : t('deleted_job'); } catch(e) { titles[b.jobId] = '—'; }
       }
     }
     el.innerHTML = bids.map(b => `
@@ -211,11 +211,11 @@ async function loadMyBids() {
         <div class="prop-head">
           <div>
             <div class="prop-name">${esc(titles[b.jobId]||'—')}</div>
-            <div class="prop-meta">⏱ ${b.days} gün · ${timeAgo(b.createdAt)}</div>
+            <div class="prop-meta">⏱ ${b.days} ${t('day_s')} · ${timeAgo(b.createdAt)}</div>
           </div>
           <div style="text-align:right;">
             <div class="prop-amount">₼${b.amount}</div>
-            ${b.status==='accepted'?'<span class="badge badge-green">✅ Qəbul edildi</span>':'<span class="badge badge-orange">Gözləyir</span>'}
+            ${b.status==='accepted'?'<span class="badge badge-green">'+t('st_accepted')+'</span>':'<span class="badge badge-orange">'+t('st_wait')+'</span>'}
           </div>
         </div>
       </div>`).join('');
@@ -242,22 +242,22 @@ async function loadActive() {
         <div class="prop-head">
           <div>
             <div class="prop-name">${esc(j.title)}</div>
-            <div class="prop-meta">${d.role==='client'?'Freelancer işləyir':'Müştəri: '+esc(j.clientName)}</div>
+            <div class="prop-meta">${d.role==='client'?t('db_flworking'):t('db_client')+': '+esc(j.clientName)}</div>
           </div>
           <div style="text-align:right;">
             <div class="prop-amount">₼${j.budget}</div>
-            ${d.role==='client'?`<button class="btn btn-green btn-sm" style="margin-top:6px;" onclick="event.stopPropagation();completeJob('${j.id}')">✅ İşi qəbul et</button>`:'<span class="badge badge-blue">Davam edir</span>'}
+            ${d.role==='client'?`<button class="btn btn-green btn-sm" style="margin-top:6px;" onclick="event.stopPropagation();completeJob('${j.id}')">${t('db_acceptw')}</button>`:'<span class="badge badge-blue">'+t('st_progress')+'</span>'}
           </div>
         </div>
       </div>`).join('')
-    : '<div class="empty"><div class="ico">🔄</div><p>Aktiv iş yoxdur</p></div>';
+    : '<div class="empty"><div class="ico">🔄</div><p>' + t('db_noactive') + '</p></div>';
   } catch(e) {
     el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>' + esc(e.message) + '</p></div>';
   }
 }
 
 window.completeJob = async function(jobId) {
-  if (!confirm('İşi qəbul edib tamamlamaq istəyirsiniz?')) return;
+  if (!confirm(t('cf_done'))) return;
   const { db, doc, updateDoc, getDoc } = FB;
   try {
     const js = await getDoc(doc(db,'jobs',jobId));
@@ -289,7 +289,7 @@ window.openRate = function(jobId, freelancerId, title) {
   document.getElementById('rate-comment').value = '';
   drawStars();
   const btn = document.getElementById('rate-btn');
-  btn.disabled = false; btn.textContent = 'Rəyi göndər ⭐';
+  btn.disabled = false; btn.textContent = t('rate_send');
   document.getElementById('modal-rate').classList.add('open');
 };
 window.closeRate = function() {
@@ -328,7 +328,7 @@ window.submitRate = async function() {
     showToast('Rəyiniz göndərildi! ⭐');
   } catch(e) {
     showToast('Xəta: ' + e.message);
-    btn.disabled = false; btn.textContent = 'Rəyi göndər ⭐';
+    btn.disabled = false; btn.textContent = t('rate_send');
   }
 };
 
