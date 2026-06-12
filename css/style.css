@@ -28,7 +28,7 @@ button{font-family:inherit;}
 h1,h2,h3,.display{font-family:'Sora','Inter',sans-serif;letter-spacing:-0.5px;}
 
 /* ===== HEADER ===== */
-header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid var(--border);}
+header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid var(--border);overflow-x:clip;}
 .hdr-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:28px;padding:0 24px;height:64px;}
 .logo{font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:var(--green);letter-spacing:-1px;flex-shrink:0;}
 .logo span{color:var(--ink);}
@@ -283,7 +283,14 @@ footer{background:var(--ink);color:#cfe0cb;margin-top:80px;}
   .msg-contact{min-width:200px;border-right:1px solid var(--border);}
 }
 @media(max-width:600px){
-  .hdr-inner{padding:0 16px;gap:12px;}
+  .hdr-inner{padding:0 12px;gap:10px;}
+  .logo{font-size:18px;}
+  .hdr-right{gap:6px;}
+  .lang-sel{padding:4px 2px !important;font-size:11px !important;}
+  .btn-sm{padding:8px 10px;font-size:12px;}
+  .user-chip{padding:4px 8px 4px 4px;font-size:12px;gap:6px;}
+  .user-chip span{max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .user-chip .avatar{width:26px;height:26px;font-size:11px;}
   .container{padding:0 16px;}
   .hero-inner{padding:54px 16px 60px;}
   .hero-search{flex-direction:column;}
