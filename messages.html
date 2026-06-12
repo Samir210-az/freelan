@@ -81,6 +81,16 @@ async function loadContacts() {
         </div>
       </div>`;
     }).join('');
+
+    // Auto-open chat from URL param (?chat=...)
+    const want = new URLSearchParams(location.search).get('chat');
+    if (want) {
+      const c = chats.find(x => x.id === want);
+      if (c) {
+        const otherName = c.memberNames?.[c.members.find(m => m !== FB.user.uid)] || 'İstifadəçi';
+        openChat(c.id, otherName);
+      }
+    }
   } catch(e) {
     el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p style="font-size:12px;">' + esc(e.message) + '</p></div>';
   }
