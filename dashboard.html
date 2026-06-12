@@ -122,7 +122,7 @@ async function init() {
   const name = d.name || FB.user.email.split('@')[0];
   document.getElementById('du-avatar').textContent = name[0].toUpperCase();
   document.getElementById('du-name').textContent = name;
-  document.getElementById('du-role').textContent = d.role === 'freelancer' ? '🧑‍💻 Freelancer' : '💼 Müştəri';
+  document.getElementById('du-role').textContent = (d.role === 'freelancer' ? '🧑‍💻 Freelancer' : '💼 Müştəri') + (d.plan === 'pro' ? ' · ⭐ PRO' : d.plan === 'business' ? ' · 💼 Biznes' : '');
   document.getElementById('ov-hello').textContent = 'Salam, ' + name + '! 👋';
   document.getElementById('st-balance').textContent = '₼' + (d.balance || 0);
   document.getElementById('st-done').textContent = d.jobsDone || 0;
