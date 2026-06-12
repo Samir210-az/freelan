@@ -17,11 +17,11 @@
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-inner">
-    <h1>İşini tap.<br><em>Azad qazan.</em></h1>
-    <p>Azərbaycanın ilk freelance bazarı — dizaynerlər, proqramçılar, kopirayterlər və müştərilər üçün etibarlı platforma.</p>
+    <h1 data-i18n="idx_h1">İşini tap.<br><em>Azad qazan.</em></h1>
+    <p data-i18n="idx_p">Azərbaycanın ilk freelance bazarı — dizaynerlər, proqramçılar, kopirayterlər və müştərilər üçün etibarlı platforma.</p>
     <div class="hero-search">
-      <input type="text" id="hero-q" placeholder="Hansı xidməti axtarırsınız?" onkeydown="if(event.key==='Enter')heroSearch()">
-      <button class="btn btn-green" onclick="heroSearch()">Axtar</button>
+      <input type="text" id="hero-q" data-i18n-ph="idx_q_ph" placeholder="Hansı xidməti axtarırsınız?" onkeydown="if(event.key==='Enter')heroSearch()">
+      <button class="btn btn-green" data-i18n="search" onclick="heroSearch()">Axtar</button>
     </div>
     <div class="hero-tags">
       <a href="jobs.html?q=logo">Logo dizayn</a>
@@ -41,8 +41,8 @@
 <!-- CATEGORIES -->
 <section class="section">
   <div class="container">
-    <h2 class="section-title">Hər iş növü üçün freelancer tap</h2>
-    <p class="section-sub">Kateqoriyanı seç və peşəkarlarla işə başla</p>
+    <h2 class="section-title" data-i18n="idx_cats_t">Hər iş növü üçün freelancer tap</h2>
+    <p class="section-sub" data-i18n="idx_cats_s">Kateqoriyanı seç və peşəkarlarla işə başla</p>
     <div class="grid-4">
       <div class="cat-card" onclick="location.href='jobs.html?cat=Dizayn'"><div class="ico">🎨</div><h3>Dizayn</h3><p>Logo, brendinq, UI/UX</p></div>
       <div class="cat-card" onclick="location.href='jobs.html?cat=Proqramlaşdırma'"><div class="ico">💻</div><h3>Proqramlaşdırma</h3><p>Veb, mobil, backend</p></div>
@@ -59,16 +59,16 @@
 <!-- HOW IT WORKS SHORT -->
 <section class="section" style="background:var(--bg2);">
   <div class="container">
-    <h2 class="section-title">Necə işləyir?</h2>
-    <p class="section-sub">4 sadə addımda işə başla</p>
+    <h2 class="section-title" data-i18n="idx_how_t">Necə işləyir?</h2>
+    <p class="section-sub" data-i18n="idx_how_s">4 sadə addımda işə başla</p>
     <div class="steps">
-      <div class="step"><div class="num">1</div><h3>Elan yerləşdir</h3><p>İşini təsvir et, büdcəni göstər. Elan vermək həmişə pulsuzdur.</p></div>
-      <div class="step"><div class="num">2</div><h3>Təkliflər al</h3><p>Uyğun freelancerlər qiymət və müddət təklifi göndərir.</p></div>
-      <div class="step"><div class="num">3</div><h3>Seç və işə başla</h3><p>Profili, reytinqi yoxla, ən yaxşı təklifi qəbul et.</p></div>
-      <div class="step"><div class="num">4</div><h3>Təhlükəsiz ödə</h3><p>Pul escrow-da saxlanılır — işi qəbul etdikdən sonra ödənilir.</p></div>
+      <div class="step"><div class="num">1</div><h3 data-i18n="s1t">Elan yerləşdir</h3><p data-i18n="s1p">İşini təsvir et, büdcəni göstər. Elan vermək həmişə pulsuzdur.</p></div>
+      <div class="step"><div class="num">2</div><h3 data-i18n="s2t">Təkliflər al</h3><p data-i18n="s2p">Uyğun freelancerlər qiymət və müddət təklifi göndərir.</p></div>
+      <div class="step"><div class="num">3</div><h3 data-i18n="s3t">Seç və işə başla</h3><p data-i18n="s3p">Profili, reytinqi yoxla, ən yaxşı təklifi qəbul et.</p></div>
+      <div class="step"><div class="num">4</div><h3 data-i18n="s4t">Təhlükəsiz ödə</h3><p data-i18n="s4p">Pul escrow-da saxlanılır — işi qəbul etdikdən sonra ödənilir.</p></div>
     </div>
     <div style="text-align:center;margin-top:32px;">
-      <a class="btn btn-green" href="how-it-works.html">Ətraflı öyrən →</a>
+      <a class="btn btn-green" data-i18n="idx_more" href="how-it-works.html">Ətraflı öyrən →</a>
     </div>
   </div>
 </section>
@@ -78,10 +78,10 @@
   <div class="container">
     <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:28px;">
       <div>
-        <h2 class="section-title" style="margin-bottom:4px;">Son elanlar</h2>
-        <p style="color:var(--ink2);">İndi aktiv tapşırıqlar</p>
+        <h2 class="section-title" style="margin-bottom:4px;" data-i18n="idx_recent_t">Son elanlar</h2>
+        <p style="color:var(--ink2);" data-i18n="idx_recent_s">İndi aktiv tapşırıqlar</p>
       </div>
-      <a class="btn btn-line" href="jobs.html">Bütün elanlar →</a>
+      <a class="btn btn-line" data-i18n="idx_all" href="jobs.html">Bütün elanlar →</a>
     </div>
     <div class="grid-3" id="recent-jobs">
       <div class="empty" style="grid-column:1/-1;"><div class="ico">⏳</div><p>Yüklənir...</p></div>
@@ -94,10 +94,10 @@
   <div class="container">
     <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:28px;">
       <div>
-        <h2 class="section-title" style="margin-bottom:4px;">Top freelancerlər</h2>
-        <p style="color:var(--ink2);">Ən yüksək reytinqli mütəxəssislər</p>
+        <h2 class="section-title" style="margin-bottom:4px;" data-i18n="idx_top_t">Top freelancerlər</h2>
+        <p style="color:var(--ink2);" data-i18n="idx_top_s">Ən yüksək reytinqli mütəxəssislər</p>
       </div>
-      <a class="btn btn-line" href="freelancers.html">Hamısına bax →</a>
+      <a class="btn btn-line" data-i18n="idx_seeall" href="freelancers.html">Hamısına bax →</a>
     </div>
     <div class="grid-4" id="top-freelancers">
       <div class="empty" style="grid-column:1/-1;"><div class="ico">⏳</div><p>Yüklənir...</p></div>
@@ -110,11 +110,11 @@
   <div class="container">
     <div style="background:var(--ink);border-radius:24px;padding:54px 40px;text-align:center;color:#fff;position:relative;overflow:hidden;">
       <div class="hero-glow" style="left:-150px;top:-150px;"></div>
-      <h2 style="font-size:clamp(24px,4vw,38px);margin-bottom:12px;position:relative;">Bu gün işə başla</h2>
-      <p style="color:#cfe0cb;margin-bottom:26px;position:relative;">İstər iş ver, istər iş tap — Freelan.az səninlədir.</p>
+      <h2 style="font-size:clamp(24px,4vw,38px);margin-bottom:12px;position:relative;" data-i18n="cta_t">Bu gün işə başla</h2>
+      <p style="color:#cfe0cb;margin-bottom:26px;position:relative;" data-i18n="cta_p">İstər iş ver, istər iş tap — Freelan.az səninlədir.</p>
       <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;">
-        <button class="btn btn-green" onclick="openPostJob()" style="padding:13px 28px;">💼 Elan ver — Pulsuz</button>
-        <button class="btn" style="background:#fff;color:var(--ink);padding:13px 28px;" onclick="openAuth('register')">🧑‍💻 Freelancer ol</button>
+        <button class="btn btn-green" data-i18n="cta_post" onclick="openPostJob()" style="padding:13px 28px;">💼 Elan ver — Pulsuz</button>
+        <button class="btn" style="background:#fff;color:var(--ink);padding:13px 28px;" data-i18n="cta_fl" onclick="openAuth('register')">🧑‍💻 Freelancer ol</button>
       </div>
     </div>
   </div>
@@ -155,7 +155,7 @@ async function loadHome() {
     const snap = await getDocs(query(collection(db, 'users'), where('role','==','freelancer'), limit(20)));
     const fls = [];
     snap.forEach(d => fls.push({ id: d.id, ...d.data() }));
-    fls.sort((a,b) => (b.rating||0) - (a.rating||0));
+    fls.sort((a,b) => ((b.plan==='pro')-(a.plan==='pro')) || (b.rating||0) - (a.rating||0));
     document.getElementById('st-fl').textContent = fls.length;
     const el = document.getElementById('top-freelancers');
     el.innerHTML = fls.length
