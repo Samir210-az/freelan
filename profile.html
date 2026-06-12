@@ -67,7 +67,7 @@ async function load() {
     el.innerHTML = `
     <div class="jd-card" style="text-align:center;padding:40px;">
       <div class="avatar" style="width:84px;height:84px;font-size:30px;margin:0 auto 16px;">${esc((u.name||'?')[0].toUpperCase())}</div>
-      <h1 style="font-size:26px;">${esc(u.name)}</h1>
+      <h1 style="font-size:26px;">${esc(u.name)} ${planBadge(u.plan)}</h1>
       <p style="color:var(--ink2);margin:4px 0 12px;">${esc(u.title || (u.role === 'freelancer' ? 'Freelancer' : 'Müştəri'))}</p>
       <div class="stars" style="font-size:15px;">★ ${u.rating > 0 ? u.rating.toFixed(1) : 'Yeni'} · ${u.jobsDone||0} tamamlanmış iş</div>
       ${u.rate > 0 ? `<div style="font-size:20px;font-weight:800;color:var(--green);margin-top:12px;">₼${u.rate}/saat</div>` : ''}
