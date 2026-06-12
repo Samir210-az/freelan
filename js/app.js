@@ -469,6 +469,29 @@ window.jobCardHtml = function(j) {
   </div>`;
 };
 
+// ===== DIRECT MESSAGE (chat open/create) =====
+window.openMessage = async function(otherUid, otherName) {
+  if (!FB.user) { openAuth('login'); return; }
+  if (otherUid === FB.user.uid) { showToast('Özünüzə mesaj göndərə bilməzsiniz'); return; }
+  const { db, collection, getDocs, addDoc, query, where, serverTimestamp } = FB;
+  showToast('Söhbət açılır... 💬');
+  try {
+    const snap = await getDocs(query(collection(db, 'chats'), where('members', 'array-contains', FB.user.uid)));
+    let chatId = null;
+    snap.forEach(d => { if (d.data().members?.includes(otherUid)) chatId = d.id; });
+    if (!chatId) {
+      const myName = FB.userData?.name || FB.user.email.split('@')[0];
+      const ref = await addDoc(collection(db, 'chats'), {
+        members: [FB.user.uid, otherUid],
+        memberNames: { [FB.user.uid]: myName, [otherUid]: otherName || 'İstifadəçi' },
+        lastMsg: '', lastAt: serverTimestamp(), createdAt: serverTimestamp()
+      });
+      chatId = ref.id;
+    }
+    location.href = 'messages.html?chat=' + chatId;
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
+
 // ===== INIT =====
 renderHeader();
 renderFooter();
