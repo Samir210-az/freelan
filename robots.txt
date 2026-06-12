@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /dashboard.html
+Disallow: /messages.html
+
+Sitemap: https://samir210-az.github.io/freelan/sitemap.xml
