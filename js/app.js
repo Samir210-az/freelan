@@ -124,7 +124,6 @@ window.applyI18n = function() {
     const k = el.dataset.i18nPh;
     if (I18N.az[k] !== undefined) el.placeholder = t(k);
   });
-  if (document.title.includes('Freelan.az') === false) return;
 };
 
 window.FB = {
@@ -134,6 +133,8 @@ window.FB = {
 
 // ===== HELPERS =====
 window.esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+window.azLower = s => String(s ?? '').toLocaleLowerCase('az-AZ');
+window.clampStars = n => Math.max(0, Math.min(5, Math.round(Number(n) || 0)));
 
 window.showToast = function(msg) {
   let t = document.getElementById('toast');
@@ -176,6 +177,7 @@ function renderHeader() {
   <div class="hdr-inner">
     <a class="logo" href="index.html">Freelan<span>.az</span></a>
     <nav class="hdr-nav">
+      <a href="index.html" class="${act('index.html')}">${t('nav_home')}</a>
       <a href="jobs.html" class="${act('jobs.html')}">${t('nav_jobs')}</a>
       <a href="freelancers.html" class="${act('freelancers.html')}">${t('nav_freelancers')}</a>
       <a href="how-it-works.html" class="${act('how-it-works.html')}">${t('nav_how')}</a>
@@ -235,6 +237,7 @@ function renderFooter() {
         <a href="freelancers.html">${t('nav_freelancers')}</a>
         <a href="how-it-works.html">${t('nav_how')}</a>
         <a href="pricing.html">${t('nav_pricing')}</a>
+        <a href="messages.html">${t('nav_messages')}</a>
       </div>
       <div>
         <h4>${t('ftr_company')}</h4>
@@ -460,8 +463,11 @@ window.fbSubmitBid = async function() {
   const days = parseInt(document.getElementById('bid-days').value);
   const cover = document.getElementById('bid-cover').value.trim();
   if (!amount || amount < 1) { fbErr('bid-err', 'Məbləği daxil edin'); return; }
+  if (amount > 100000) { fbErr('bid-err', 'Məbləğ ən çox 100 000 ₼ ola bilər'); return; }
   if (!days || days < 1) { fbErr('bid-err', 'Müddəti daxil edin'); return; }
+  if (days > 365) { fbErr('bid-err', 'Müddət ən çox 365 gün ola bilər'); return; }
   if (cover.length < 20) { fbErr('bid-err', 'Müraciət məktubu ən az 20 simvol olmalıdır'); return; }
+  if (cover.length > 1500) { fbErr('bid-err', 'Müraciət məktubu ən çox 1500 simvol ola bilər'); return; }
   const btn = document.getElementById('bid-btn');
   btn.disabled = true; btn.textContent = '⏳ Göndərilir...';
   try {
@@ -553,6 +559,13 @@ window.fbPostJob = async function() {
   const budget = parseInt(document.getElementById('pj-budget').value);
   const deadline = parseInt(document.getElementById('pj-deadline').value) || 7;
   if (!title || !desc || !budget) { fbErr('pj-err', 'Başlıq, təsvir və büdcə mütləqdir'); return; }
+  if (title.length < 10) { fbErr('pj-err', 'Başlıq ən az 10 simvol olmalıdır'); return; }
+  if (title.length > 100) { fbErr('pj-err', 'Başlıq ən çox 100 simvol ola bilər'); return; }
+  if (desc.length < 30) { fbErr('pj-err', 'Təsvir ən az 30 simvol olmalıdır'); return; }
+  if (desc.length > 3000) { fbErr('pj-err', 'Təsvir ən çox 3000 simvol ola bilər'); return; }
+  if (budget < 5) { fbErr('pj-err', 'Büdcə ən az 5 ₼ olmalıdır'); return; }
+  if (budget > 100000) { fbErr('pj-err', 'Büdcə ən çox 100 000 ₼ ola bilər'); return; }
+  if (deadline < 1 || deadline > 365) { fbErr('pj-err', 'Müddət 1-365 gün arası olmalıdır'); return; }
   const btn = document.getElementById('pj-btn');
   btn.disabled = true; btn.textContent = '⏳ Göndərilir...';
   try {
