@@ -31,9 +31,9 @@
       <a href="jobs.html?q=tərcümə">Tərcümə</a>
     </div>
     <div class="trust-row">
-      <span><b id="st-fl">—</b> freelancer</span>
-      <span><b id="st-jobs">—</b> aktiv elan</span>
-      <span><b>Escrow</b> təhlükəsiz ödəniş</span>
+      <span><b id="st-fl">—</b> <span data-i18n="trust_fl">freelancer</span></span>
+      <span><b id="st-jobs">—</b> <span data-i18n="trust_jobs">aktiv elan</span></span>
+      <span><b>Escrow</b> <span data-i18n="trust_esc">təhlükəsiz ödəniş</span></span>
     </div>
   </div>
 </section>
@@ -122,7 +122,7 @@
 
 <footer id="app-footer"></footer>
 
-<script type="module" src="js/app.js"></script>
+<script type="module" src="js/app.js?v=3"></script>
 <script type="module">
 window.heroSearch = function() {
   const q = document.getElementById('hero-q').value.trim();
@@ -146,7 +146,7 @@ async function loadHome() {
     document.getElementById('st-jobs').textContent = jobs.length;
     el.innerHTML = jobs.length
       ? jobs.slice(0,6).map(jobCardHtml).join('')
-      : '<div class="empty" style="grid-column:1/-1;"><div class="ico">📭</div><p>Hələ elan yoxdur — ilk elanı sən ver!</p></div>';
+      : '<div class="empty" style="grid-column:1/-1;"><div class="ico">📭</div><p>'+t('idx_nojobs')+'</p></div>';
   } catch(e) {
     document.getElementById('recent-jobs').innerHTML = '<div class="empty" style="grid-column:1/-1;"><div class="ico">⚠️</div><p>Elanlar yüklənmədi</p></div>';
   }
@@ -164,10 +164,10 @@ async function loadHome() {
           <div class="avatar">${esc((f.name||'?')[0].toUpperCase())}</div>
           <h3>${esc(f.name)}</h3>
           <div class="role">${esc(f.title || 'Freelancer')}</div>
-          <div class="stars">★ ${f.rating > 0 ? f.rating.toFixed(1) : 'Yeni'}</div>
-          ${f.rate > 0 ? `<div class="rate">₼${f.rate}/saat</div>` : ''}
+          <div class="stars">★ ${f.rating > 0 ? f.rating.toFixed(1) : t('new_lbl')}</div>
+          ${f.rate > 0 ? `<div class="rate">₼${f.rate}${t('per_hour')}</div>` : ''}
         </div>`).join('')
-      : '<div class="empty" style="grid-column:1/-1;"><div class="ico">🧑‍💻</div><p>İlk freelancer sən ol!</p></div>';
+      : '<div class="empty" style="grid-column:1/-1;"><div class="ico">🧑‍💻</div><p>'+t('idx_nofl')+'</p></div>';
   } catch(e) {
     document.getElementById('top-freelancers').innerHTML = '<div class="empty" style="grid-column:1/-1;"><div class="ico">⚠️</div><p>Yüklənmədi</p></div>';
   }
