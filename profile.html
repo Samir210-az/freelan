@@ -4,6 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Profil — Freelan.az</title>
+<meta name="description" content="Freelancer profili — bacarıqlar, reytinq, rəylər və tamamlanmış işlər.">
+<meta property="og:title" content="Profil — Freelan.az">
+<meta property="og:description" content="Freelancer profili — bacarıqlar, reytinq, rəylər və tamamlanmış işlər.">
+<meta property="og:url" content="https://samir210-az.github.io/freelan/profile.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Freelan.az">
+<meta property="og:image" content="https://samir210-az.github.io/freelan/icon-512.png">
+<meta property="og:locale" content="az_AZ">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Profil — Freelan.az">
+<meta name="twitter:description" content="Freelancer profili — bacarıqlar, reytinq, rəylər və tamamlanmış işlər.">
+<meta name="theme-color" content="#0d1f12">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -19,7 +35,7 @@
 
 <footer id="app-footer"></footer>
 
-<script type="module" src="js/app.js?v=3"></script>
+<script type="module" src="js/app.js?v=4"></script>
 <script type="module">
 const uid = new URLSearchParams(location.search).get('id');
 document.addEventListener('fb-ready', load);
@@ -54,7 +70,7 @@ async function load() {
                 <div class="avatar">${esc((r.clientName||'?')[0].toUpperCase())}</div>
                 <div>
                   <div class="prop-name">${esc(r.clientName||t('db_client'))}</div>
-                  <div class="prop-meta" style="color:#f5a623;">${'★'.repeat(r.rating||0)}<span style="color:#ddd;">${'★'.repeat(5-(r.rating||0))}</span> <span style="color:var(--ink3);">· ${timeAgo(r.createdAt)}</span></div>
+                  <div class="prop-meta" style="color:#f5a623;">${'★'.repeat(clampStars(r.rating))}<span style="color:#ddd;">${'★'.repeat(5-clampStars(r.rating))}</span> <span style="color:var(--ink3);">· ${timeAgo(r.createdAt)}</span></div>
                 </div>
               </div>
             </div>
