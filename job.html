@@ -121,6 +121,7 @@ function render(bids) {
         <div class="avatar" style="width:42px;height:42px;font-size:16px;">${esc((job.clientName||'?')[0].toUpperCase())}</div>
         <div style="font-weight:700;font-size:14.5px;">${esc(job.clientName||'Müştəri')}</div>
       </div>
+      ${!isOwner ? `<button class="btn btn-line btn-sm" style="width:100%;margin-top:14px;" onclick="openMessage('${job.clientId}','${esc(job.clientName||'Müştəri')}')">💬 Mesaj göndər</button>` : ''}
     </div>
   </div>`;
 }
@@ -143,6 +144,7 @@ function bidHtml(b, isOwner) {
           : (isOwner && job.status === 'approved')
             ? `<button class="btn btn-green btn-sm" style="margin-top:6px;" onclick="acceptBid('${b.id}','${b.freelancerId}')">Qəbul et</button>`
             : ''}
+        ${isOwner ? `<button class="btn btn-line btn-sm" style="margin-top:6px;" onclick="openMessage('${b.freelancerId}','${esc(b.freelancerName)}')">💬 Mesaj</button>` : ''}
       </div>
     </div>
     <p class="prop-cover">${esc(b.cover)}</p>
