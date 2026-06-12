@@ -133,7 +133,7 @@ function bidHtml(b, isOwner) {
       <div style="display:flex;gap:11px;align-items:center;">
         <div class="avatar">${esc((b.freelancerName||'?')[0].toUpperCase())}</div>
         <div>
-          <div class="prop-name">${esc(b.freelancerName)}</div>
+          <div class="prop-name">${esc(b.freelancerName)} ${planBadge(b.freelancerPlan)}</div>
           <div class="prop-meta">${esc(b.freelancerTitle||'Freelancer')} · ⭐ ${b.freelancerRating > 0 ? b.freelancerRating.toFixed(1) : 'Yeni'} · ⏱ ${b.days} gün</div>
         </div>
       </div>
