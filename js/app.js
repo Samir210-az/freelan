@@ -666,9 +666,14 @@ function renderPostJobModal() {
         <textarea class="form-textarea" id="pj-desc" placeholder="Nə istədiyinizi ətraflı yazın: tələblər, gözləntilər, nümunələr..."></textarea></div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">${t('pj_budget')}</label>
-          <input class="form-input" id="pj-budget" type="number" placeholder="500"></div>
+          <input class="form-input" id="pj-budget" type="number" placeholder="500" oninput="calcFee()"></div>
         <div class="form-group"><label class="form-label">${t('pj_days')}</label>
           <input class="form-input" id="pj-deadline" type="number" placeholder="7"></div>
+      </div>
+      <div id="pj-fee-preview" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:14px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:var(--ink2);">💼 Layihə haqqı</span><span id="pj-fee-base" style="font-weight:600;"></span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:var(--ink2);">⚙️ Xidmət haqqı (10%)</span><span id="pj-fee-service" style="color:var(--green);font-weight:600;"></span></div>
+        <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border);"><span style="font-weight:700;">💳 Cəmi</span><span id="pj-fee-total" style="font-weight:700;color:var(--green);font-size:16px;"></span></div>
       </div>
       <div id="pj-err" class="err-box"></div>
       <button class="btn btn-green" id="pj-btn" style="width:100%;" onclick="fbPostJob()">${t('pj_send')}</button>
@@ -680,6 +685,22 @@ function renderPostJobModal() {
     if (e.target.id === 'modal-postjob') closePostJob();
   });
 }
+
+window.calcFee = function() {
+  const val = parseInt(document.getElementById('pj-budget')?.value) || 0;
+  const preview = document.getElementById('pj-fee-preview');
+  if (!preview) return;
+  if (val >= 5) {
+    const fee = Math.round(val * 0.10 * 100) / 100;
+    const total = val + fee;
+    document.getElementById('pj-fee-base').textContent = '₼' + val.toFixed(2);
+    document.getElementById('pj-fee-service').textContent = '₼' + fee.toFixed(2);
+    document.getElementById('pj-fee-total').textContent = '₼' + total.toFixed(2);
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
+  }
+};
 
 window.openPostJob = function() {
   if (!FB.user) { openAuth('register'); return; }
@@ -710,8 +731,10 @@ window.fbPostJob = async function() {
   const btn = document.getElementById('pj-btn');
   btn.disabled = true; btn.textContent = '⏳ Göndərilir...';
   try {
+    const serviceFee = Math.round(budget * 0.10 * 100) / 100;
+    const totalPrice = budget + serviceFee;
     await addDoc(collection(db, 'jobs'), {
-      title, category: cat, description: desc, budget, deadline,
+      title, category: cat, description: desc, budget, serviceFee, totalPrice, deadline,
       clientId: FB.user.uid,
       clientName: FB.userData?.name || 'Müştəri',
       status: 'pending', bids: 0,
@@ -734,7 +757,10 @@ window.jobCardHtml = function(j) {
   <div class="job-card" onclick="location.href='job.html?id=${j.id}'">
     <div class="job-top">
       <div class="job-title">${esc(j.title)}</div>
-      <div class="job-price">₼${esc(j.budget)}</div>
+      <div class="job-price" style="text-align:right;">
+        <div>₼${esc(j.totalPrice || j.budget)}</div>
+        ${j.serviceFee ? `<div style="font-size:11px;color:var(--ink3);font-weight:400;">+₼${esc(j.serviceFee)} xidmət</div>` : ''}
+      </div>
     </div>
     <div class="job-desc">${esc((j.description||'').substring(0,130))}${(j.description||'').length>130?'…':''}</div>
     <div class="tags"><span class="tag">${esc(j.category)}</span></div>
@@ -808,3 +834,4 @@ window.requestPlan = async function(plan) {
 renderHeader();
 renderFooter();
 applyI18n();
+
