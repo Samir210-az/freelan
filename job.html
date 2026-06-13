@@ -4,17 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Elan — Freelan.az</title>
-<meta name="description" content="Freelance tapşırığın detalları — büdcə, müddət, təkliflər. Müraciət et və ya freelancerlə birbaşa əlaqə saxla.">
-<meta property="og:title" content="Elan — Freelan.az">
-<meta property="og:description" content="Freelance tapşırığın detalları — büdcə, müddət, təkliflər. Müraciət et və ya freelancerlə birbaşa əlaqə saxla.">
-<meta property="og:url" content="https://samir210-az.github.io/freelan/job.html">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Freelan.az">
-<meta property="og:image" content="https://samir210-az.github.io/freelan/icon-512.png">
-<meta property="og:locale" content="az_AZ">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Elan — Freelan.az">
-<meta name="twitter:description" content="Freelance tapşırığın detalları — büdcə, müddət, təkliflər. Müraciət et və ya freelancerlə birbaşa əlaqə saxla.">
+<meta name="description" content="Freelance tapşırığın detalları — büdcə, müddət, təkliflər.">
 <meta name="theme-color" content="#0d1f12">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -23,19 +13,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 <script>try{var th=localStorage.getItem("theme");if(!th&&window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches)th="dark";if(th)document.documentElement.setAttribute("data-theme",th);}catch(e){}</script>
 <link rel="stylesheet" href="css/style.css?v=5">
+<style>
+.action-box{border-radius:12px;padding:16px;margin-top:14px;font-size:14px;}
+.action-box.blue{background:rgba(31,87,195,0.08);border:1px solid rgba(31,87,195,0.2);}
+.action-box.green{background:rgba(20,160,0,0.08);border:1px solid rgba(20,160,0,0.2);}
+.action-box.orange{background:rgba(217,151,6,0.08);border:1px solid rgba(217,151,6,0.2);}
+.action-box p{margin:0 0 12px;color:var(--ink2);line-height:1.5;}
+.action-btns{display:flex;gap:8px;flex-wrap:wrap;}
+</style>
 </head>
 <body>
-
 <header id="app-header"></header>
-
 <div class="container">
   <div class="jd-grid" id="jd-wrap">
-    <div class="empty" style="grid-column:1/-1;"><div class="ico">⏳</div><p data-i18n="loading">Yüklənir...</p></div>
+    <div class="empty" style="grid-column:1/-1;"><div class="ico">&#x23F3;</div><p>Yuklənir...</p></div>
   </div>
 </div>
-
 <footer id="app-footer"></footer>
-
 <script type="module" src="js/app.js?v=9"></script>
 <script type="module">
 const jobId = new URLSearchParams(location.search).get('id');
@@ -54,34 +48,70 @@ async function load() {
     if (!snap.exists()) { renderError(t('jd_nf')); loading = false; return; }
     job = { id: snap.id, ...snap.data() };
     document.title = job.title + ' — Freelan.az';
-
-    // Load bids
     let bids = [];
     try {
       const bs = await getDocs(query(collection(db, 'bids'), where('jobId', '==', jobId)));
       bs.forEach(d => bids.push({ id: d.id, ...d.data() }));
       bids.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
     } catch(e) {}
-
     render(bids);
-  } catch(e) {
-    renderError('Xəta: ' + e.message);
-  }
+  } catch(e) { renderError('Xeta: ' + e.message); }
   loading = false;
 }
 
 function renderError(msg) {
   document.getElementById('jd-wrap').innerHTML =
-    `<div class="empty" style="grid-column:1/-1;"><div class="ico">😕</div><p>${esc(msg)}</p>
-     <a class="btn btn-green btn-sm" style="margin-top:14px;" href="jobs.html">${t('jd_back')}</a></div>`;
+    '<div class="empty" style="grid-column:1/-1;"><div class="ico">&#x1F615;</div><p>' + esc(msg) + '</p>'
+    + '<a class="btn btn-green btn-sm" style="margin-top:14px;" href="jobs.html">' + t('jd_back') + '</a></div>';
 }
 
 function statusBadge(s) {
-  return s === 'approved' ? '<span class="badge badge-green">'+t('st_open')+'</span>'
-       : s === 'in_progress' ? '<span class="badge badge-blue">'+t('st_progress')+'</span>'
-       : s === 'pending' ? '<span class="badge badge-orange">'+t('st_pending')+'</span>'
-       : s === 'completed' ? '<span class="badge badge-gray">'+t('st_done')+'</span>'
-       : '<span class="badge badge-gray">—</span>';
+  if (s==='approved')    return '<span class="badge badge-green">'   + t('st_open')     + '</span>';
+  if (s==='in_progress') return '<span class="badge badge-blue">'    + t('st_progress') + '</span>';
+  if (s==='pending')     return '<span class="badge badge-orange">'  + t('st_pending')  + '</span>';
+  if (s==='submitted')   return '<span class="badge badge-orange">Tesdiq gozlenir</span>';
+  if (s==='completed')   return '<span class="badge badge-gray">'    + t('st_done')     + '</span>';
+  if (s==='disputed')    return '<span class="badge badge-red">Mubahise</span>';
+  return '<span class="badge badge-gray">—</span>';
+}
+
+function actionBox() {
+  if (!FB.user || !job) return '';
+  const uid = FB.user.uid;
+  const isOwner    = uid === job.clientId;
+  const isAssigned = uid === job.assignedTo;
+
+  // Freelancer: ishi tamamladim duymesi
+  if (isAssigned && job.status === 'in_progress') {
+    return '<div class="action-box blue">'
+      + '<p>&#x1F4E6; Siz bu isi icra edirsiniz. Bitirdikden sonra asagidaki duymeje basin.</p>'
+      + '<div class="action-btns">'
+      + '<button class="btn btn-green" onclick="submitWork()">&#x2705; Isi tamamladim</button>'
+      + '</div></div>';
+  }
+
+  // Musteri: tesdiqle ya mubahise
+  if (isOwner && job.status === 'submitted') {
+    return '<div class="action-box orange">'
+      + '<p>&#x1F514; Freelancer isi tamamladi kimi qeyd edib. Yoxlayin ve qerar verin.</p>'
+      + '<div class="action-btns">'
+      + '<button class="btn btn-green" onclick="completeJob()">&#x2705; Tesdiqle — is tamamlandi</button>'
+      + '<button class="btn btn-danger" onclick="disputeJob()">&#x26A0; Mubahise ac</button>'
+      + '</div></div>';
+  }
+
+  // Musteri in_progress-de bekleyir
+  if (isOwner && job.status === 'in_progress') {
+    return '<div class="action-box blue"><p>&#x23F3; Freelancer is uzerinde calisir. Tamamlandiqda sizden tesdiq istenilecek.</p></div>';
+  }
+
+  if (job.status === 'completed') {
+    return '<div class="action-box green"><p>&#x2705; Bu is ugurla tamamlandi.</p></div>';
+  }
+  if (job.status === 'disputed') {
+    return '<div class="action-box orange"><p>&#x26A0; Bu is mubahisededir. Admin hell edecek.</p></div>';
+  }
+  return '';
 }
 
 function render(bids) {
@@ -89,83 +119,83 @@ function render(bids) {
   const isAdmin = FB.userData?.role === 'admin';
   const myBid = FB.user ? bids.find(b => b.freelancerId === FB.user.uid) : null;
 
-  document.getElementById('jd-wrap').innerHTML = `
-  <div>
-    <div class="jd-card">
-      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">
-        <h1 style="font-size:24px;line-height:1.3;">${esc(job.title)}</h1>
-        ${statusBadge(job.status)}
-      </div>
-      <div class="job-meta" style="margin:12px 0 18px;">
-        <span>📁 ${esc(job.category)}</span>
-        <span>🕐 ${timeAgo(job.createdAt)}</span>
-        <span>💬 ${bids.length} ${t('offers')}</span>
-      </div>
-      <h3 style="font-size:15px;margin-bottom:8px;">${t('jd_desc')}</h3>
-      <p style="font-size:14.5px;color:var(--ink2);line-height:1.7;white-space:pre-wrap;">${esc(job.description)}</p>
-    </div>
+  document.getElementById('jd-wrap').innerHTML =
+  '<div>'
+  + '<div class="jd-card">'
+    + '<div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">'
+      + '<h1 style="font-size:24px;line-height:1.3;">' + esc(job.title) + '</h1>'
+      + statusBadge(job.status)
+    + '</div>'
+    + '<div class="job-meta" style="margin:12px 0 18px;">'
+      + '<span>&#x1F4C1; ' + esc(job.category) + '</span>'
+      + '<span>&#x1F550; ' + timeAgo(job.createdAt) + '</span>'
+      + '<span>&#x1F4AC; ' + bids.length + ' ' + t('offers') + '</span>'
+    + '</div>'
+    + '<h3 style="font-size:15px;margin-bottom:8px;">' + t('jd_desc') + '</h3>'
+    + '<p style="font-size:14.5px;color:var(--ink2);line-height:1.7;white-space:pre-wrap;">' + esc(job.description) + '</p>'
+    + actionBox()
+  + '</div>'
+  + '<div class="jd-card" style="margin-top:18px;">'
+    + '<h3 style="font-size:17px;margin-bottom:16px;">' + t('jd_props') + ' (' + bids.length + ')</h3>'
+    + '<div id="bids-area">'
+      + (bids.length === 0
+          ? '<div class="empty"><div class="ico">&#x1F680;</div><p>'+t('jd_no_props')+'</p></div>'
+          : bids.map(b => bidHtml(b, isOwner)).join(''))
+    + '</div>'
+  + '</div>'
++ '</div>'
 
-    <div class="jd-card" style="margin-top:18px;">
-      <h3 style="font-size:17px;margin-bottom:16px;">${t('jd_props')} (${bids.length})</h3>
-      <div id="bids-area">
-        ${bids.length === 0
-          ? '<div class="empty"><div class="ico">🚀</div><p>'+t('jd_no_props')+'</p></div>'
-          : bids.map(b => bidHtml(b, isOwner)).join('')}
-      </div>
-    </div>
-  </div>
-
-  <div class="jd-side">
-    <div class="jd-card">
-      <div class="jd-price">₼${esc(job.budget)}</div>
-      <div style="font-size:12px;color:var(--ink3);margin-bottom:16px;">${t('jd_fixed')}</div>
-      ${myBid
-        ? `<div class="ok-box" style="display:block;">✅ ${t('jd_bid_sent')}: <b>₼${myBid.amount}</b>${myBid.status==='accepted'?' — '+t('st_accepted'):''}</div>`
++ '<div class="jd-side">'
+  + '<div class="jd-card">'
+    + '<div class="jd-price">&#x20BC;' + Number(job.totalPrice || job.budget).toFixed(2) + '</div>'
+    + (job.serviceFee ? '<div style="font-size:12px;color:var(--ink3);margin-bottom:4px;">+&#x20BC;' + Number(job.serviceFee).toFixed(2) + ' xidmet haqqi</div>' : '')
+    + '<div style="font-size:12px;color:var(--ink3);margin-bottom:16px;">' + t('jd_fixed') + '</div>'
+    + (myBid
+        ? '<div class="ok-box" style="display:block;">&#x2705; ' + t('jd_bid_sent') + ': <b>&#x20BC;' + myBid.amount + '</b>' + (myBid.status==='accepted'?' — '+t('st_accepted'):'')+  '</div>'
         : (!isOwner && !isAdmin && job.status === 'approved')
-          ? `<button class="btn btn-green" style="width:100%;" onclick="openBid('${job.id}','${esc(job.title)}')">${t('jd_send')}</button>`
-          : ''}
-      ${isOwner ? '<p style="font-size:12.5px;color:var(--ink3);text-align:center;">'+t('jd_yours')+'</p>' : ''}
-      <div style="margin-top:16px;">
-        <div class="info-row"><span>${t('jd_cat')}</span><strong>${esc(job.category)}</strong></div>
-        <div class="info-row"><span>${t('jd_dur')}</span><strong>${esc(job.deadline)} ${t('day_s')}</strong></div>
-        <div class="info-row"><span>${t('jd_props')}</span><strong>${bids.length}</strong></div>
-        <div class="info-row"><span>${t('jd_posted')}</span><strong>${timeAgo(job.createdAt)}</strong></div>
-      </div>
-    </div>
-    <div class="jd-card">
-      <h4 style="font-size:13px;margin-bottom:12px;color:var(--ink2);">${t('jd_client')}</h4>
-      <div style="display:flex;align-items:center;gap:11px;">
-        <div class="avatar" style="width:42px;height:42px;font-size:16px;">${esc((job.clientName||'?')[0].toUpperCase())}</div>
-        <div style="font-weight:700;font-size:14.5px;">${esc(job.clientName||t('db_client'))}</div>
-      </div>
-      ${!isOwner ? `<button class="btn btn-line btn-sm" style="width:100%;margin-top:14px;" onclick="openMessage('${job.clientId}','${esc(job.clientName||t('db_client'))}')">${t('msg_send')}</button>` : ''}
-    </div>
-  </div>`;
+          ? '<button class="btn btn-green" style="width:100%;" onclick="openBid(\''+job.id+'\',\''+esc(job.title)+'\')">'+t('jd_send')+'</button>'
+          : '')
+    + (isOwner ? '<p style="font-size:12.5px;color:var(--ink3);text-align:center;">'+t('jd_yours')+'</p>' : '')
+    + '<div style="margin-top:16px;">'
+      + '<div class="info-row"><span>'+t('jd_cat')+'</span><strong>'+esc(job.category)+'</strong></div>'
+      + '<div class="info-row"><span>'+t('jd_dur')+'</span><strong>'+esc(job.deadline)+' '+t('day_s')+'</strong></div>'
+      + '<div class="info-row"><span>'+t('jd_props')+'</span><strong>'+bids.length+'</strong></div>'
+      + '<div class="info-row"><span>'+t('jd_posted')+'</span><strong>'+timeAgo(job.createdAt)+'</strong></div>'
+    + '</div>'
+  + '</div>'
+  + '<div class="jd-card">'
+    + '<h4 style="font-size:13px;margin-bottom:12px;color:var(--ink2);">'+t('jd_client')+'</h4>'
+    + '<div style="display:flex;align-items:center;gap:11px;">'
+      + '<div class="avatar" style="width:42px;height:42px;font-size:16px;">' + esc((job.clientName||'?')[0].toUpperCase()) + '</div>'
+      + '<div style="font-weight:700;font-size:14.5px;">' + esc(job.clientName||t('db_client')) + '</div>'
+    + '</div>'
+    + (!isOwner ? '<button class="btn btn-line btn-sm" style="width:100%;margin-top:14px;" onclick="openMessage(\''+job.clientId+'\',\''+esc(job.clientName||t('db_client'))+'\')">'+t('msg_send')+'</button>' : '')
+  + '</div>'
++ '</div>';
 }
 
 function bidHtml(b, isOwner) {
-  return `
-  <div class="prop-item">
-    <div class="prop-head">
-      <div style="display:flex;gap:11px;align-items:center;">
-        <div class="avatar">${esc((b.freelancerName||'?')[0].toUpperCase())}</div>
-        <div>
-          <div class="prop-name">${esc(b.freelancerName)} ${planBadge(b.freelancerPlan)}</div>
-          <div class="prop-meta">${esc(b.freelancerTitle||'Freelancer')} · ⭐ ${b.freelancerRating > 0 ? b.freelancerRating.toFixed(1) : t('new_lbl')} · ⏱ ${b.days} ${t('day_s')}</div>
-        </div>
-      </div>
-      <div style="text-align:right;">
-        <div class="prop-amount">₼${b.amount}</div>
-        ${b.status === 'accepted'
-          ? '<span class="badge badge-green" style="margin-top:4px;">'+t('st_accepted')+'</span>'
-          : (isOwner && job.status === 'approved')
-            ? `<button class="btn btn-green btn-sm" style="margin-top:6px;" onclick="acceptBid('${b.id}','${b.freelancerId}')">${t('accept')}</button>`
-            : ''}
-        ${isOwner ? `<button class="btn btn-line btn-sm" style="margin-top:6px;" onclick="openMessage('${b.freelancerId}','${esc(b.freelancerName)}')">${t('msg_btn')}</button>` : ''}
-      </div>
-    </div>
-    <p class="prop-cover">${esc(b.cover)}</p>
-  </div>`;
+  return '<div class="prop-item">'
+    + '<div class="prop-head">'
+      + '<div style="display:flex;gap:11px;align-items:center;">'
+        + '<div class="avatar">' + esc((b.freelancerName||'?')[0].toUpperCase()) + '</div>'
+        + '<div>'
+          + '<div class="prop-name">' + esc(b.freelancerName) + ' ' + planBadge(b.freelancerPlan) + '</div>'
+          + '<div class="prop-meta">' + esc(b.freelancerTitle||'Freelancer') + ' &middot; &#x2B50; ' + (b.freelancerRating > 0 ? b.freelancerRating.toFixed(1) : t('new_lbl')) + ' &middot; &#x23F1; ' + b.days + ' ' + t('day_s') + '</div>'
+        + '</div>'
+      + '</div>'
+      + '<div style="text-align:right;">'
+        + '<div class="prop-amount">&#x20BC;' + b.amount + '</div>'
+        + (b.status === 'accepted'
+            ? '<span class="badge badge-green" style="margin-top:4px;">'+t('st_accepted')+'</span>'
+            : (isOwner && job.status === 'approved')
+              ? '<button class="btn btn-green btn-sm" style="margin-top:6px;" onclick="acceptBid(\''+b.id+'\',\''+b.freelancerId+'\')">'+t('accept')+'</button>'
+              : '')
+        + (isOwner ? '<button class="btn btn-line btn-sm" style="margin-top:6px;" onclick="openMessage(\''+b.freelancerId+'\',\''+esc(b.freelancerName)+'\')">'+t('msg_btn')+'</button>' : '')
+      + '</div>'
+    + '</div>'
+    + '<p class="prop-cover">' + esc(b.cover) + '</p>'
+  + '</div>';
 }
 
 window.acceptBid = async function(bidId, freelancerId) {
@@ -174,9 +204,42 @@ window.acceptBid = async function(bidId, freelancerId) {
   try {
     await updateDoc(doc(db, 'bids', bidId), { status: 'accepted' });
     await updateDoc(doc(db, 'jobs', jobId), { status: 'in_progress', assignedTo: freelancerId });
-    showToast('Təklif qəbul edildi! İş başlayır 🎉');
+    showToast('Teklif qebul edildi! Is bashlayir');
     load();
-  } catch(e) { showToast('Xəta: ' + e.message); }
+  } catch(e) { showToast('Xeta: ' + e.message); }
+};
+
+// Freelancer: ishi musterinin tesdiqine gonderir
+window.submitWork = async function() {
+  if (!confirm('Ishi tamamlandi kimi qeyd etmek isteyirsiniz?\nMusteri tesdiq etmelidir.')) return;
+  const { db, doc, updateDoc } = FB;
+  try {
+    await updateDoc(doc(db, 'jobs', jobId), { status: 'submitted' });
+    showToast('Is musteriye gonderildi! Tesdiq gozlenilir');
+    load();
+  } catch(e) { showToast('Xeta: ' + e.message); }
+};
+
+// Musteri: ishi tesdiqleyir - tamamlandi
+window.completeJob = async function() {
+  if (!confirm('Ishi tesdiqleyir ve tamamlandi kimi qeyd edirik?')) return;
+  const { db, doc, updateDoc } = FB;
+  try {
+    await updateDoc(doc(db, 'jobs', jobId), { status: 'completed', completedAt: new Date() });
+    showToast('Is ugurla tamamlandi!');
+    load();
+  } catch(e) { showToast('Xeta: ' + e.message); }
+};
+
+// Musteri: mubahise achir
+window.disputeJob = async function() {
+  if (!confirm('Mubahise achmaq isteyirsiniz?\nAdmin arasiya girecek.')) return;
+  const { db, doc, updateDoc } = FB;
+  try {
+    await updateDoc(doc(db, 'jobs', jobId), { status: 'disputed' });
+    showToast('Mubahise achildi. Admin elaqe saxlayacaq.');
+    load();
+  } catch(e) { showToast('Xeta: ' + e.message); }
 };
 </script>
 </body>
