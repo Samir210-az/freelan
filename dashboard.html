@@ -195,8 +195,37 @@ async function loadMyJobs() {
     snap.forEach(d => jobs.push({ id: d.id, ...d.data() }));
     jobs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
     document.getElementById('st-active').textContent = jobs.filter(j=>j.status==='in_progress').length;
-    el.innerHTML = jobs.length ? jobs.map(j => `
-      <div class="prop-item" style="cursor:pointer;" onclick="location.href='job.html?id=${j.id}'">
+    if (!jobs.length) {
+      el.innerHTML = '<div class="empty"><div class="ico">📋</div><p>' + t('db_nojobs') + '</p><button class="btn btn-green btn-sm" style="margin-top:14px;" onclick="openPostJob()">' + t('db_first') + '</button></div>';
+      return;
+    }
+    const rows = [];
+    for (const j of jobs) {
+      let bidsHtml = '';
+      if (j.status === 'approved' && (j.bids||0) > 0) {
+        try {
+          const bsnap = await getDocs(query(collection(db,'bids'), where('jobId','==',j.id)));
+          const bidList = [];
+          bsnap.forEach(b => bidList.push({id:b.id,...b.data()}));
+          bidList.sort((a,b2)=>(a.createdAt?.seconds||0)-(b2.createdAt?.seconds||0));
+          if (bidList.length) {
+            bidsHtml = '<div class="dash-bids">' + bidList.map(b=>`
+              <div class="dash-bid-row">
+                <div>
+                  <b>${esc(b.freelancerName)}</b>
+                  <span class="notif-ago">₼${b.amount} · ${b.days} gün</span>
+                  <span class="notif-ago">${esc((b.cover||'').substring(0,80))}${b.cover&&b.cover.length>80?'…':''}</span>
+                </div>
+                <div style="display:flex;gap:6px;flex-shrink:0;">
+                  <button class="btn btn-green btn-sm" onclick="event.stopPropagation();dashAcceptBid('${b.id}','${b.freelancerId}','${j.id}')">✅ Qəbul et</button>
+                  <button class="btn btn-line btn-sm" onclick="event.stopPropagation();openMessage('${b.freelancerId}','${esc(b.freelancerName)}')">💬</button>
+                </div>
+              </div>`).join('') + '</div>';
+          }
+        } catch(e2) {}
+      }
+      rows.push(`
+      <div class="prop-item" onclick="location.href='job.html?id=${j.id}'" style="cursor:pointer;">
         <div class="prop-head">
           <div>
             <div class="prop-name">${esc(j.title)}</div>
@@ -207,12 +236,25 @@ async function loadMyJobs() {
             ${j.status==='approved'?'<span class="badge badge-green">'+t('st_open')+'</span>':j.status==='pending'?'<span class="badge badge-orange">'+t('st_pending')+'</span>':j.status==='in_progress'?'<span class="badge badge-blue">'+t('st_progress')+'</span>':'<span class="badge badge-gray">'+t('st_done')+'</span>'}
           </div>
         </div>
-      </div>`).join('')
-    : '<div class="empty"><div class="ico">📋</div><p>' + t('db_nojobs') + '</p><button class="btn btn-green btn-sm" style="margin-top:14px;" onclick="openPostJob()">' + t('db_first') + '</button></div>';
+        ${bidsHtml}
+      </div>`);
+    }
+    el.innerHTML = rows.join('');
   } catch(e) {
     el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>' + esc(e.message) + '</p></div>';
   }
 }
+
+window.dashAcceptBid = async function(bidId, freelancerId, jobId) {
+  if (!confirm(t('cf_bid'))) return;
+  const { db, doc, updateDoc } = FB;
+  try {
+    await updateDoc(doc(db,'bids',bidId), { status:'accepted' });
+    await updateDoc(doc(db,'jobs',jobId), { status:'in_progress', assignedTo: freelancerId });
+    showToast('Təklif qəbul edildi! İş başlayır 🎉');
+    loadMyJobs();
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
 
 async function loadMyBids() {
   const { db, collection, getDocs, getDoc, doc, query, where } = FB;
