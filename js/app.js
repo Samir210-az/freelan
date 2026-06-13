@@ -1,7 +1,7 @@
 // ===== FREELAN.AZ — Shared Firebase + UI module =====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, query, limit, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, query, limit, where, serverTimestamp, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCDhahbyEM5IsLLWrRz7_haxJIH0WWyBec",
@@ -24,7 +24,7 @@ ftr_desc:'Azərbaycanın ilk freelance platforması. Müştərilər və peşəka
 au_welcome:'Xoş gəldiniz 👋',au_login_sub:'Hesabınıza daxil olun',au_email:'E-poçt',au_pass:'Şifrə',au_no_acc:'Hesabınız yoxdur?',au_reg_t:'Qeydiyyat 🚀',au_reg_sub:'Hansı rolda qatılırsınız?',au_role_c:'💼 Müştəri',au_role_c2:'İş elanı verirəm',au_role_f2:'İş axtarıram',au_name:'Ad, Soyad',au_pass_min:'(min. 6 simvol)',au_reg_btn:'Qeydiyyatdan keç',au_have:'Artıq hesabınız var?',
 bid_t:'Təklif göndər 💼',bid_amt:'Təklif məbləği (₼)',bid_days:'Müddət (gün)',bid_cover:'Müraciət məktubu',bid_send:'Təklifi göndər 🚀',
 pj_t:'Yeni elan 📋',pj_sub:'Tapşırığınızı ətraflı təsvir edin — daha yaxşı təkliflər alın',pj_title:'Başlıq',pj_cat:'Kateqoriya',pj_desc:'Təsvir',pj_budget:'Büdcə (₼)',pj_days:'Müddət (gün)',pj_send:'Elanı paylaş 🚀',pj_note:'Elan moderasiyadan keçdikdən sonra dərc olunur',
-search:'Axtar',
+search:'Axtar',notif_empty:'Bildiriş yoxdur',notif_title:'Bildirişlər',notif_new_bid:'sizin elanınıza yeni təklif göndərdi',notif_mark:'Hamısını oxunmuş işarələ',
 idx_h1:'İşini tap.<br><em>Azad qazan.</em>',idx_p:'Azərbaycanın ilk freelance bazarı — dizaynerlər, proqramçılar, kopirayterlər və müştərilər üçün etibarlı platforma.',idx_q_ph:'Hansı xidməti axtarırsınız?',idx_cats_t:'Hər iş növü üçün freelancer tap',idx_cats_s:'Kateqoriyanı seç və peşəkarlarla işə başla',idx_how_t:'Necə işləyir?',idx_how_s:'4 sadə addımda işə başla',
 s1t:'Elan yerləşdir',s1p:'İşini təsvir et, büdcəni göstər. Elan vermək həmişə pulsuzdur.',s2t:'Təkliflər al',s2p:'Uyğun freelancerlər qiymət və müddət təklifi göndərir.',s3t:'Seç və işə başla',s3p:'Profili, reytinqi yoxla, ən yaxşı təklifi qəbul et.',s4t:'Təhlükəsiz ödə',s4p:'Pul escrow-da saxlanılır — işi qəbul etdikdən sonra ödənilir.',
 idx_more:'Ətraflı öyrən →',idx_recent_t:'Son elanlar',idx_recent_s:'İndi aktiv tapşırıqlar',idx_all:'Bütün elanlar →',idx_top_t:'Top freelancerlər',idx_top_s:'Ən yüksək reytinqli mütəxəssislər',idx_seeall:'Hamısına bax →',cta_t:'Bu gün işə başla',cta_p:'İstər iş ver, istər iş tap — Freelan.az səninlədir.',cta_post:'💼 Elan ver — Pulsuz',cta_fl:'🧑‍💻 Freelancer ol',
@@ -57,7 +57,7 @@ ftr_desc:'Первая фриланс-платформа Азербайджан�
 au_welcome:'Добро пожаловать 👋',au_login_sub:'Войдите в свой аккаунт',au_email:'Эл. почта',au_pass:'Пароль',au_no_acc:'Нет аккаунта?',au_reg_t:'Регистрация 🚀',au_reg_sub:'В какой роли вы присоединяетесь?',au_role_c:'💼 Клиент',au_role_c2:'Размещаю заказы',au_role_f2:'Ищу работу',au_name:'Имя, Фамилия',au_pass_min:'(мин. 6 символов)',au_reg_btn:'Зарегистрироваться',au_have:'Уже есть аккаунт?',
 bid_t:'Отправить предложение 💼',bid_amt:'Сумма предложения (₼)',bid_days:'Срок (дней)',bid_cover:'Сопроводительное письмо',bid_send:'Отправить 🚀',
 pj_t:'Новый заказ 📋',pj_sub:'Опишите задачу подробно — получите лучшие предложения',pj_title:'Заголовок',pj_cat:'Категория',pj_desc:'Описание',pj_budget:'Бюджет (₼)',pj_days:'Срок (дней)',pj_send:'Опубликовать 🚀',pj_note:'Заказ публикуется после модерации',
-search:'Поиск',
+search:'Поиск',notif_empty:'Нет уведомлений',notif_title:'Уведомления',notif_new_bid:'отправил новое предложение на ваш заказ',notif_mark:'Отметить всё как прочитанное',
 idx_h1:'Найди работу.<br><em>Зарабатывай свободно.</em>',idx_p:'Первая фриланс-биржа Азербайджана — надёжная платформа для дизайнеров, программистов, копирайтеров и клиентов.',idx_q_ph:'Какую услугу вы ищете?',idx_cats_t:'Найди фрилансера для любой задачи',idx_cats_s:'Выбери категорию и начни работать с профи',idx_how_t:'Как это работает?',idx_how_s:'Начни всего за 4 шага',
 s1t:'Разместите заказ',s1p:'Опишите задачу и укажите бюджет. Размещение всегда бесплатно.',s2t:'Получите предложения',s2p:'Подходящие фрилансеры присылают цену и сроки.',s3t:'Выберите и начните',s3p:'Проверьте профиль и рейтинг, примите лучшее предложение.',s4t:'Платите безопасно',s4p:'Деньги хранятся в escrow и переводятся после приёмки работы.',
 idx_more:'Подробнее →',idx_recent_t:'Последние заказы',idx_recent_s:'Активные задачи прямо сейчас',idx_all:'Все заказы →',idx_top_t:'Топ фрилансеры',idx_top_s:'Специалисты с лучшим рейтингом',idx_seeall:'Смотреть все →',cta_t:'Начни уже сегодня',cta_p:'Размещай заказы или находи работу — Freelan.az с тобой.',cta_post:'💼 Разместить заказ — бесплатно',cta_fl:'🧑‍💻 Стать фрилансером',
@@ -117,7 +117,7 @@ hf1t:'Create a profile',hf1p:'Choose the "Freelancer" role, list your skills and
 hw_esc_t:'🔒 Escrow — your safety guarantee',hw_esc_p:'As soon as the client accepts a proposal, the payment is "frozen" in escrow. The freelancer works with confidence knowing the money is on the platform. When the client approves the work, the money is automatically released. In case of a dispute, the moderation team steps in.',
 trust_fl:'freelancers',trust_jobs:'active jobs',trust_esc:'secure payments',idx_nojobs:'No jobs yet — post the first one!',idx_nofl:'Be the first freelancer!',
 tm_h:'Terms of Service',tm_upd:'Last updated: June 2026',tm1h:'1. General provisions',tm1p:'By using the Freelan.az platform ("Platform"), you accept these Terms of Service. If you do not agree with the terms, do not use the Platform.',tm2h:'2. Account',tm2l:'<li>You must be at least 18 years old to register.</li><li>The information you provide must be accurate and up to date.</li><li>You are responsible for the security of your account.</li><li>One person may create only one account.</li>',tm3h:'3. Role of the platform',tm3p:'Freelan.az is an intermediary platform between clients and freelancers. The agreement between the parties is made directly between them. The Platform does not directly guarantee the quality of work, but provides moderation support in dispute resolution.',tm4h:'4. Payments and fees',tm4l:'<li>Payments are processed through the escrow system.</li><li>The Platform charges a service fee on completed work (shown on the pricing page).</li><li>Off-platform payment arrangements are prohibited and lead to account suspension.</li>',tm5h:'5. Prohibited conduct',tm5l:'<li>Posting fake jobs, fake profiles or fake reviews</li><li>Deceiving or insulting other users</li><li>Offering illegal services</li><li>Sharing contact details to avoid fees off-platform</li>',tm6h:'6. Account suspension',tm6p:'Accounts of users who violate the terms may be blocked with or without warning.',tm7h:'7. Changes',tm7p:'The Platform may update these terms at any time. Users will be notified of significant changes.',tm8h:'8. Contact',tm8p:'For questions, write to us via the <a href="contact.html" style="color:var(--green);font-weight:600;">contact page</a>.',pv_h:'Privacy Policy',pv1h:'1. Information we collect',pv1l:'<li><b>Account data:</b> name, email, role (client/freelancer)</li><li><b>Profile data:</b> title, skills, hourly rate, bio (entered by you)</li><li><b>Activity data:</b> jobs, proposals, messages, ratings</li>',pv2h:'2. How we use your data',pv2l:'<li>Providing platform services (jobs, proposals, messaging)</li><li>Protecting the security of your account</li><li>Improving service quality</li>',pv2p:'We do not sell your data to third parties.',pv3h:'3. Data storage',pv3p:'Data is stored securely on Google Firebase infrastructure. Passwords are stored in hashed form and no one (including the platform) can see them.',pv4h:'4. Publicly visible information',pv4p:'A freelancer profile (name, title, skills, rating) is visible to other users. Your email address is not shown publicly.',pv5h:'5. Your rights',pv5l:'<li>You can change your profile information at any time</li><li>You can request deletion of your account</li><li>You can ask what data about you is stored</li>',pv6h:'6. Cookies',pv6p:'The platform uses only essential technical cookies to keep your login session.',pv7h:'7. Contact',pv7p:'For privacy questions, write via the <a href="contact.html" style="color:var(--green);font-weight:600;">contact page</a>.',rl_h:'Platform rules',rl_upd:'Mandatory for all users',rl1h:'📋 Job posting rules',rl1l:'<li>The job title and description must be clear and specific</li><li>The budget must reflect the real market</li><li>Only one job posting per task</li><li>Illegal, unethical or misleading jobs are prohibited</li><li>All jobs are moderated before publication</li>',rl2h:'💼 Proposal rules',rl2l:'<li>Only send proposals for work you can actually deliver</li><li>The cover letter must relate to the specific job — avoid copy-paste templates</li><li>Unjustified withdrawal from an accepted proposal negatively affects your rating</li>',rl3h:'💬 Communication rules',rl3l:'<li>Respectful and professional communication is mandatory</li><li>Insults, threats and spam are prohibited</li><li>Redirecting payment off-platform is prohibited</li>',rl4h:'⭐ Rating rules',rl4l:'<li>Reviews must be based only on real collaboration experience</li><li>Writing fake reviews or offering payment for reviews is prohibited</li>',rl5h:'🚫 Consequences of violations',rl5l:'<li><b>1st violation:</b> warning</li><li><b>2nd violation:</b> temporary restriction</li><li><b>Severe violation:</b> permanent account ban</li>',g_btn:'Continue with Google',au_or:'or',g_err:'Google sign-in failed',ev_banner:'Your email is not verified — check your inbox.',ev_resend:'Send verification link',ev_sent:'Verification email sent',ev_wait:'Try again later',th_dark:'Dark mode',th_light:'Light mode',fp_link:'Forgot password?',fp_t:'Reset password 🔑',fp_sub:'Enter your email — we will send a reset link',fp_btn:'Send reset link',fp_sent:'✅ A reset link has been sent to your email. Check your inbox.',fp_back:'← Back to login',fp_err:'Enter your email address',fp_nf:'No account found with this email',ph_t:'Profile photo',ph_upload:'📷 Upload photo',ph_change:'Change photo',ph_remove:'Remove',ph_big:'File is too large (max 5MB)',ph_bad:'Please upload an image file',ph_saved:'✅ Photo saved',
-rl_p:'Spotted a violation? <a href="contact.html" style="color:var(--green);font-weight:600;">Report it to us</a> — every report is reviewed.'}
+rl_p:'Spotted a violation? <a href="contact.html" style="color:var(--green);font-weight:600;">Report it to us</a> — every report is reviewed.',notif_empty:'No notifications',notif_title:'Notifications',notif_new_bid:'sent a new proposal on your job',notif_mark:'Mark all as read'}
 };
 window.t = k => (I18N[LANG] && I18N[LANG][k] !== undefined) ? I18N[LANG][k] : (I18N.az[k] !== undefined ? I18N.az[k] : k);
 window.setLang = function(l) { localStorage.setItem('lang', l); location.reload(); };
@@ -521,6 +521,18 @@ window.updateHeaderUser = function() {
   right.innerHTML = `
     ${themeBtnHtml()}
     ${langSelHtml()}
+    <div class="notif-wrap" id="notif-wrap">
+      <button class="notif-btn" id="notif-btn" onclick="toggleNotifPanel()" aria-label="Bildirişlər">
+        🔔<span class="notif-count" id="notif-count" style="display:none;">0</span>
+      </button>
+      <div class="notif-panel" id="notif-panel" style="display:none;">
+        <div class="notif-panel-head">
+          <span>${t('notif_title')}</span>
+          <button class="notif-mark-all" onclick="markAllNotifRead()">${t('notif_mark')}</button>
+        </div>
+        <div class="notif-list" id="notif-list"><div class="notif-empty">${t('notif_empty')}</div></div>
+      </div>
+    </div>
     <a class="user-chip" href="dashboard.html">
       <div class="avatar">${avaInner(d?.photo, name)}</div><span>${esc(name)}</span>
     </a>
@@ -530,6 +542,7 @@ window.updateHeaderUser = function() {
     const a = document.getElementById('nav-admin');
     if (a) a.style.display = 'inline-block';
   }
+  initNotifications(FB.user.uid);
 }
 
 // ===== UNIFIED BID SYSTEM (Upwork "Submit a Proposal") =====
@@ -621,6 +634,25 @@ window.fbSubmitBid = async function() {
     } catch(e) {}
     closeBid();
     showToast('Təklifiniz göndərildi! 🎉');
+    // Müştəriyə bildiriş yaz
+    try {
+      const jobSnap = await getDoc(doc(db, 'jobs', jobId));
+      if (jobSnap.exists()) {
+        const jobData = jobSnap.data();
+        const clientId = jobData.clientId;
+        if (clientId && clientId !== user.uid) {
+          await addDoc(collection(db, 'notifications'), {
+            toUid: clientId,
+            fromName: FB.userData?.name || user.email.split('@')[0],
+            jobId,
+            jobTitle: jobData.title || '',
+            type: 'new_bid',
+            read: false,
+            createdAt: serverTimestamp()
+          });
+        }
+      }
+    } catch(e) { console.log('notif write err:', e.message); }
     document.dispatchEvent(new CustomEvent('bid-sent', { detail: { jobId } }));
   } catch(e) {
     fbErr('bid-err', 'Xəta: ' + e.message);
@@ -777,6 +809,75 @@ window.requestPlan = async function(plan) {
     showToast('Sorğunuz göndərildi! Ödəniş üçün sizinlə əlaqə saxlanılacaq 📩');
   } catch(e) { showToast('Xəta: ' + e.message); }
 };
+
+// ===== NOTIFICATIONS =====
+let _notifUnsub = null;
+window.initNotifications = function(uid) {
+  if (_notifUnsub) { _notifUnsub(); _notifUnsub = null; }
+  const q = query(
+    collection(db, 'notifications'),
+    where('toUid', '==', uid),
+    orderBy('createdAt', 'desc'),
+    limit(20)
+  );
+  _notifUnsub = onSnapshot(q, snap => {
+    const items = [];
+    snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+    const unread = items.filter(n => !n.read).length;
+    const countEl = document.getElementById('notif-count');
+    if (countEl) {
+      if (unread > 0) { countEl.textContent = unread > 9 ? '9+' : unread; countEl.style.display = 'flex'; }
+      else { countEl.style.display = 'none'; }
+    }
+    const listEl = document.getElementById('notif-list');
+    if (!listEl) return;
+    if (items.length === 0) {
+      listEl.innerHTML = '<div class="notif-empty">' + t('notif_empty') + '</div>';
+      return;
+    }
+    listEl.innerHTML = items.map(n => {
+      const ago = n.createdAt ? timeAgo(n.createdAt) : '';
+      const cls = n.read ? 'notif-item' : 'notif-item notif-item-unread';
+      const txt = esc(n.fromName) + ' ' + t('notif_new_bid') + ': <b>' + esc(n.jobTitle) + '</b>';
+      return '<div class="' + cls + '" onclick="onNotifClick('' + n.id + '','' + esc(n.jobId) + '')">'
+        + txt + '<span class="notif-ago">' + ago + '</span></div>';
+    }).join('');
+  }, err => console.log('notif listen err:', err.message));
+};
+
+window.toggleNotifPanel = function() {
+  const panel = document.getElementById('notif-panel');
+  if (!panel) return;
+  const open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+};
+
+window.onNotifClick = async function(notifId, jobId) {
+  try { await updateDoc(doc(db, 'notifications', notifId), { read: true }); } catch(e) {}
+  const panel = document.getElementById('notif-panel');
+  if (panel) panel.style.display = 'none';
+  if (jobId) location.href = 'job.html?id=' + jobId;
+};
+
+window.markAllNotifRead = async function() {
+  if (!FB.user) return;
+  try {
+    const snap = await getDocs(query(collection(db, 'notifications'),
+      where('toUid', '==', FB.user.uid), where('read', '==', false)));
+    const batch = [];
+    snap.forEach(d => batch.push(updateDoc(doc(db, 'notifications', d.id), { read: true })));
+    await Promise.all(batch);
+  } catch(e) { console.log('mark all err:', e.message); }
+};
+
+// Panel xaricini klikle bağla
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('notif-wrap');
+  const panel = document.getElementById('notif-panel');
+  if (panel && panel.style.display !== 'none' && wrap && !wrap.contains(e.target)) {
+    panel.style.display = 'none';
+  }
+});
 
 // ===== INIT =====
 // Tema: inline <head> skripti data-theme təyin edir; burada ehtiyat tətbiq
