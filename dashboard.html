@@ -568,35 +568,40 @@ window.sendTopup = async function() {
   const selOpt = sel?.options[sel.selectedIndex];
   const jobId    = sel?.value || '';
   const jobTitle = selOpt?.dataset?.title || '';
-  const msg    = document.getElementById('topup-msg');
-  const amount = parseFloat(amtRaw);
+  const jobBudget = selOpt?.dataset?.budget || '';
+  const msgEl  = document.getElementById('topup-msg');
+  const amount = parseFloat(amtRaw) || 0;
 
   updateWhatsAppLink();
   const btn = document.getElementById('whatsapp-btn');
   if (btn && btn.href !== '#') window.open(btn.href, '_blank');
 
-  if (amount && amount >= 5) {
-    try {
-      const d = FB.userData || {};
-      await addDoc(collection(db, 'payments'), {
-        userId: FB.user.uid,
-        userName: d.name || FB.user.email,
-        userEmail: FB.user.email,
-        amount,
-        jobId:    jobId    || '',
-        jobTitle: jobTitle || '',
-        method: 'whatsapp',
-        note: note || '',
-        status: 'pending',
-        createdAt: serverTimestamp()
-      });
-      msg.style.color = 'var(--green)';
-      msg.textContent = '✅ Sorğu göndərildi!';
-      document.getElementById('topup-amount').value = '';
-      document.getElementById('topup-note').value = '';
-      if (sel) sel.value = '';
-      loadTopupHistory();
-    } catch(e) { msg.style.color = 'var(--red)'; msg.textContent = '❌ ' + e.message; }
+  // Həmişə Firestore-a yaz (məbləğ olmasa belə)
+  try {
+    const d = FB.userData || {};
+    await addDoc(collection(db, 'payments'), {
+      userId:    FB.user.uid,
+      userName:  d.name || FB.user.email,
+      userEmail: FB.user.email,
+      amount:    amount || null,
+      jobId:     jobId    || '',
+      jobTitle:  jobTitle || '',
+      jobBudget: jobBudget || '',
+      method:    'whatsapp',
+      note:      note || '',
+      status:    'pending',
+      createdAt: serverTimestamp()
+    });
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = '✅ Sorğu göndərildi! Tezliklə əlaqə saxlanılacaq.';
+    document.getElementById('topup-amount').value = '';
+    document.getElementById('topup-note').value = '';
+    if (sel) sel.value = '';
+    updateWhatsAppLink();
+    loadTopupHistory();
+  } catch(e) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = '❌ ' + e.message;
   }
 };
 
