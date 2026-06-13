@@ -102,29 +102,35 @@
           <p style="font-size:13px;color:var(--ink2);margin-bottom:18px;">Ödəniş etmək üçün WhatsApp vasitəsilə bizimlə əlaqə saxlayın. Ödənişi aldıqdan sonra balansınız artırılacaq.</p>
 
           <div class="form-group">
-            <label class="form-label">Hansı iş üçün? <small style="color:var(--ink3);">(istəyə bağlı)</small></label>
+            <label class="form-label">Hansı iş üçün? <b style="color:var(--red);">*</b></label>
             <select class="form-input" id="topup-job" onchange="updateWhatsAppLink()">
-              <option value="">— Seçin —</option>
+              <option value="">— Əvvəlcə iş seçin —</option>
             </select>
+            <small id="job-warn" style="color:var(--red);display:none;">Zəhmət olmasa iş seçin</small>
           </div>
           <div class="form-group">
-            <label class="form-label">Məbləğ (₼) <small style="color:var(--ink3);">(istəyə bağlı)</small></label>
-            <input class="form-input" type="number" id="topup-amount" placeholder="Məs: 50" min="5" max="5000" oninput="updateWhatsAppLink()">
+            <label class="form-label">Məbləğ (₼) <b style="color:var(--red);">*</b></label>
+            <input class="form-input" type="number" id="topup-amount" placeholder="Məs: 50" min="1" max="5000" oninput="updateWhatsAppLink()">
+            <small id="amt-warn" style="color:var(--red);display:none;">Məbləği daxil edin</small>
           </div>
           <div class="form-group">
-            <label class="form-label">Əlavə qeyd <small style="color:var(--ink3);">(istəyə bağlı)</small></label>
+            <label class="form-label">Qeyd <small style="color:var(--ink3);">(istəyə bağlı)</small></label>
             <input class="form-input" type="text" id="topup-note" placeholder="Əlavə məlumat..." oninput="updateWhatsAppLink()">
           </div>
 
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
-            <a id="whatsapp-btn" href="#" target="_blank" rel="noopener"
-              style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;font-weight:700;font-size:14px;padding:12px 20px;border-radius:10px;text-decoration:none;">
+          <div id="wa-preview" style="background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.3);border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;line-height:1.7;display:none;">
+            <b style="color:#128c3e;">📱 WhatsApp mesajı:</b><br>
+            <span id="wa-preview-text" style="white-space:pre-wrap;color:var(--ink2);"></span>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button id="whatsapp-btn" onclick="sendTopup()"
+              style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;font-weight:700;font-size:14px;padding:12px 20px;border-radius:10px;border:none;cursor:pointer;opacity:.5;pointer-events:none;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-              WhatsApp ilə əlaqə
-            </a>
+              WhatsApp ilə göndər
+            </button>
             <div id="topup-msg" style="font-size:13px;align-self:center;min-height:20px;"></div>
           </div>
-          <p style="font-size:12px;color:var(--ink3);margin-top:12px;">💡 Məbləği daxil etsəniz WhatsApp mesajına avtomatik əlavə olunacaq</p>
         </div>
 
         <!-- Keçmiş sorğular -->
@@ -588,58 +594,77 @@ function buildWhatsAppLink() {
   const note   = (document.getElementById('topup-note')?.value   || '').trim();
   const name   = FB.userData?.name  || '';
   const email  = FB.user?.email     || '';
-
   const jobId  = sel?.value || '';
   const job    = _myJobs.find(j => j.id === jobId);
+  const btn    = document.getElementById('whatsapp-btn');
+  const prev   = document.getElementById('wa-preview');
+  const prevTxt= document.getElementById('wa-preview-text');
 
-  // İş seçilməyibsə aktiv işləri siyahıla
-  let jobPart = '';
-  if (job) {
-    jobPart = '\n💼 İş: ' + job.title + (job.budget ? ' — ₼' + job.budget + ' AZN' : '');
-    jobPart += '\n🔗 https://samir210-az.github.io/freelan/job.html?id=' + job.id;
-  } else if (_myJobs.length) {
-    jobPart = '\n📋 Aktiv işlərim: ' + _myJobs.slice(0,3).map(j => j.title + (j.budget ? ' (₼' + j.budget + ')' : '')).join(', ');
+  // Validation
+  const valid = !!jobId && !!amount && parseFloat(amount) > 0;
+
+  // Düymə aktiv/deaktiv
+  if (btn) {
+    btn.style.opacity      = valid ? '1'    : '.4';
+    btn.style.pointerEvents= valid ? 'auto' : 'none';
   }
 
+  if (!valid) {
+    if (prev) prev.style.display = 'none';
+    return;
+  }
+
+  // Mesajı qur
   let msg = '📋 *Freelan.az — Balans artırma sorğusu*';
   msg += '\n👤 ' + name + ' (' + email + ')';
-  msg += jobPart;
-  if (amount) msg += '\n💰 Məbləğ: ₼' + amount + ' AZN';
-  if (note)   msg += '\n📝 ' + note;
+  msg += '\n💼 İş: ' + job.title + (job.budget ? ' — büdcə ₼' + job.budget + ' AZN' : '');
+  msg += '\n🔗 https://samir210-az.github.io/freelan/job.html?id=' + job.id;
+  msg += '\n💰 Ödəniş məbləği: ₼' + amount + ' AZN';
+  if (note) msg += '\n📝 ' + note;
   msg += '\n\nZəhmət olmasa ödənişi təsdiqləyin.';
 
-  const btn = document.getElementById('whatsapp-btn');
-  if (btn) btn.href = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(msg);
+  // Preview göstər
+  if (prev && prevTxt) {
+    prevTxt.textContent = msg;
+    prev.style.display = 'block';
+  }
+
+  // WhatsApp linki
+  if (btn) btn.dataset.walink = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(msg);
 }
 
-// input dəyişdikdə linki yenilə
 function updateWhatsAppLink() { buildWhatsAppLink(); }
 
 window.sendTopup = async function() {
   const { db, collection, addDoc, serverTimestamp } = FB;
-  const amount   = parseFloat(document.getElementById('topup-amount').value) || 0;
-  const note     = (document.getElementById('topup-note').value || '').trim();
-  const jobId    = document.getElementById('topup-job')?.value || '';
-  const job      = _myJobs.find(j => j.id === jobId);
-  const jobTitle = job?.title  || '';
+  const amount    = parseFloat(document.getElementById('topup-amount').value) || 0;
+  const note      = (document.getElementById('topup-note').value || '').trim();
+  const jobId     = document.getElementById('topup-job')?.value || '';
+  const job       = _myJobs.find(j => j.id === jobId);
+  const jobTitle  = job?.title  || '';
   const jobBudget = String(job?.budget || '');
-  const msgEl    = document.getElementById('topup-msg');
+  const msgEl     = document.getElementById('topup-msg');
+  const btn       = document.getElementById('whatsapp-btn');
 
-  // Əvvəlcə linki qur, sonra WhatsApp-ı aç
+  // Validation
+  if (!jobId) { document.getElementById('job-warn').style.display = 'block'; return; }
+  if (!amount) { document.getElementById('amt-warn').style.display = 'block'; return; }
+  document.getElementById('job-warn').style.display = 'none';
+  document.getElementById('amt-warn').style.display = 'none';
+
+  // WhatsApp-ı aç
   buildWhatsAppLink();
-  const btn = document.getElementById('whatsapp-btn');
-  if (btn && btn.href && btn.href !== '#' && btn.href !== location.href) {
-    window.open(btn.href, '_blank');
-  }
+  const waLink = btn?.dataset?.walink;
+  if (waLink) window.open(waLink, '_blank');
 
   // Firestore-a yaz
   try {
     const d = FB.userData || {};
     await addDoc(collection(db, 'payments'), {
       userId:    FB.user.uid,
-      userName:  d.name || email,
+      userName:  d.name || FB.user.email,
       userEmail: FB.user.email,
-      amount:    amount || null,
+      amount:    amount,
       jobId:     jobId,
       jobTitle:  jobTitle,
       jobBudget: jobBudget,
@@ -649,7 +674,7 @@ window.sendTopup = async function() {
       createdAt: serverTimestamp()
     });
     msgEl.style.color = 'var(--green)';
-    msgEl.textContent = '✅ Sorğu göndərildi!';
+    msgEl.textContent = '✅ Sorğu göndərildi! Tezliklə əlaqə saxlanılacaq.';
     document.getElementById('topup-amount').value = '';
     document.getElementById('topup-note').value = '';
     const sel = document.getElementById('topup-job');
@@ -658,7 +683,7 @@ window.sendTopup = async function() {
     loadTopupHistory();
   } catch(e) {
     msgEl.style.color = 'var(--red)';
-    msgEl.textContent = '❌ ' + e.message;
+    msgEl.textContent = '❌ Xəta: ' + e.message + ' (Firestore Rules yoxlayın)';
   }
 };
 
