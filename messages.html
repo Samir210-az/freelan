@@ -24,6 +24,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 <script>try{var th=localStorage.getItem("theme");if(!th&&window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches)th="dark";if(th)document.documentElement.setAttribute("data-theme",th);}catch(e){}</script>
 <link rel="stylesheet" href="css/style.css?v=5">
+<style>
+.bubble { position: relative; }
+.bubble:hover .msg-del { opacity: 1; pointer-events: auto; }
+.msg-del {
+  position: absolute;
+  top: 4px; right: 4px;
+  background: rgba(220,50,50,0.85);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 20px; height: 20px;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s;
+  padding: 0;
+}
+.msg-del:hover { background: rgba(200,20,20,1); }
+</style>
 </head>
 <body>
 
@@ -59,7 +81,7 @@
 
 <script type="module" src="js/app.js?v=8"></script>
 <script type="module">
-import { onSnapshot, orderBy, query as fsQuery, collection as fsCollection, where as fsWhere } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { onSnapshot, orderBy, query as fsQuery, collection as fsCollection, where as fsWhere, deleteDoc, doc as fsDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 let activeChatId = null;
 let unsub = null;
@@ -146,15 +168,30 @@ window.openChat = function(chatId, name) {
   unsub = onSnapshot(q, snap => {
     const list = document.getElementById('chat-list');
     const msgs = [];
-    snap.forEach(d => msgs.push(d.data()));
+    snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
     list.innerHTML = msgs.length
-      ? msgs.map(m => `<div class="bubble ${m.from === FB.user.uid ? 'b-out' : 'b-in'}">${esc(m.text)}</div>`).join('')
+      ? msgs.map(m => {
+          const isOwn = m.from === FB.user.uid;
+          return `<div class="bubble ${isOwn ? 'b-out' : 'b-in'}">
+            ${esc(m.text)}
+            ${isOwn ? `<button class="msg-del" title="Sil" onclick="delMsg('${m.id}')">×</button>` : ''}
+          </div>`;
+        }).join('')
       : '<div class="empty"><div class="ico">👋</div><p>' + t('ms_first') + '</p></div>';
     list.scrollTop = list.scrollHeight;
     // açıq çatda yeni mesaj gəlsə, oxunmuş kimi qeyd et
     const last = msgs[msgs.length - 1];
     if (last && last.at?.seconds) markRead(chatId, last.at.seconds);
   });
+};
+
+window.delMsg = async function(msgId) {
+  if (!activeChatId || !msgId) return;
+  try {
+    await deleteDoc(fsDoc(FB.db, 'chats', activeChatId, 'messages', msgId));
+  } catch(e) {
+    showToast('Silinmədi: ' + e.message);
+  }
 };
 
 window.sendMsg = async function() {
