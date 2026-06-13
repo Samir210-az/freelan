@@ -231,6 +231,10 @@ async function init() {
   setPhotoPreview(d.photo || '');
 
   loadActive();
+
+  // job.html-dən yönləndirilmişsə balans bölməsini aç
+  const openSec = sessionStorage.getItem('openSec');
+  if (openSec) { sessionStorage.removeItem('openSec'); showSec(openSec); }
 }
 
 window.showSec = function(sec) {
