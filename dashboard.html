@@ -102,12 +102,18 @@
           <p style="font-size:13px;color:var(--ink2);margin-bottom:18px;">Ödəniş etmək üçün WhatsApp vasitəsilə bizimlə əlaqə saxlayın. Ödənişi aldıqdan sonra balansınız artırılacaq.</p>
 
           <div class="form-group">
+            <label class="form-label">Hansı iş üçün? <small style="color:var(--ink3);">(istəyə bağlı)</small></label>
+            <select class="form-input" id="topup-job" onchange="updateWhatsAppLink()">
+              <option value="">— Seçin —</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label class="form-label">Məbləğ (₼) <small style="color:var(--ink3);">(istəyə bağlı)</small></label>
             <input class="form-input" type="number" id="topup-amount" placeholder="Məs: 50" min="5" max="5000" oninput="updateWhatsAppLink()">
           </div>
           <div class="form-group">
-            <label class="form-label">Qeyd <small style="color:var(--ink3);">(istəyə bağlı)</small></label>
-            <input class="form-input" type="text" id="topup-note" placeholder="Özünüz haqqında qısa məlumat..." oninput="updateWhatsAppLink()">
+            <label class="form-label">Əlavə qeyd <small style="color:var(--ink3);">(istəyə bağlı)</small></label>
+            <input class="form-input" type="text" id="topup-note" placeholder="Əlavə məlumat..." oninput="updateWhatsAppLink()">
           </div>
 
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
@@ -235,6 +241,7 @@ window.showSec = function(sec) {
   if (sec === 'balance') {
     const bal = FB.userData?.balance || 0;
     document.getElementById('bal-current').textContent = '₼' + bal;
+    loadJobsForSelect();
     updateWhatsAppLink();
     loadTopupHistory();
   }
@@ -503,13 +510,48 @@ window.removePhoto = function() {
 // ── BALANS ──────────────────────────────────────────────────
 const WA_NUMBER = '994552107111';
 
+async function loadJobsForSelect() {
+  const { db, collection, getDocs, query, where } = FB;
+  const sel = document.getElementById('topup-job');
+  if (!sel) return;
+  try {
+    const role = FB.userData?.role;
+    let snap;
+    if (role === 'client') {
+      snap = await getDocs(query(collection(db, 'jobs'), where('clientId', '==', FB.user.uid)));
+    } else {
+      snap = await getDocs(query(collection(db, 'jobs'), where('assignedTo', '==', FB.user.uid)));
+    }
+    const jobs = [];
+    snap.forEach(d => jobs.push({ id: d.id, ...d.data() }));
+    jobs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    sel.innerHTML = '<option value="">— Seçin —</option>' +
+      jobs.map(j => `<option value="${j.id}" data-title="${esc(j.title)}" data-budget="${j.budget||''}">${esc(j.title)}${j.budget ? ' (₼'+j.budget+')' : ''}</option>`).join('');
+  } catch(e) {}
+}
+
 function updateWhatsAppLink() {
+  const sel    = document.getElementById('topup-job');
   const amount = document.getElementById('topup-amount')?.value;
   const note   = document.getElementById('topup-note')?.value?.trim();
   const name   = FB.userData?.name || FB.user?.email || '';
-  let msg = `Salam! Freelan.az balans artırma sorğusu.\nİstifadəçi: ${name}`;
-  if (amount) msg += `\nMəbləğ: ₼${amount}`;
-  if (note)   msg += `\nQeyd: ${note}`;
+  const email  = FB.user?.email || '';
+
+  const selOpt = sel?.options[sel.selectedIndex];
+  const jobTitle  = selOpt?.dataset?.title || '';
+  const jobBudget = selOpt?.dataset?.budget || '';
+
+  let msg = `📋 *Freelan.az — Balans artırma sorğusu*\n`;
+  msg += `👤 İstifadəçi: ${name}`;
+  if (email) msg += ` (${email})`;
+  if (jobTitle) {
+    msg += `\n💼 İş: ${jobTitle}`;
+    if (jobBudget) msg += ` (büdcə: ₼${jobBudget})`;
+  }
+  if (amount) msg += `\n💰 Məbləğ: ₼${amount} AZN`;
+  if (note)   msg += `\n📝 Qeyd: ${note}`;
+  msg += `\n\nZəhmət olmasa ödənişi təsdiqləyin.`;
+
   const link = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
   const btn = document.getElementById('whatsapp-btn');
   if (btn) btn.href = link;
@@ -519,17 +561,17 @@ window.sendTopup = async function() {
   const { db, collection, addDoc, serverTimestamp } = FB;
   const amtRaw = document.getElementById('topup-amount').value;
   const note   = document.getElementById('topup-note').value.trim();
+  const sel    = document.getElementById('topup-job');
+  const selOpt = sel?.options[sel.selectedIndex];
+  const jobId    = sel?.value || '';
+  const jobTitle = selOpt?.dataset?.title || '';
   const msg    = document.getElementById('topup-msg');
   const amount = parseFloat(amtRaw);
 
-  // WhatsApp linkini yenilə və aç
   updateWhatsAppLink();
   const btn = document.getElementById('whatsapp-btn');
-  if (btn && btn.href !== '#') {
-    window.open(btn.href, '_blank');
-  }
+  if (btn && btn.href !== '#') window.open(btn.href, '_blank');
 
-  // Əgər məbləğ daxil edilibsə Firestore-a da qeyd et
   if (amount && amount >= 5) {
     try {
       const d = FB.userData || {};
@@ -538,6 +580,8 @@ window.sendTopup = async function() {
         userName: d.name || FB.user.email,
         userEmail: FB.user.email,
         amount,
+        jobId:    jobId    || '',
+        jobTitle: jobTitle || '',
         method: 'whatsapp',
         note: note || '',
         status: 'pending',
@@ -547,6 +591,7 @@ window.sendTopup = async function() {
       msg.textContent = '✅ Sorğu göndərildi!';
       document.getElementById('topup-amount').value = '';
       document.getElementById('topup-note').value = '';
+      if (sel) sel.value = '';
       loadTopupHistory();
     } catch(e) { msg.style.color = 'var(--red)'; msg.textContent = '❌ ' + e.message; }
   }
