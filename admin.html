@@ -41,6 +41,7 @@
       <a data-sec="jobs" onclick="showSec('jobs')">📋 Bütün elanlar</a>
       <a data-sec="users" onclick="showSec('users')">👥 İstifadəçilər</a>
       <a data-sec="plans" onclick="showSec('plans')">💎 Tarif sorğuları <span class="badge badge-orange" id="plans-count" style="margin-left:auto;">0</span></a>
+      <a data-sec="payments" onclick="showSec('payments')">💳 Ödənişlər <span class="badge badge-orange" id="pay-count" style="margin-left:auto;">0</span></a>
     </nav>
   </aside>
 
@@ -79,6 +80,12 @@
       <h2 style="font-size:22px;margin-bottom:20px;">Tarif sorğuları 💎</h2>
       <p style="font-size:13px;color:var(--ink2);margin:-10px 0 18px;">Ödənişi qəbul etdikdən sonra sorğunu təsdiqləyin — istifadəçiyə tarif aktiv olunacaq.</p>
       <div id="plans-list"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
+    </div>
+    <!-- PAYMENTS -->
+    <div class="dash-sec" id="sec-payments">
+      <h2 style="font-size:22px;margin-bottom:20px;">💳 Ödəniş sorğuları</h2>
+      <p style="font-size:13px;color:var(--ink2);margin:-10px 0 18px;">İstifadəçi bank köçürməsini etdikdən sonra aşağıda sorğu görünür. Ödənişi yoxlayın, sonra Təsdiqlə düyməsinə basın — istifadəçinin balansı avtomatik artacaq.</p>
+      <div id="payments-list"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
     </div>
   </main>
 </div>
@@ -122,7 +129,9 @@ async function loadAll() {
       getDocs(collection(db, 'bids'))
     ]);
     let upgSnap = { forEach: () => {} };
+    let paySnap = { forEach: () => {} };
     try { upgSnap = await getDocs(collection(db, 'upgrades')); } catch(e) {}
+    try { paySnap = await getDocs(collection(db, 'payments')); } catch(e) {}
 
     const jobs = []; jobsSnap.forEach(d => jobs.push({ id: d.id, ...d.data() }));
     const users = []; usersSnap.forEach(d => users.push({ id: d.id, ...d.data() }));
@@ -143,10 +152,16 @@ async function loadAll() {
     pendingUpg.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
     document.getElementById('plans-count').textContent = pendingUpg.length;
 
+    const payments = []; paySnap.forEach(d => payments.push({ id: d.id, ...d.data() }));
+    payments.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    const pendingPay = payments.filter(p => p.status === 'pending');
+    document.getElementById('pay-count').textContent = pendingPay.length;
+
     renderPending(pending);
     renderJobs(jobs);
     renderUsers(users);
     renderUpgrades(pendingUpg);
+    renderPayments(payments);
   } catch(e) {
     showToast('Yükləmə xətası: ' + e.message);
   }
@@ -234,6 +249,60 @@ function renderUpgrades(list) {
     </div>`).join('')
   : '<div class="empty"><div class="ico">✨</div><p>Gözləyən tarif sorğusu yoxdur</p></div>';
 }
+
+function renderPayments(list) {
+  const el = document.getElementById('payments-list');
+  const sb = s => s==='approved' ? '<span class="badge badge-green">Təsdiqləndi ✅</span>' : s==='rejected' ? '<span class="badge badge-red">Rədd edildi ❌</span>' : '<span class="badge badge-orange">Gözləyir ⏳</span>';
+  el.innerHTML = list.length ? list.map(p => `
+    <div class="prop-item">
+      <div class="prop-head">
+        <div style="flex:1;">
+          <div class="prop-name">${esc(p.userName||'—')} <span style="font-weight:400;font-size:13px;color:var(--ink2);">(${esc(p.userEmail||'')})</span></div>
+          <div class="prop-meta">Bank köçürməsi · ${timeAgo(p.createdAt)}</div>
+          ${p.note ? `<div class="prop-cover" style="margin-top:6px;">📝 ${esc(p.note)}</div>` : ''}
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div class="prop-amount">₼${Number(p.amount).toFixed(2)}</div>
+          <div style="margin-top:6px;">${sb(p.status)}</div>
+          ${p.status === 'pending' ? `
+          <div style="display:flex;gap:6px;margin-top:10px;justify-content:flex-end;">
+            <button class="btn btn-green btn-sm" onclick="approvePayment('${p.id}','${p.userId}',${p.amount})">✅ Təsdiqlə</button>
+            <button class="btn btn-danger btn-sm" onclick="rejectPayment('${p.id}')">❌ Rədd et</button>
+          </div>` : ''}
+        </div>
+      </div>
+    </div>`).join('')
+  : '<div class="empty"><div class="ico">✨</div><p>Ödəniş sorğusu yoxdur</p></div>';
+}
+
+window.approvePayment = async function(payId, userId, amount) {
+  if (!confirm(`₼${amount} ödənişi TƏSDİQLƏYİRSİNİZ?\nİstifadəçinin balansı artırılacaq.`)) return;
+  const { db, doc, updateDoc, getDoc, serverTimestamp } = FB;
+  try {
+    const uRef = doc(db, 'users', userId);
+    const uSnap = await getDoc(uRef);
+    const curBalance = uSnap.exists() ? (uSnap.data().balance || 0) : 0;
+    await updateDoc(uRef, { balance: curBalance + Number(amount) });
+    await updateDoc(doc(db, 'payments', payId), { status: 'approved', updatedAt: serverTimestamp() });
+    showToast('Ödəniş təsdiqləndi, balans artırıldı ✅');
+    loadAll();
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
+
+window.rejectPayment = async function(payId) {
+  const note = prompt('Rədd etmə səbəbini yazın (istəyə bağlı):');
+  if (note === null) return;
+  const { db, doc, updateDoc, serverTimestamp } = FB;
+  try {
+    await updateDoc(doc(db, 'payments', payId), {
+      status: 'rejected',
+      adminNote: note || '',
+      updatedAt: serverTimestamp()
+    });
+    showToast('Ödəniş rədd edildi');
+    loadAll();
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
 
 window.approvePlan = async function(id, userId, plan) {
   if (!confirm('Ödəniş qəbul olunub? Tarif aktiv ediləcək.')) return;
