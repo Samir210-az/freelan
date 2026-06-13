@@ -359,31 +359,59 @@ async function loadMyBids() {
 }
 
 async function loadActive() {
-  const { db, collection, getDocs, query, where } = FB;
+  const { db, collection, getDocs } = FB;
   const el = document.getElementById('active-list');
   const d = FB.userData || {};
+  const uid = FB.user.uid;
   try {
-    let snap;
-    if (d.role === 'client') {
-      snap = await getDocs(query(collection(db,'jobs'), where('clientId','==',FB.user.uid), where('status','==','in_progress')));
-    } else {
-      snap = await getDocs(query(collection(db,'jobs'), where('assignedTo','==',FB.user.uid), where('status','==','in_progress')));
-    }
+    const snap = await getDocs(collection(db,'jobs'));
     const jobs = [];
-    snap.forEach(x => jobs.push({ id: x.id, ...x.data() }));
-    el.innerHTML = jobs.length ? jobs.map(j => `
-      <div class="prop-item" style="cursor:pointer;" onclick="location.href='job.html?id=${j.id}'">
-        <div class="prop-head">
-          <div>
-            <div class="prop-name">${esc(j.title)}</div>
-            <div class="prop-meta">${d.role==='client'?t('db_flworking'):t('db_client')+': '+esc(j.clientName)}</div>
-          </div>
-          <div style="text-align:right;">
-            <div class="prop-amount">₼${j.budget}</div>
-            ${d.role==='client'?`<button class="btn btn-green btn-sm" style="margin-top:6px;" onclick="event.stopPropagation();completeJob('${j.id}')">${t('db_acceptw')}</button>`:'<span class="badge badge-blue">'+t('st_progress')+'</span>'}
-          </div>
-        </div>
-      </div>`).join('')
+    snap.forEach(x => {
+      const j = { id: x.id, ...x.data() };
+      const isClient = d.role === 'client' && j.clientId === uid;
+      const isFL     = d.role === 'freelancer' && j.assignedTo === uid;
+      if ((isClient || isFL) && ['in_progress','submitted'].includes(j.status)) jobs.push(j);
+    });
+    jobs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+
+    el.innerHTML = jobs.length ? jobs.map(j => {
+      const isSubmitted = j.status === 'submitted';
+      const balance = parseFloat(FB.userData?.balance || 0);
+      const needed  = parseFloat(j.budget || 0);
+      const hasBalance = balance >= needed;
+
+      let statusHtml = '';
+      let warningHtml = '';
+
+      if (d.role === 'client') {
+        if (isSubmitted) {
+          warningHtml = hasBalance
+            ? '<div style="font-size:12px;color:#14a000;margin-top:4px;">✅ Balans kifayətdir — elanı açıb təsdiqləyin</div>'
+            : '<div style="font-size:12px;color:#d23232;margin-top:4px;">⚠️ Balansınızı artırın (lazım: ₼'+needed+', var: ₼'+balance.toFixed(2)+')</div>';
+          statusHtml = '<span class="badge badge-orange" style="margin-top:4px;">Təsdiq gözlənir</span>';
+        } else {
+          statusHtml = '<span class="badge badge-blue" style="margin-top:4px;">Davam edir</span>';
+        }
+      } else {
+        statusHtml = isSubmitted
+          ? '<span class="badge badge-orange" style="margin-top:4px;">Müştəri gözlənir</span>'
+          : '<span class="badge badge-blue" style="margin-top:4px;">Davam edir</span>';
+      }
+
+      return '<div class="prop-item" style="cursor:pointer;" onclick="location.href='job.html?id='+j.id+''">'
+        + '<div class="prop-head">'
+          + '<div style="flex:1;">'
+            + '<div class="prop-name">'+esc(j.title)+'</div>'
+            + '<div class="prop-meta">'+(d.role==='client'?'🧑‍💻 '+esc(j.assignedName||'Freelancer'):'👤 '+esc(j.clientName||'Müştəri'))+'</div>'
+            + warningHtml
+          + '</div>'
+          + '<div style="text-align:right;flex-shrink:0;">'
+            + '<div class="prop-amount">₼'+j.budget+'</div>'
+            + statusHtml
+          + '</div>'
+        + '</div>'
+      + '</div>';
+    }).join('')
     : '<div class="empty"><div class="ico">🔄</div><p>' + t('db_noactive') + '</p></div>';
   } catch(e) {
     el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>' + esc(e.message) + '</p></div>';
