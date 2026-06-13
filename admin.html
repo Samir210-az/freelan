@@ -335,7 +335,7 @@ function renderPayments(list) {
           ${p.note ? `<div class="prop-cover" style="margin-top:2px;">📝 ${esc(p.note)}</div>` : ''}
         </div>
         <div style="text-align:right;flex-shrink:0;">
-          <div class="prop-amount">₼${Number(p.amount).toFixed(2)}</div>
+          <div class="prop-amount">₼${p.amount ? Number(p.amount).toFixed(2) : '—'}</div>
           <div style="margin-top:6px;">${sb(p.status)}</div>
           ${p.status === 'pending' ? `
           <div style="display:flex;gap:6px;margin-top:10px;justify-content:flex-end;">
