@@ -521,18 +521,6 @@ window.updateHeaderUser = function() {
   right.innerHTML = `
     ${themeBtnHtml()}
     ${langSelHtml()}
-    <div class="notif-wrap" id="notif-wrap">
-      <button class="notif-btn" id="notif-btn" onclick="toggleNotifPanel()" aria-label="Bildirişlər">
-        🔔<span class="notif-count" id="notif-count" style="display:none;">0</span>
-      </button>
-      <div class="notif-panel" id="notif-panel" style="display:none;">
-        <div class="notif-panel-head">
-          <span>${t('notif_title')}</span>
-          <button class="notif-mark-all" onclick="markAllNotifRead()">${t('notif_mark')}</button>
-        </div>
-        <div class="notif-list" id="notif-list"><div class="notif-empty">${t('notif_empty')}</div></div>
-      </div>
-    </div>
     <a class="user-chip" href="dashboard.html">
       <div class="avatar">${avaInner(d?.photo, name)}</div><span>${esc(name)}</span>
     </a>
@@ -542,7 +530,6 @@ window.updateHeaderUser = function() {
     const a = document.getElementById('nav-admin');
     if (a) a.style.display = 'inline-block';
   }
-  initNotifications(FB.user.uid);
 }
 
 // ===== UNIFIED BID SYSTEM (Upwork "Submit a Proposal") =====
@@ -809,76 +796,6 @@ window.requestPlan = async function(plan) {
     showToast('Sorğunuz göndərildi! Ödəniş üçün sizinlə əlaqə saxlanılacaq 📩');
   } catch(e) { showToast('Xəta: ' + e.message); }
 };
-
-// ===== NOTIFICATIONS =====
-let _notifUnsub = null;
-window.initNotifications = async function(uid) {
-  if (_notifUnsub) { _notifUnsub(); _notifUnsub = null; }
-  const { onSnapshot, orderBy } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  const q = query(
-    collection(db, 'notifications'),
-    where('toUid', '==', uid),
-    orderBy('createdAt', 'desc'),
-    limit(20)
-  );
-  _notifUnsub = onSnapshot(q, snap => {
-    const items = [];
-    snap.forEach(d => items.push({ id: d.id, ...d.data() }));
-    const unread = items.filter(n => !n.read).length;
-    const countEl = document.getElementById('notif-count');
-    if (countEl) {
-      if (unread > 0) { countEl.textContent = unread > 9 ? '9+' : unread; countEl.style.display = 'flex'; }
-      else { countEl.style.display = 'none'; }
-    }
-    const listEl = document.getElementById('notif-list');
-    if (!listEl) return;
-    if (items.length === 0) {
-      listEl.innerHTML = '<div class="notif-empty">' + t('notif_empty') + '</div>';
-      return;
-    }
-    listEl.innerHTML = items.map(n => {
-      const ago = n.createdAt ? timeAgo(n.createdAt) : '';
-      const cls = n.read ? 'notif-item' : 'notif-item notif-item-unread';
-      const txt = esc(n.fromName) + ' ' + t('notif_new_bid') + ': <b>' + esc(n.jobTitle) + '</b>';
-      return '<div class="' + cls + '" onclick="onNotifClick('' + n.id + '','' + esc(n.jobId) + '')">'
-        + txt + '<span class="notif-ago">' + ago + '</span></div>';
-    }).join('');
-  }, err => console.log('notif listen err:', err.message));
-};
-
-window.toggleNotifPanel = function() {
-  const panel = document.getElementById('notif-panel');
-  if (!panel) return;
-  const open = panel.style.display !== 'none';
-  panel.style.display = open ? 'none' : 'block';
-};
-
-window.onNotifClick = async function(notifId, jobId) {
-  try { await updateDoc(doc(db, 'notifications', notifId), { read: true }); } catch(e) {}
-  const panel = document.getElementById('notif-panel');
-  if (panel) panel.style.display = 'none';
-  if (jobId) location.href = 'job.html?id=' + jobId;
-};
-
-window.markAllNotifRead = async function() {
-  if (!FB.user) return;
-  try {
-    const snap = await getDocs(query(collection(db, 'notifications'),
-      where('toUid', '==', FB.user.uid), where('read', '==', false)));
-    const batch = [];
-    snap.forEach(d => batch.push(updateDoc(doc(db, 'notifications', d.id), { read: true })));
-    await Promise.all(batch);
-  } catch(e) { console.log('mark all err:', e.message); }
-};
-
-// Panel xaricini klikle bağla
-document.addEventListener('click', e => {
-  const wrap = document.getElementById('notif-wrap');
-  const panel = document.getElementById('notif-panel');
-  if (panel && panel.style.display !== 'none' && wrap && !wrap.contains(e.target)) {
-    panel.style.display = 'none';
-  }
-});
 
 // ===== INIT =====
 // Tema: inline <head> skripti data-theme təyin edir; burada ehtiyat tətbiq
