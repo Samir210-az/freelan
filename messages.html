@@ -25,44 +25,22 @@
 <script>try{var th=localStorage.getItem("theme");if(!th&&window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches)th="dark";if(th)document.documentElement.setAttribute("data-theme",th);}catch(e){}</script>
 <link rel="stylesheet" href="css/style.css?v=5">
 <style>
+/* Sohbet silme dugmesi */
 .msg-contact { position: relative; }
 .del-chat-btn {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(220,50,50,0.85);
+  background: rgba(200,40,40,0.85);
   color: #fff;
   border: none;
-  border-radius: 6px;
-  padding: 3px 8px;
-  font-size: 12px;
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-size: 11px;
   cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .15s;
-  z-index: 2;
-  white-space: nowrap;
+  flex-shrink: 0;
+  display: none;
 }
-.msg-contact:hover .del-chat-btn {
-  opacity: 1;
-  pointer-events: auto;
-}
-/* Mobil: hep gorunsun */
-@media (max-width: 600px) {
-  .del-chat-btn {
-    opacity: 1;
-    pointer-events: auto;
-    position: static;
-    transform: none;
-    margin-left: auto;
-    flex-shrink: 0;
-  }
-  .msg-contact {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+.msg-contact:hover .del-chat-btn { display: inline-block; }
+@media (max-width: 700px) {
+  .del-chat-btn { display: inline-block !important; }
 }
 </style>
 </head>
@@ -72,14 +50,14 @@
 
 <div class="msg-grid" id="msg-wrap" style="display:none;">
   <aside class="msg-side" id="contacts">
-    <div class="empty"><div class="ico">&#x23F3;</div><p>Yücklənir...</p></div>
+    <div class="empty"><div class="ico">⏳</div><p>Yücklənir...</p></div>
   </aside>
   <main class="msg-main">
     <div class="msg-head" id="chat-head">
       <span style="color:var(--ink3);font-size:14px;" data-i18n="ms_pick">Söhbət seçin</span>
     </div>
     <div class="msg-list" id="chat-list">
-      <div class="empty"><div class="ico">&#x1F4AC;</div><p data-i18n="ms_pick2">Söhbət başlatmaq üçün sol tərəfdən kontakt seçin</p></div>
+      <div class="empty"><div class="ico">💬</div><p data-i18n="ms_pick2">Söhbət başlatmaq üçün sol tərəfdən kontakt seçin</p></div>
     </div>
     <div class="msg-input-row" id="chat-input-row" style="display:none;">
       <input type="text" id="msg-text" data-i18n-ph="ms_ph" placeholder="Mesaj yazın..." onkeydown="if(event.key==='Enter')sendMsg()">
@@ -90,7 +68,7 @@
 
 <div id="auth-required" class="container" style="display:none;">
   <div class="empty" style="padding:100px 20px;">
-    <div class="ico">&#x1F510;</div>
+    <div class="ico">🔐</div>
     <p style="margin-bottom:18px;" data-i18n="ms_auth">Mesajlara baxmaq üçün hesabınıza daxil olun</p>
     <button class="btn btn-green" data-i18n="login" onclick="openAuth('login')">Daxil ol</button>
   </div>
@@ -101,14 +79,9 @@
 <script type="module" src="js/app.js?v=8"></script>
 <script type="module">
 import {
-  onSnapshot,
-  orderBy,
-  query as fsQuery,
-  collection as fsCollection,
-  where as fsWhere,
-  deleteDoc,
-  getDocs,
-  doc as fsDoc
+  onSnapshot, orderBy, query as fsQuery,
+  collection as fsCollection, where as fsWhere,
+  deleteDoc, getDocs, doc as fsDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 let activeChatId = null;
@@ -150,7 +123,7 @@ function subscribeContacts() {
       }
     }
   }, err => {
-    el.innerHTML = '<div class="empty"><div class="ico">&#x26A0;</div><p style="font-size:12px;">' + esc(err.message) + '</p></div>';
+    el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p style="font-size:12px;">' + esc(err.message) + '</p></div>';
   });
 }
 
@@ -161,7 +134,7 @@ function otherNameOf(c) {
 function renderContacts() {
   const el = document.getElementById('contacts');
   if (!chatsCache.length) {
-    el.innerHTML = '<div class="empty"><div class="ico">&#x1F4AC;</div><p style="font-size:13px;">' + t('ms_none') + '</p></div>';
+    el.innerHTML = '<div class="empty"><div class="ico">💬</div><p style="font-size:13px;">' + t('ms_none') + '</p></div>';
     return;
   }
   el.innerHTML = chatsCache.map(c => {
@@ -169,15 +142,16 @@ function renderContacts() {
     const isUnread = c.lastFrom && c.lastFrom !== FB.user.uid
       && c.id !== activeChatId
       && (c.lastAt?.seconds || 0) > lastReadSec(c.id);
-    return '<div class="msg-contact ' + (c.id===activeChatId?'active':'') + ' ' + (isUnread?'unread':'') + '" onclick="openChat('' + c.id + '','' + esc(otherName) + '')">'
-      + '<div class="avatar">' + esc(otherName[0].toUpperCase()) + '</div>'
-      + '<div style="min-width:0;flex:1;">'
-      + '<div class="nm">' + esc(otherName) + '</div>'
-      + '<div class="lst">' + esc(c.lastMsg || '') + '</div>'
-      + '</div>'
-      + (isUnread ? '<span class="unread-dot"></span>' : '')
-      + '<button class="del-chat-btn" onclick="event.stopPropagation();deleteChat('' + c.id + '','' + esc(otherName) + '')">&#x1F5D1; Sil</button>'
-      + '</div>';
+    return `
+    <div class="msg-contact ${c.id===activeChatId?'active':''} ${isUnread?'unread':''}" data-chat="${c.id}" onclick="openChat('${c.id}','${esc(otherName)}')">
+      <div class="avatar">${esc(otherName[0].toUpperCase())}</div>
+      <div style="min-width:0;flex:1;">
+        <div class="nm">${esc(otherName)}</div>
+        <div class="lst">${esc(c.lastMsg || '')}</div>
+      </div>
+      ${isUnread ? '<span class="unread-dot"></span>' : ''}
+      <button class="del-chat-btn" onclick="event.stopPropagation();deleteChat('${c.id}','${esc(otherName)}')">❌ Sil</button>
+    </div>`;
   }).join('');
 }
 
@@ -186,7 +160,7 @@ window.openChat = function(chatId, name) {
   const c = chatsCache.find(x => x.id === chatId);
   markRead(chatId, c?.lastAt?.seconds);
   renderContacts();
-  document.getElementById('chat-head').innerHTML = '<div class="avatar">' + esc(name[0].toUpperCase()) + '</div><b>' + esc(name) + '</b>';
+  document.getElementById('chat-head').innerHTML = `<div class="avatar">${esc(name[0].toUpperCase())}</div><b>${esc(name)}</b>`;
   document.getElementById('chat-input-row').style.display = 'flex';
 
   if (unsub) unsub();
@@ -194,47 +168,30 @@ window.openChat = function(chatId, name) {
   unsub = onSnapshot(q, snap => {
     const list = document.getElementById('chat-list');
     const msgs = [];
-    snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
-    if (!msgs.length) {
-      list.innerHTML = '<div class="empty"><div class="ico">&#x1F44B;</div><p>' + t('ms_first') + '</p></div>';
-      return;
-    }
-    list.innerHTML = msgs.map(function(m) {
-      var isOwn = m.from === FB.user.uid;
-      return '<div class="bubble ' + (isOwn ? 'b-out' : 'b-in') + '">' + esc(m.text) + '</div>';
-    }).join('');
+    snap.forEach(d => msgs.push(d.data()));
+    list.innerHTML = msgs.length
+      ? msgs.map(m => `<div class="bubble ${m.from === FB.user.uid ? 'b-out' : 'b-in'}">${esc(m.text)}</div>`).join('')
+      : '<div class="empty"><div class="ico">👋</div><p>' + t('ms_first') + '</p></div>';
     list.scrollTop = list.scrollHeight;
-    var last = msgs[msgs.length - 1];
-    if (last && last.at && last.at.seconds) markRead(chatId, last.at.seconds);
+    const last = msgs[msgs.length - 1];
+    if (last && last.at?.seconds) markRead(chatId, last.at.seconds);
   });
 };
 
-// Tam sohbeti sil: once butun mesajlari, sonra chat senedin ozunu sil
 window.deleteChat = async function(chatId, name) {
-  if (!confirm('"' + name + '" ile sohbeti tamamilə silmək istəyirsiniz?\nBu əməliyyat geri qaytarıla bilməz.')) return;
-
+  if (!confirm('"' + name + '" ilə söhbəti tam silmək istəyirsiniz?\nBu əməliyyat geri qaytarila bilməz.')) return;
   try {
-    // 1. Aktivdirsə bagla
     if (activeChatId === chatId) {
       if (unsub) { unsub(); unsub = null; }
       activeChatId = null;
       document.getElementById('chat-head').innerHTML = '<span style="color:var(--ink3);font-size:14px;">Söhbət seçin</span>';
-      document.getElementById('chat-list').innerHTML = '<div class="empty"><div class="ico">&#x1F4AC;</div><p>Söhbət seçin</p></div>';
+      document.getElementById('chat-list').innerHTML = '<div class="empty"><div class="ico">💬</div><p>Söhbət seçin</p></div>';
       document.getElementById('chat-input-row').style.display = 'none';
     }
-
-    // 2. Butun mesajlari sil
     const msgsSnap = await getDocs(fsCollection(FB.db, 'chats', chatId, 'messages'));
-    const delPromises = [];
-    msgsSnap.forEach(d => delPromises.push(deleteDoc(d.ref)));
-    await Promise.all(delPromises);
-
-    // 3. Chat sənədini sil
+    await Promise.all(msgsSnap.docs.map(d => deleteDoc(d.ref)));
     await deleteDoc(fsDoc(FB.db, 'chats', chatId));
-
-    // 4. localStorage-i temizle
     localStorage.removeItem(readKey(chatId));
-
     showToast && showToast('Söhbət silindi');
   } catch(e) {
     alert('Silinmədi: ' + e.message);
@@ -255,7 +212,7 @@ window.sendMsg = async function() {
       lastMsg: text, lastAt: serverTimestamp(), lastFrom: FB.user.uid
     });
     markRead(activeChatId);
-  } catch(e) { showToast ? showToast('Göndərilmədi: ' + e.message) : alert('Göndərilmədi: ' + e.message); }
+  } catch(e) { showToast('Göndərilmədi: ' + e.message); }
 };
 </script>
 </body>
