@@ -60,8 +60,8 @@
 <header id="app-header"></header>
 
 <div class="blog-hero">
-  <h1>📝 Blog</h1>
-  <p>Freelance dünyasından praktiki məsləhətlər, karyera tövsiyələri və iş həyatı</p>
+  <h1>📝 <span id="blog-hero-title">Blog</span></h1>
+  <p id="blog-hero-sub">Freelance dünyasından praktiki məsləhətlər, karyera tövsiyələri və iş həyatı</p>
 </div>
 
 <div class="blog-grid" id="blog-grid"></div>
@@ -190,6 +190,16 @@ en: [
 const ARTICLES = ARTICLES_DATA[LANG] || ARTICLES_DATA.az;
 
 
+function updateBlogHero() {
+  const subs = {
+    az: 'Freelance dünyasından praktiki məsləhətlər, karyera tövsiyələri və iş həyatı',
+    ru: 'Практические советы и новости из мира фриланса — карьера, цены, отношения с клиентами',
+    en: 'Practical tips and news from the freelance world — career, pricing, client relationships'
+  };
+  const sub = document.getElementById('blog-hero-sub');
+  if (sub) sub.textContent = subs[LANG] || subs.az;
+}
+
 function renderBlogGrid() {
   const grid = document.getElementById('blog-grid');
   grid.innerHTML = ARTICLES.map(a => `
@@ -230,6 +240,7 @@ document.getElementById('blog-modal').addEventListener('click', function(e) {
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBlogModal(); });
 
+updateBlogHero();
 renderBlogGrid();
 </script>
 </body>
