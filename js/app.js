@@ -835,4 +835,3 @@ renderHeader();
 renderFooter();
 applyI18n();
 
-
