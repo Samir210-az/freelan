@@ -410,3 +410,9 @@ footer{background:var(--ink);color:#cfe0cb;margin-top:80px;}
 [data-theme="dark"] .notif-item-unread{background:#132016;}
 [data-theme="dark"] .notif-item-unread:hover{background:#1a2e1d;}
 @media(max-width:480px){.notif-panel{width:calc(100vw - 24px);right:-60px;}}
+
+/* ===== DASHBOARD BID LIST ===== */
+.dash-bids{margin-top:12px;border-top:1px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:8px;}
+.dash-bid-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:8px 10px;background:var(--bg2);border-radius:8px;font-size:13px;}
+.dash-bid-row b{display:block;font-size:14px;margin-bottom:2px;}
+[data-theme="dark"] .dash-bid-row{background:#1a2a1d;}
