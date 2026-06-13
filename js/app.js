@@ -1,7 +1,7 @@
 // ===== FREELAN.AZ — Shared Firebase + UI module =====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, query, limit, where, serverTimestamp, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, query, limit, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCDhahbyEM5IsLLWrRz7_haxJIH0WWyBec",
@@ -812,8 +812,9 @@ window.requestPlan = async function(plan) {
 
 // ===== NOTIFICATIONS =====
 let _notifUnsub = null;
-window.initNotifications = function(uid) {
+window.initNotifications = async function(uid) {
   if (_notifUnsub) { _notifUnsub(); _notifUnsub = null; }
+  const { onSnapshot, orderBy } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
   const q = query(
     collection(db, 'notifications'),
     where('toUid', '==', uid),
