@@ -80,129 +80,115 @@
 <footer id="app-footer"></footer>
 <script type="module" src="js/app.js?v=8"></script>
 <script>
-const ARTICLES = [
-  {
-    id: 1,
-    emoji: '🚀',
-    tag: 'Karyera',
-    title: 'Freelance karyeraya necə başlamalı?',
-    date: '10 İyun 2026',
-    readTime: '6 dəq',
-    excerpt: 'İlk profili yaratmaqdan ilk müştəriyə qədər — Azərbaycanda freelancer olmağın addım-addım yolu.',
-    body: `
-      <p>Freelance karyeraya başlamaq həyəcanverici, eyni zamanda çaşdırıcı ola bilər. Hara müraciət edəcəksiniz? Qiymətinizi necə təyin edəcəksiniz? Müştərini necə inandıracaqsınız? Bu məqalədə Azərbaycan bazarına uyğun praktiki addımları izah edirik.</p>
-      <h3>1. Sahənizi müəyyən edin</h3>
-      <p>Hamı üçün hər şey etməyə çalışmayın. <strong>Dizayn, proqramlaşdırma, kopiraytinq, SMM, tərcümə</strong> — bunlardan hansında daha güclüsünüz? Dar ixtisaslaşma sizi bazarda daha görünən edir.</p>
-      <h3>2. Portfolio hazırlayın</h3>
-      <p>Əgər real layihəniz yoxdursa, problem deyil. Aşağıdakıları edə bilərsiniz:</p>
-      <ul>
-        <li>Xəyali bir şirkət üçün nümunə iş hazırlayın</li>
-        <li>Açıq mənbəli layihələrə töhfə verin</li>
-        <li>Tanışlarınız üçün pulsuz və ya ucuz iş görün</li>
-      </ul>
-      <h3>3. Profilinizi doldurun</h3>
-      <p>Freelan.az-da profilinizin hər sahəsini doldurun. Foto, bio, bacarıqlar, saatlıq tarif — bunların hamısı müştərinin sizə inamını artırır. Boş profillər nadir hallarda seçilir.</p>
-      <h3>4. İlk müraciəti göndərin</h3>
-      <p>Təklif göndərərkən şablon mətndən imtina edin. Müştərinin elanını diqqətlə oxuyun və <strong>konkret probleminə konkret həll</strong> təklif edin. Qısa, aydın, fərdi müraciət həmişə üstün gəlir.</p>
-      <h3>5. Birinci reytinqinizi qazanın</h3>
-      <p>İlk iş üçün bir az daha aşağı qiymət təklif etməkdən qorxmayın — məqsəd reytinq və rəy qazanmaqdır. Sonrakı işlər üçün qiymətinizi artıra bilərsiniz.</p>
-    `
-  },
-  {
-    id: 2,
-    emoji: '💰',
-    tag: 'Qiymətqoyma',
-    title: 'Freelancer kimi qiymətinizi necə təyin etməlisiniz?',
-    date: '5 İyun 2026',
-    readTime: '5 dəq',
-    excerpt: 'Çox aşağı qiymət — dəyərsizləşmə, çox yüksək — müştərisizlik. Düzgün balansı necə tapmaq olar?',
-    body: `
-      <p>Qiymətqoyma freelancerların ən çox güləndən biri. Həm özünüzü ucuzlatmaq, həm də müştərini qorxutmaq istəmirsiniz. İşin sirri bazarı bilmək və öz dəyərinizi anlamaqdadır.</p>
-      <h3>Azərbaycan bazarını araşdırın</h3>
-      <p>Freelan.az-da oxşar sahədə çalışan freelancerların profillərinə baxın. Saatlıq tariflər nə qədərdir? Hansı bacarıq səviyyəsi hansı qiymətlə gedir? Bu, bazarın zəmin qiymətini başa düşməyə kömək edir.</p>
-      <h3>Xərclərinizdən başlayın</h3>
-      <p>Aylıq xərclərinizi hesablayın: internet, proqram abunəlikləri, vergi (varsa), yaşayış. Bu rəqəmi iş saatlarınıza bölün — <strong>minimum tarif</strong> budur.</p>
-      <h3>Layihə əsaslı qiymət</h3>
-      <ul>
-        <li><strong>Logo dizaynı:</strong> 80–300 ₼</li>
-        <li><strong>Landing page:</strong> 200–600 ₼</li>
-        <li><strong>SMM paketi (aylıq):</strong> 150–400 ₼</li>
-        <li><strong>Mətn yazısı (1000 söz):</strong> 20–60 ₼</li>
-        <li><strong>Mobil tətbiq:</strong> 800–3000 ₼+</li>
-      </ul>
-      <h3>Qiymətinizi artırın</h3>
-      <p>Hər tamamlanan iş və rəy ilə qiymətinizi 10–20% artırmağı hədəfləyin. Müştərilər keyfiyyəti gördükdə daha çox ödəməyə razıdırlar. <strong>Reytinqiniz ən güclü dəlildir.</strong></p>
-    `
-  },
-  {
-    id: 3,
-    emoji: '✍️',
-    tag: 'Təklif',
-    title: 'Müştərini qazanan müraciət məktubu necə yazılır?',
-    date: '1 İyun 2026',
-    readTime: '4 dəq',
-    excerpt: 'Şablon müraciətlər məhv edir. Müştərinin diqqətini çəkən, iş qazandıran müraciətin sirləri.',
-    body: `
-      <p>Hər gün onlarla müraciət alan müştəri nəyi axtarır? Özünü başa düşən, probleminə konkret həll təklif edən, güvənilən birini. Müraciət məktubunuz bunu 30 saniyədə çatdırmalıdır.</p>
-      <h3>Şablon ifadələrdən qaçın</h3>
-      <p>«Mən peşəkar freelanceram və sizin layihənizə kömək etmək istəyirəm» — bu cümləni yüzlərlə rəqibiniz yazır. Bunun əvəzinə birbaşa elanın məzmununa keçin.</p>
-      <h3>Elanı diqqətlə oxuyun</h3>
-      <p>Müştərinin yazdıqlarını diqqətlə oxuyun. Onun <strong>əsl problemi</strong> nədir? Sadəcə logo istəmir — brendini qurmaq istəyir. Sadəcə kod istəmir — biznesini böyütmək istəyir. Bu perspektivdən yazın.</p>
-      <h3>Strukturu saxlayın</h3>
-      <ul>
-        <li><strong>İlk cümlə:</strong> Müştərinin elanına birbaşa cavab verin</li>
-        <li><strong>Orta hissə:</strong> Oxşar işinizdən bir nümunə göstərin</li>
-        <li><strong>Son:</strong> Konkret sual verin — əlaqə qurun</li>
-      </ul>
-      <h3>Uzunluq</h3>
-      <p>3–5 cümlə ideal həcmdir. Romancı olmayın. Müştərinin vaxtı azdır — əsas məlumatı tez çatdırın. Ətraflı məlumat müsahibə mərhələsinə saxlanır.</p>
-    `
-  },
-  {
-    id: 4,
-    emoji: '⏰',
-    tag: 'Məhsuldarlıq',
-    title: 'Evdən işləyərkən vaxtı necə idarə etməli?',
-    date: '27 May 2026',
-    readTime: '5 dəq',
-    excerpt: 'Freelancerların ən böyük problemi vaxt idarəçiliyi. Məhsuldar olmağın praktiki üsulları.',
-    body: `
-      <p>Ofis mühiti olmadan öz-özünüzü idarə etmək çətindir. Sosial media, ev işləri, rahat yataq — bunlar ən böyük diqqət düşmənləridir. Amma doğru sistemlə evdən ofisdən daha məhsuldar işləmək mümkündür.</p>
-      <h3>Sabit iş saatı</h3>
-      <p>Hər gün eyni vaxtda işə başlayın. Beyin müntəzəmliyə alışır. Səhər 9:00-da başlayırsınızsa, o vaxta qədər hazır olun — məhz iş rejimini simulyasiya edin.</p>
-      <h3>Pomodoro texnikası</h3>
-      <p><strong>25 dəqiqə iş + 5 dəqiqə fasilə</strong> — bu sadə sistem diqqəti qoruyur, yanmağın qarşısını alır. 4 pomodordan sonra uzun fasilə (15–30 dəq) götürün.</p>
-      <h3>Ayrı iş yeri</h3>
-      <p>Mümkünsə, yataq otağında işləməyin. Beyniniz o yeri dincliklə əlaqələndirir. Masa, kompüter, düzgün işıqlandırma — iş mühiti yaratmaq məhsuldarlığı əhəmiyyətli artırır.</p>
-      <h3>Gün planlaması</h3>
-      <ul>
-        <li>Axşam növbəti günün 3 əsas tapşırığını yazın</li>
-        <li>Ən vacib işi səhər tamamlayın (enerji yüksəkdir)</li>
-        <li>E-poçt və mesajları gün ərzində müəyyən vaxtlarda yoxlayın</li>
-      </ul>
-    `
-  },
-  {
-    id: 5,
-    emoji: '🤝',
-    tag: 'Müştəri münasibətləri',
-    title: 'Müştərilərlə uzunmüddətli münasibət qurmaq',
-    date: '20 May 2026',
-    readTime: '4 dəq',
-    excerpt: 'Yeni müştəri tapmaq mövcud müştərini saxlamaqdan 5 dəfə baha başa gəlir. Sadiq müştəri bazası necə qurulur?',
-    body: `
-      <p>Ən uğurlu freelancerlar hər ay yeni müştəri axtarmır — mövcud müştəriləri onlara yeni iş gətirir. Bu isə yalnız bir şeylə mümkündür: <strong>güvən.</strong></p>
-      <h3>Vaxtında çatdırın</h3>
-      <p>Bəlkə ən vacib qaydadır. Termin keçirtmək peşəkarlığa ciddi zərər verir. Gecikmə hiss edirsinizsə, öncədən xəbər verin — müştəri gözləntiləri idarə edə bilir, sürprizlə baş a çıxara bilmir.</p>
-      <h3>Gözləntilərdən artıq verin</h3>
-      <p>Logo istədi — brand guide də əlavə edin. Mətn istədi — SEO tövsiyəsi də yazın. Kiçik «bonus» müştərini heyran edir, sizi yadda qalır. Bu, ən ucuz marketinqdir.</p>
-      <h3>Əlaqəni kəsməyin</h3>
-      <p>İş bitdikdən 2–4 həftə sonra yazın: «Hər şey yaxşıdır? Başqa köməyim lazım ola bilərmi?» Bu sadə mesaj çox vaxt yeni layihəyə çevrilir.</p>
-      <h3>Reytinq istəyin</h3>
-      <p>Müştəri razı qaldısa, reytinq vermək üçün utanmadan xahiş edin. «Əgər işdən razı qaldınızsa, qısa rəy buraxsanız çox sevinilərdim» — bu kifayətdir. Reytinqlər gələcək müştərilər üçün ən güclü sübut sayılır.</p>
-    `
-  }
-];
+const LANG = localStorage.getItem('lang') || 'az';
+
+const ARTICLES_DATA = {
+az: [
+  {id:1,emoji:'🚀',tag:'Karyera',title:'Freelance karyeraya necə başlamalı?',date:'10 İyun 2026',readTime:'6 dəq',
+   excerpt:'İlk profili yaratmaqdan ilk müştəriyə qədər — Azərbaycanda freelancer olmağın addım-addım yolu.',
+   body:`<p>Freelance karyeraya başlamaq həyəcanverici, eyni zamanda çaşdırıcı ola bilər. Bu məqalədə Azərbaycan bazarına uyğun praktiki addımları izah edirik.</p>
+   <h3>1. Sahənizi müəyyən edin</h3><p><strong>Dizayn, proqramlaşdırma, kopiraytinq, SMM, tərcümə</strong> — bunlardan hansında daha güclüsünüz? Dar ixtisaslaşma sizi bazarda daha görünən edir.</p>
+   <h3>2. Portfolio hazırlayın</h3><ul><li>Xəyali bir şirkət üçün nümunə iş hazırlayın</li><li>Tanışlarınız üçün pulsuz iş görün</li><li>Açıq mənbəli layihələrə töhfə verin</li></ul>
+   <h3>3. Profilinizi doldurun</h3><p>Foto, bio, bacarıqlar, saatlıq tarif — bunların hamısı müştərinin sizə inamını artırır.</p>
+   <h3>4. İlk müraciəti göndərin</h3><p>Şablon mətndən imtina edin. Müştərinin <strong>konkret probleminə konkret həll</strong> təklif edin.</p>
+   <h3>5. Birinci reytinqinizi qazanın</h3><p>İlk iş üçün bir az aşağı qiymət təklif etməkdən qorxmayın — məqsəd reytinq və rəy qazanmaqdır.</p>`},
+  {id:2,emoji:'💰',tag:'Qiymətqoyma',title:'Freelancer kimi qiymətinizi necə təyin etməlisiniz?',date:'5 İyun 2026',readTime:'5 dəq',
+   excerpt:'Çox aşağı qiymət — dəyərsizləşmə, çox yüksək — müştərisizlik. Düzgün balansı necə tapmaq olar?',
+   body:`<p>Qiymətqoyma freelancerların ən çox güləndən biridir. Həm özünüzü ucuzlatmaq, həm də müştərini qorxutmaq istəmirsiniz.</p>
+   <h3>Azərbaycan bazarını araşdırın</h3><p>Freelan.az-da oxşar sahədə çalışan freelancerların profillərinə baxın.</p>
+   <h3>Oriyentir qiymətlər</h3><ul><li><strong>Logo dizaynı:</strong> 80–300 ₼</li><li><strong>Landing page:</strong> 200–600 ₼</li><li><strong>SMM paketi (aylıq):</strong> 150–400 ₼</li><li><strong>Mətn (1000 söz):</strong> 20–60 ₼</li></ul>
+   <h3>Qiymətinizi artırın</h3><p>Hər tamamlanan iş və rəy ilə qiymətinizi 10–20% artırmağı hədəfləyin. <strong>Reytinqiniz ən güclü dəlildir.</strong></p>`},
+  {id:3,emoji:'✍️',tag:'Təklif',title:'Müştərini qazanan müraciət məktubu necə yazılır?',date:'1 İyun 2026',readTime:'4 dəq',
+   excerpt:'Şablon müraciətlər məhv edir. Müştərinin diqqətini çəkən, iş qazandıran müraciətin sirləri.',
+   body:`<p>Hər gün onlarla müraciət alan müştəri nəyi axtarır? Özünü başa düşən, probleminə konkret həll təklif edən birini.</p>
+   <h3>Şablon ifadələrdən qaçın</h3><p>«Mən peşəkar freelanceram» — bu cümləni yüzlərlə rəqibiniz yazır. Birbaşa elanın məzmununa keçin.</p>
+   <h3>Struktur</h3><ul><li><strong>İlk cümlə:</strong> Müştərinin elanına birbaşa cavab verin</li><li><strong>Orta:</strong> Oxşar işinizdən nümunə</li><li><strong>Son:</strong> Konkret sual — əlaqə qurun</li></ul>
+   <h3>Uzunluq</h3><p>3–5 cümlə idealdır. Müştərinin vaxtı azdır — əsas məlumatı tez çatdırın.</p>`},
+  {id:4,emoji:'⏰',tag:'Məhsuldarlıq',title:'Evdən işləyərkən vaxtı necə idarə etməli?',date:'27 May 2026',readTime:'5 dəq',
+   excerpt:'Freelancerların ən böyük problemi vaxt idarəçiliyi. Məhsuldar olmağın praktiki üsulları.',
+   body:`<p>Ofis mühiti olmadan öz-özünüzü idarə etmək çətindir. Doğru sistemlə evdən ofisdən daha məhsuldar işləmək mümkündür.</p>
+   <h3>Sabit iş saatı</h3><p>Hər gün eyni vaxtda işə başlayın. Beyin müntəzəmliyə alışır.</p>
+   <h3>Pomodoro texnikası</h3><p><strong>25 dəqiqə iş + 5 dəqiqə fasilə.</strong> 4 pomodordan sonra 15–30 dəq uzun fasilə.</p>
+   <h3>Gün planlaması</h3><ul><li>Axşam növbəti günün 3 əsas tapşırığını yazın</li><li>Ən vacib işi səhər tamamlayın</li><li>E-poçtu gün ərzində müəyyən vaxtlarda yoxlayın</li></ul>`},
+  {id:5,emoji:'🤝',tag:'Müştəri münasibətləri',title:'Müştərilərlə uzunmüddətli münasibət qurmaq',date:'20 May 2026',readTime:'4 dəq',
+   excerpt:'Yeni müştəri tapmaq mövcud müştərini saxlamaqdan 5 dəfə baha başa gəlir. Sadiq müştəri bazası necə qurulur?',
+   body:`<p>Ən uğurlu freelancerlar hər ay yeni müştəri axtarmır — mövcud müştəriləri onlara yeni iş gətirir.</p>
+   <h3>Vaxtında çatdırın</h3><p>Termin keçirtmək peşəkarlığa ciddi zərər verir. Gecikmə hiss edirsinizsə, öncədən xəbər verin.</p>
+   <h3>Gözləntilərdən artıq verin</h3><p>Logo istədi — brand guide də əlavə edin. Kiçik «bonus» müştərini heyran edir.</p>
+   <h3>Reytinq istəyin</h3><p>Müştəri razı qaldısa, reytinq vermək üçün utanmadan xahiş edin. Reytinqlər ən güclü sübutdur.</p>`}
+],
+ru: [
+  {id:1,emoji:'🚀',tag:'Карьера',title:'Как начать карьеру фрилансера?',date:'10 июня 2026',readTime:'6 мин',
+   excerpt:'От создания первого профиля до первого клиента — пошаговый путь фрилансера в Азербайджане.',
+   body:`<p>Начать карьеру фрилансера захватывающе, но и сбивает с толку. В этой статье объясняем практические шаги для азербайджанского рынка.</p>
+   <h3>1. Определите свою нишу</h3><p><strong>Дизайн, программирование, копирайтинг, SMM, перевод</strong> — в чём вы сильнее? Узкая специализация делает вас заметнее на рынке.</p>
+   <h3>2. Создайте портфолио</h3><ul><li>Сделайте примерную работу для вымышленной компании</li><li>Помогите знакомым бесплатно</li><li>Внесите вклад в открытые проекты</li></ul>
+   <h3>3. Заполните профиль</h3><p>Фото, биография, навыки, почасовая ставка — всё это повышает доверие клиента.</p>
+   <h3>4. Отправьте первое предложение</h3><p>Откажитесь от шаблонных текстов. Предложите <strong>конкретное решение конкретной проблемы</strong> клиента.</p>
+   <h3>5. Заработайте первый рейтинг</h3><p>Не бойтесь предложить чуть меньшую цену для первой работы — цель в рейтинге и отзыве.</p>`},
+  {id:2,emoji:'💰',tag:'Ценообразование',title:'Как установить цену на свои услуги?',date:'5 июня 2026',readTime:'5 мин',
+   excerpt:'Слишком низкая цена — обесценивание, слишком высокая — нет клиентов. Как найти баланс?',
+   body:`<p>Ценообразование — одна из главных проблем фрилансеров. Не хочется ни обесценивать себя, ни отпугивать клиентов.</p>
+   <h3>Изучите рынок Азербайджана</h3><p>Посмотрите профили фрилансеров в похожей сфере на Freelan.az.</p>
+   <h3>Ориентировочные цены</h3><ul><li><strong>Дизайн логотипа:</strong> 80–300 ₼</li><li><strong>Landing page:</strong> 200–600 ₼</li><li><strong>SMM (в месяц):</strong> 150–400 ₼</li><li><strong>Текст (1000 слов):</strong> 20–60 ₼</li></ul>
+   <h3>Повышайте цену</h3><p>С каждой завершённой работой повышайте цену на 10–20%. <strong>Рейтинг — ваш главный аргумент.</strong></p>`},
+  {id:3,emoji:'✍️',tag:'Предложение',title:'Как написать письмо, которое выигрывает?',date:'1 июня 2026',readTime:'4 мин',
+   excerpt:'Шаблонные письма проигрывают. Секреты предложения, которое привлекает клиента.',
+   body:`<p>Что ищет клиент, получающий десятки предложений? Того, кто его понимает и предлагает конкретное решение.</p>
+   <h3>Избегайте шаблонов</h3><p>«Я профессиональный фрилансер» — это пишут сотни конкурентов. Переходите сразу к сути.</p>
+   <h3>Структура</h3><ul><li><strong>Первое предложение:</strong> прямой ответ на объявление</li><li><strong>Середина:</strong> пример похожей работы</li><li><strong>Конец:</strong> конкретный вопрос — установите контакт</li></ul>
+   <h3>Длина</h3><p>3–5 предложений — идеально. У клиента мало времени.</p>`},
+  {id:4,emoji:'⏰',tag:'Продуктивность',title:'Как управлять временем работая из дома?',date:'27 мая 2026',readTime:'5 мин',
+   excerpt:'Главная проблема фрилансеров — управление временем. Практические способы повысить продуктивность.',
+   body:`<p>Управлять собой без офиса сложно. Но с правильной системой можно работать продуктивнее, чем в офисе.</p>
+   <h3>Фиксированный рабочий график</h3><p>Начинайте каждый день в одно и то же время. Мозг привыкает к регулярности.</p>
+   <h3>Техника Помодоро</h3><p><strong>25 минут работы + 5 минут перерыва.</strong> После 4 помодоро — длинный перерыв 15–30 мин.</p>
+   <h3>Планирование дня</h3><ul><li>Вечером записывайте 3 главные задачи на следующий день</li><li>Самое важное делайте утром</li><li>Проверяйте почту в определённое время</li></ul>`},
+  {id:5,emoji:'🤝',tag:'Отношения с клиентами',title:'Как строить долгосрочные отношения с клиентами?',date:'20 мая 2026',readTime:'4 мин',
+   excerpt:'Найти нового клиента в 5 раз дороже, чем удержать существующего. Как создать базу постоянных клиентов?',
+   body:`<p>Самые успешные фрилансеры не ищут нового клиента каждый месяц — существующие сами приносят новые заказы.</p>
+   <h3>Сдавайте в срок</h3><p>Срыв дедлайна наносит серьёзный удар по репутации. Если чувствуете задержку — предупредите заранее.</p>
+   <h3>Давайте больше ожиданий</h3><p>Попросили логотип — добавьте brand guide. Маленький «бонус» восхищает клиента.</p>
+   <h3>Просите рейтинг</h3><p>Если клиент доволен — не стесняйтесь попросить отзыв. Рейтинги — ваше главное доказательство.</p>`}
+],
+en: [
+  {id:1,emoji:'🚀',tag:'Career',title:'How to start a freelance career?',date:'June 10, 2026',readTime:'6 min',
+   excerpt:'From creating your first profile to landing your first client — a step-by-step guide for freelancers in Azerbaijan.',
+   body:`<p>Starting a freelance career is exciting but can be confusing. Here are practical steps tailored for the Azerbaijani market.</p>
+   <h3>1. Define your niche</h3><p><strong>Design, programming, copywriting, SMM, translation</strong> — which are you strongest in? Narrow specialisation makes you more visible in the market.</p>
+   <h3>2. Build a portfolio</h3><ul><li>Create sample work for a fictional company</li><li>Help acquaintances for free</li><li>Contribute to open-source projects</li></ul>
+   <h3>3. Complete your profile</h3><p>Photo, bio, skills, hourly rate — all of these increase client trust.</p>
+   <h3>4. Send your first proposal</h3><p>Avoid template texts. Offer a <strong>specific solution to a specific problem</strong>.</p>
+   <h3>5. Earn your first rating</h3><p>Don't be afraid to offer a slightly lower price for the first job — the goal is to get a rating and review.</p>`},
+  {id:2,emoji:'💰',tag:'Pricing',title:'How to set your freelance rates?',date:'June 5, 2026',readTime:'5 min',
+   excerpt:'Too low — undervalued. Too high — no clients. How to find the right balance?',
+   body:`<p>Pricing is one of the biggest challenges for freelancers. You don't want to undervalue yourself or scare clients away.</p>
+   <h3>Research the Azerbaijani market</h3><p>Check profiles of freelancers in similar fields on Freelan.az.</p>
+   <h3>Reference prices</h3><ul><li><strong>Logo design:</strong> ₼80–300</li><li><strong>Landing page:</strong> ₼200–600</li><li><strong>SMM (monthly):</strong> ₼150–400</li><li><strong>Text (1000 words):</strong> ₼20–60</li></ul>
+   <h3>Raise your rates</h3><p>With every completed job, aim to raise your rate by 10–20%. <strong>Your rating is your strongest argument.</strong></p>`},
+  {id:3,emoji:'✍️',tag:'Proposals',title:'How to write a winning cover letter?',date:'June 1, 2026',readTime:'4 min',
+   excerpt:'Template proposals lose. The secrets of a proposal that actually wins clients.',
+   body:`<p>What does a client receiving dozens of proposals look for? Someone who understands them and offers a concrete solution.</p>
+   <h3>Avoid templates</h3><p>"I am a professional freelancer" — hundreds of competitors write exactly that. Get straight to the point.</p>
+   <h3>Structure</h3><ul><li><strong>First sentence:</strong> direct answer to the job post</li><li><strong>Middle:</strong> an example of similar work</li><li><strong>End:</strong> a specific question — establish contact</li></ul>
+   <h3>Length</h3><p>3–5 sentences is ideal. The client's time is limited.</p>`},
+  {id:4,emoji:'⏰',tag:'Productivity',title:'How to manage your time working from home?',date:'May 27, 2026',readTime:'5 min',
+   excerpt:'Time management is the biggest challenge for freelancers. Practical ways to stay productive.',
+   body:`<p>Managing yourself without an office environment is hard. But with the right system, you can be more productive than in an office.</p>
+   <h3>Fixed work hours</h3><p>Start every day at the same time. The brain adapts to regularity.</p>
+   <h3>Pomodoro technique</h3><p><strong>25 minutes of work + 5 minutes break.</strong> After 4 pomodoros, take a long 15–30 min break.</p>
+   <h3>Day planning</h3><ul><li>Write 3 main tasks for the next day the evening before</li><li>Do the most important task in the morning</li><li>Check email at set times during the day</li></ul>`},
+  {id:5,emoji:'🤝',tag:'Client relations',title:'Building long-term relationships with clients',date:'May 20, 2026',readTime:'4 min',
+   excerpt:'Finding a new client costs 5x more than keeping an existing one. How to build a loyal client base?',
+   body:`<p>The most successful freelancers don't search for new clients every month — their existing clients bring new work.</p>
+   <h3>Deliver on time</h3><p>Missing a deadline seriously damages your reputation. If you sense a delay — warn the client in advance.</p>
+   <h3>Exceed expectations</h3><p>They asked for a logo — add a brand guide. A small "bonus" delights clients and makes you memorable.</p>
+   <h3>Ask for a rating</h3><p>If the client is satisfied, don't hesitate to ask for a review. Ratings are your strongest proof.</p>`}
+]
+};
+
+const ARTICLES = ARTICLES_DATA[LANG] || ARTICLES_DATA.az;
+
 
 function renderBlogGrid() {
   const grid = document.getElementById('blog-grid');
