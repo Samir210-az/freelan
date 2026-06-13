@@ -758,8 +758,8 @@ window.jobCardHtml = function(j) {
     <div class="job-top">
       <div class="job-title">${esc(j.title)}</div>
       <div class="job-price" style="text-align:right;">
-        <div>₼${esc(j.totalPrice || j.budget)}</div>
-        ${j.serviceFee ? `<div style="font-size:11px;color:var(--ink3);font-weight:400;">+₼${esc(j.serviceFee)} xidmət</div>` : ''}
+        <div>₼${Number(j.totalPrice || j.budget).toFixed(2)}</div>
+        ${j.serviceFee ? `<div style="font-size:11px;color:var(--ink3);font-weight:400;">+₼${Number(j.serviceFee).toFixed(2)} xidmət</div>` : ''}
       </div>
     </div>
     <div class="job-desc">${esc((j.description||'').substring(0,130))}${(j.description||'').length>130?'…':''}</div>
@@ -834,4 +834,5 @@ window.requestPlan = async function(plan) {
 renderHeader();
 renderFooter();
 applyI18n();
+
 
