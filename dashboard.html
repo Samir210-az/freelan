@@ -515,23 +515,24 @@ window.removePhoto = function() {
 const WA_NUMBER = '994552107111';
 
 async function loadJobsForSelect() {
-  const { db, collection, getDocs, query, where } = FB;
+  const { db, collection, getDocs } = FB;
   const sel = document.getElementById('topup-job');
   if (!sel) return;
   try {
+    const uid  = FB.user.uid;
     const role = FB.userData?.role;
-    let snap;
-    if (role === 'client') {
-      snap = await getDocs(query(collection(db, 'jobs'), where('clientId', '==', FB.user.uid)));
-    } else {
-      snap = await getDocs(query(collection(db, 'jobs'), where('assignedTo', '==', FB.user.uid)));
-    }
+    const snap = await getDocs(collection(db, 'jobs'));
     const jobs = [];
-    snap.forEach(d => jobs.push({ id: d.id, ...d.data() }));
+    snap.forEach(d => {
+      const j = { id: d.id, ...d.data() };
+      if (role === 'client' && j.clientId === uid) jobs.push(j);
+      if (role === 'freelancer' && j.assignedTo === uid) jobs.push(j);
+    });
     jobs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-    sel.innerHTML = '<option value="">— Seçin —</option>' +
+    sel.innerHTML = '<option value="">— Seçin (istəyə bağlı) —</option>' +
       jobs.map(j => `<option value="${j.id}" data-title="${esc(j.title)}" data-budget="${j.budget||''}" data-id="${j.id}">${esc(j.title)}${j.budget ? ' (₼'+j.budget+')' : ''}</option>`).join('');
-  } catch(e) {}
+    updateWhatsAppLink();
+  } catch(e) { console.error('loadJobsForSelect:', e); }
 }
 
 function updateWhatsAppLink() {
