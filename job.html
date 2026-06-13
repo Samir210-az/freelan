@@ -314,22 +314,15 @@ window.submitWork = async function() {
   const linkInput = document.getElementById('work-link-input');
   const deliverableLink = linkInput ? linkInput.value.trim() : '';
   if (!confirm('İşi tamamlandı kimi göndərmək istəyirsiniz?\nMüştəri balansını artırıb təsdiq etməlidir.')) return;
-  const { db, doc, updateDoc, collection, addDoc, serverTimestamp } = FB;
+  const { db, doc, updateDoc, serverTimestamp } = FB;
   try {
+    // notifications yerine birbaşa jobs-a yazırıq (Rules problemi yoxdur)
     await updateDoc(doc(db,'jobs',jobId), {
       status: 'submitted',
       deliverableLink: deliverableLink || '',
-      submittedAt: serverTimestamp()
-    });
-    await addDoc(collection(db,'notifications'), {
-      toUid: job.clientId,
-      type: 'work_submitted',
-      jobId: jobId,
-      jobTitle: job.title,
-      freelancerName: FB.userData?.name || '',
-      amount: job.budget || 0,
-      read: false,
-      createdAt: serverTimestamp()
+      submittedAt: serverTimestamp(),
+      submittedBy: FB.userData?.name || '',
+      clientNotified: true
     });
     showToast('İş müştəriyə göndərildi! Müştəri balans artırıb təsdiq etməlidir.');
     load();
@@ -344,23 +337,20 @@ window.completeJob = async function() {
     return;
   }
   if (!confirm('İşi təsdiqləyirsiniz?' + (needed > 0 ? ' Balansınızdan ₼' + needed + ' silinəcək.' : ''))) return;
-  const { db, doc, updateDoc, collection, addDoc, serverTimestamp, getDoc } = FB;
+  const { db, doc, updateDoc, serverTimestamp } = FB;
   try {
     if (needed > 0) {
       await updateDoc(doc(db,'users', FB.user.uid), { balance: balance - needed });
       FB.userData.balance = balance - needed;
     }
-    await updateDoc(doc(db,'jobs',jobId), { status:'completed', completedAt: serverTimestamp() });
-    await addDoc(collection(db,'notifications'), {
-      toUid: 'admin',
-      type: 'job_completed',
-      jobId: jobId,
-      jobTitle: job.title,
-      clientName: FB.userData?.name || '',
-      freelancerId: job.assignedTo || '',
-      amount: needed,
-      read: false,
-      createdAt: serverTimestamp()
+    // notifications yerine jobs-a needsAdminPayment yazırıq
+    await updateDoc(doc(db,'jobs',jobId), {
+      status: 'completed',
+      completedAt: serverTimestamp(),
+      needsAdminPayment: true,
+      adminPaid: false,
+      completedByClient: FB.userData?.name || '',
+      paidAmount: needed
     });
     showToast('✅ İş təsdiqləndi! Admin ödənişi həyata keçirəcək.');
     load();
