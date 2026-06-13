@@ -388,3 +388,25 @@ footer{background:var(--ink);color:#cfe0cb;margin-top:80px;}
 [data-theme="dark"] .badge-orange{background:#3a2e10;color:#f5c451;}
 [data-theme="dark"] .badge-red{background:#3a1815;color:#ff9b91;}
 [data-theme="dark"] img.is-logo,[data-theme="dark"] .hero{filter:none;}
+
+/* ===== NOTIFICATIONS ===== */
+.notif-wrap{position:relative;flex-shrink:0;}
+.notif-btn{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:8px;background:var(--bg);cursor:pointer;font-size:16px;padding:0;transition:all .15s;}
+.notif-btn:hover{border-color:var(--green);background:var(--bg3);}
+.notif-count{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;background:#e53935;color:#fff;border-radius:9px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1;pointer-events:none;}
+.notif-panel{position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--bg);border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.12);z-index:2000;overflow:hidden;}
+.notif-panel-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);font-weight:700;font-size:14px;}
+.notif-mark-all{font-size:11px;color:var(--green);background:none;border:none;cursor:pointer;padding:0;font-weight:600;}
+.notif-mark-all:hover{text-decoration:underline;}
+.notif-list{max-height:340px;overflow-y:auto;}
+.notif-empty{padding:24px 16px;text-align:center;color:var(--ink3);font-size:14px;}
+.notif-item{padding:12px 16px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--border);line-height:1.5;transition:background .12s;}
+.notif-item:last-child{border-bottom:none;}
+.notif-item:hover{background:var(--bg2);}
+.notif-item-unread{background:#f0faf1;}
+.notif-item-unread:hover{background:#e2f5e4;}
+.notif-ago{display:block;font-size:11px;color:var(--ink3);margin-top:3px;}
+[data-theme="dark"] .notif-panel{background:var(--bg2);box-shadow:0 8px 32px rgba(0,0,0,.4);}
+[data-theme="dark"] .notif-item-unread{background:#132016;}
+[data-theme="dark"] .notif-item-unread:hover{background:#1a2e1d;}
+@media(max-width:480px){.notif-panel{width:calc(100vw - 24px);right:-60px;}}
