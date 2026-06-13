@@ -266,35 +266,41 @@ function renderUpgrades(list) {
 function renderCompleted(list, users) {
   const el = document.getElementById('completed-list');
   if (!el) return;
-  el.innerHTML = list.length ? list.map(j => {
+  if (!list.length) {
+    el.innerHTML = '<div class="empty"><div class="ico">✨</div><p>Hələ tamamlanan iş yoxdur</p></div>';
+    return;
+  }
+  el.innerHTML = list.map(j => {
     const client = users.find(u => u.id === j.clientId);
-    const fl = users.find(u => u.id === j.assignedTo);
-    const paid = j.adminPaid;
-    return `
-    <div class="prop-item" style="${paid ? 'opacity:.6;' : ''}">
-      <div class="prop-head">
-        <div style="flex:1;">
-          <div class="prop-name">💼 ${esc(j.title||'—')}</div>
-          <div class="prop-meta">
-            👤 Müştəri: <b>${esc(client?.name || j.clientName || '—')}</b> ·
-            🧑‍💻 Freelancer: <b>${esc(fl?.name || '—')}</b> ·
-            ${timeAgo(j.completedAt || j.createdAt)}
-          </div>
-          <div class="prop-cover" style="margin-top:6px;">
-            💰 Məbləğ: <b>₼${Number(j.budget||0).toFixed(2)} AZN</b>
-            ${fl?.email ? '· <span style="font-size:12px;color:var(--ink3);">'+esc(fl.email)+'</span>' : ''}
-          </div>
-          <a href="job.html?id=${esc(j.id)}" target="_blank" style="font-size:12px;color:var(--green);margin-top:4px;display:inline-block;">🔗 Elanı aç →</a>
-        </div>
-        <div style="text-align:right;flex-shrink:0;">
-          ${paid
-            ? '<span class="badge badge-gray">Ödənildi ✔</span>'
-            : '<span class="badge badge-green">Tamamlandı ✅</span><div style="margin-top:8px;"><button class="btn btn-green btn-sm" onclick="markPaid(''+j.id+'')">💸 Ödənildi</button></div>'
-          }
-        </div>
-      </div>
-    </div>`;
-  }).join('') : '<div class="empty"><div class="ico">✨</div><p>Hələ tamamlanan iş yoxdur</p></div>';
+    const fl     = users.find(u => u.id === j.assignedTo);
+    const paid   = !!j.adminPaid;
+    const amount = Number(j.budget||0).toFixed(2);
+    const flName = esc(fl?.name || '—');
+    const flEmail = fl?.email ? ' · <span style="font-size:12px;color:var(--ink3);">'+esc(fl.email)+'</span>' : '';
+    return '<div class="prop-item" style="'+(paid?'opacity:.6;':'')+'">'
+      + '<div class="prop-head">'
+        + '<div style="flex:1;">'
+          + '<div class="prop-name">💼 '+esc(j.title||'—')+'</div>'
+          + '<div class="prop-meta">👤 '+esc(client?.name||j.clientName||'—')+' · 🧑‍💻 '+flName+' · '+timeAgo(j.completedAt||j.createdAt)+'</div>'
+          + '<div class="prop-cover" style="margin-top:6px;">💰 ₼'+amount+' AZN'+flEmail+'</div>'
+          + '<a href="job.html?id='+esc(j.id)+'" target="_blank" style="font-size:12px;color:var(--green);margin-top:4px;display:inline-block;">🔗 Elanı aç →</a>'
+        + '</div>'
+        + '<div style="text-align:right;flex-shrink:0;">'
+          + (paid
+              ? '<span class="badge badge-gray">Ödənildi ✔</span>'
+              : '<span class="badge badge-green">Tamamlandı ✅</span>'
+                + '<div style="margin-top:8px;">'
+                + '<button class="btn btn-green btn-sm paid-btn" data-jid="'+j.id+'">💸 Ödənildi</button>'
+                + '</div>')
+        + '</div>'
+      + '</div>'
+    + '</div>';
+  }).join('');
+
+  // Event listener - onclick yerine delegation
+  el.querySelectorAll('.paid-btn').forEach(btn => {
+    btn.addEventListener('click', () => markPaid(btn.dataset.jid));
+  });
 }
 
 window.markPaid = async function(jobId) {
