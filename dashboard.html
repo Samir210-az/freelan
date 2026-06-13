@@ -530,7 +530,7 @@ window.sendTopup = async function() {
 };
 
 async function loadTopupHistory() {
-  const { db, collection, query, where, orderBy, getDocs } = FB;
+  const { db, collection, query, where, getDocs } = FB;
   const el = document.getElementById('topup-history');
   if (!el) return;
   try {
