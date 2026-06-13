@@ -121,11 +121,17 @@ function init() {
   loadAll();
 }
 
+let _cachedCompleted = null;
+let _cachedUsers = null;
+
 window.showSec = function(sec) {
   document.querySelectorAll('.dash-sec').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + sec)?.classList.add('active');
   document.querySelectorAll('.dash-nav a[data-sec]').forEach(a => a.classList.remove('active'));
   document.querySelector(`.dash-nav a[data-sec="${sec}"]`)?.classList.add('active');
+  if (sec === 'completed' && _cachedCompleted) {
+    renderCompleted(_cachedCompleted, _cachedUsers || []);
+  }
 };
 
 async function loadAll() {
@@ -173,6 +179,9 @@ async function loadAll() {
 
     // Tamamlanan işlər birbaşa jobs-dan
     const completedJobs = jobs.filter(j => j.status === 'completed');
+    completedJobs.sort((a,b) => (b.completedAt?.seconds||0) - (a.completedAt?.seconds||0));
+    _cachedCompleted = completedJobs;
+    _cachedUsers = users;
     document.getElementById('done-count').textContent = completedJobs.length;
     renderCompleted(completedJobs, users);
   } catch(e) {
