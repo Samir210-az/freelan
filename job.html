@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Elan — Freelan.az</title>
-<meta name="description" content="Freelance tapshiriqin detallari.">
+<meta name="description" content="Freelance tapşırığın detalları — büdcə, müddət, təkliflər.">
 <meta name="theme-color" content="#0d1f12">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -18,27 +18,27 @@
 .action-box.blue{background:rgba(31,87,195,0.08);border:1px solid rgba(31,87,195,0.2);}
 .action-box.green{background:rgba(20,160,0,0.08);border:1px solid rgba(20,160,0,0.2);}
 .action-box.orange{background:rgba(217,151,6,0.08);border:1px solid rgba(217,151,6,0.2);}
-.action-box.red{background:rgba(211,47,47,0.07);border:1px solid rgba(211,47,47,0.2);}
+.action-box.red{background:rgba(210,50,50,0.08);border:1px solid rgba(210,50,50,0.2);}
 .action-box p{margin:0 0 10px;color:var(--ink2);line-height:1.5;}
-.action-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
-
-/* Mubahise sohhbeti */
-.dispute-chat{margin-top:14px;border-top:1px solid var(--border);padding-top:14px;}
-.dispute-msg{padding:10px 14px;border-radius:10px;margin-bottom:8px;font-size:13.5px;line-height:1.5;}
-.dispute-msg.admin{background:rgba(211,47,47,0.07);border-left:3px solid #d32f2f;}
-.dispute-msg.mine{background:rgba(20,160,0,0.07);border-left:3px solid var(--green);}
-.dispute-msg.other{background:var(--card);border-left:3px solid var(--border);}
-.dispute-msg .dm-who{font-size:11px;color:var(--ink3);margin-bottom:4px;font-weight:600;}
-.dispute-input-row{display:flex;gap:8px;margin-top:10px;}
-.dispute-input-row input{flex:1;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--ink);font-size:14px;}
-
+.action-btns{display:flex;gap:8px;flex-wrap:wrap;}
+/* Dispute chat */
+.dispute-chat{margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;padding:4px 0;}
+.dc-msg{padding:10px 13px;border-radius:10px;font-size:13.5px;line-height:1.5;max-width:90%;}
+.dc-msg.admin{background:rgba(210,50,50,0.1);border:1px solid rgba(210,50,50,0.2);align-self:center;max-width:100%;text-align:center;}
+.dc-msg.mine{background:var(--green);color:#fff;align-self:flex-end;}
+.dc-msg.other{background:var(--card);border:1px solid var(--border);align-self:flex-start;}
+.dc-meta{font-size:11px;opacity:0.7;margin-top:3px;}
+.dc-input-row{display:flex;gap:8px;margin-top:10px;}
+.dc-input-row input{flex:1;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:13.5px;}
 /* Fayl yukle */
-.file-upload-area{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;margin-top:10px;transition:border-color .2s;}
+.file-upload-area{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;margin-top:10px;}
 .file-upload-area:hover{border-color:var(--green);}
 .file-upload-area input{display:none;}
-.file-list{margin-top:10px;font-size:13px;}
-.file-item{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--card);border-radius:8px;margin-bottom:6px;}
-.file-item a{color:var(--green);text-decoration:none;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-preview{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;}
+.file-preview a{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--card);border:1px solid var(--border);border-radius:7px;font-size:12.5px;color:var(--green);text-decoration:none;}
+.file-preview a:hover{background:var(--bg2);}
+.btn-danger{background:#d23232;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-danger:hover{background:#b52020;}
 </style>
 </head>
 <body>
@@ -52,18 +52,23 @@
 <script type="module" src="js/app.js?v=9"></script>
 <script type="module">
 import {
-  getStorage, ref as storageRef, uploadBytes, getDownloadURL
+  getStorage, ref as sRef, uploadBytes, getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 import {
   onSnapshot, orderBy, query as fsQuery,
-  collection as fsCol, addDoc as fsAddDoc, serverTimestamp as fsST
+  collection as fsCol, addDoc as fsAdd,
+  serverTimestamp as fsST
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const jobId = new URLSearchParams(location.search).get('id');
 let job = null;
 let unsubDispute = null;
+let storage = null;
 
-document.addEventListener('fb-ready', load);
+document.addEventListener('fb-ready', () => {
+  storage = getStorage(FB._app);
+  load();
+});
 document.addEventListener('bid-sent', load);
 
 let loading = false;
@@ -78,14 +83,13 @@ async function load() {
     document.title = job.title + ' — Freelan.az';
     let bids = [];
     try {
-      const bs = await getDocs(query(collection(db, 'bids'), where('jobId', '==', jobId)));
+      const bs = await getDocs(query(collection(db, 'bids'), where('jobId','==',jobId)));
       bs.forEach(d => bids.push({ id: d.id, ...d.data() }));
-      bids.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-    } catch(e) {}
+      bids.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    } catch(e){}
     render(bids);
-    // Mubahise statusundasa sohhbeti yukle
     if (job.status === 'disputed') subscribeDispute();
-  } catch(e) { renderError('Xeta: ' + e.message); }
+  } catch(e){ renderError('Xeta: ' + e.message); }
   loading = false;
 }
 
@@ -96,91 +100,95 @@ function renderError(msg) {
 }
 
 function statusBadge(s) {
-  if (s==='approved')    return '<span class="badge badge-green">'   + t('st_open')     + '</span>';
-  if (s==='in_progress') return '<span class="badge badge-blue">'    + t('st_progress') + '</span>';
-  if (s==='pending')     return '<span class="badge badge-orange">'  + t('st_pending')  + '</span>';
+  if (s==='approved')    return '<span class="badge badge-green">'  + t('st_open')     + '</span>';
+  if (s==='in_progress') return '<span class="badge badge-blue">'   + t('st_progress') + '</span>';
+  if (s==='pending')     return '<span class="badge badge-orange">' + t('st_pending')  + '</span>';
   if (s==='submitted')   return '<span class="badge badge-orange">Tesdiq gozlenir</span>';
-  if (s==='completed')   return '<span class="badge badge-gray">'    + t('st_done')     + '</span>';
+  if (s==='completed')   return '<span class="badge badge-gray">'   + t('st_done')     + '</span>';
   if (s==='disputed')    return '<span class="badge badge-red">Mubahise</span>';
   return '<span class="badge badge-gray">—</span>';
 }
 
+// ===== ACTION BOX =====
 function actionBox() {
   if (!FB.user || !job) return '';
-  const uid      = FB.user.uid;
-  const isOwner  = uid === job.clientId;
-  const isAssign = uid === job.assignedTo;
-  const isAdmin  = FB.userData?.role === 'admin';
+  const uid = FB.user.uid;
+  const isOwner    = uid === job.clientId;
+  const isAssigned = uid === job.assignedTo;
+  const isAdmin    = FB.userData?.role === 'admin';
 
-  // --- FREELANCER: ishi tamamladim ---
-  if (isAssign && job.status === 'in_progress') {
+  // Freelancer: ishi tamamladim + fayl gonderm
+  if (isAssigned && job.status === 'in_progress') {
     return '<div class="action-box blue">'
-      + '<p>&#x1F4E6; Siz bu isi icra edirsiniz. Ishi bitirdikden sonra asagidaki duymeje basin ve numune/shekil elave edin.</p>'
-      + '<div class="action-btns">'
-      + '<button class="btn btn-green" onclick="openSubmitModal()">&#x2705; Ishi tamamladim + Fayl gonder</button>'
+      + '<p>&#x1F4E6; Siz bu isi icra edirsiniz. Isi bitirdikden sonra numune/fayl elave edib "Isi tamamladim" basin.</p>'
+      + '<div class="file-upload-area" onclick="document.getElementById(\'submit-files\').click()">'
+      + '&#x1F4CE; Fayl ve ya sekil elave et (max 10MB)<br><small style="color:var(--ink3);">PNG, JPG, PDF, ZIP ve s.</small>'
+      + '<input type="file" id="submit-files" multiple accept="image/*,.pdf,.zip,.rar,.doc,.docx,.xls,.xlsx,.txt" onchange="previewFiles(this)">'
+      + '</div>'
+      + '<div id="file-preview-list" class="file-preview"></div>'
+      + '<div class="action-btns" style="margin-top:12px;">'
+      + '<button class="btn btn-green" id="submit-work-btn" onclick="submitWork()">&#x2705; Isi tamamladim</button>'
       + '</div></div>';
   }
 
-  // --- MUSTERI: tesdiqle ya mubahise ---
+  // Musteri: submitted - tesdiqle ya mubahise + fayllar
   if (isOwner && job.status === 'submitted') {
+    let filesHtml = '';
+    if (job.deliverables && job.deliverables.length) {
+      filesHtml = '<div class="file-preview">'
+        + job.deliverables.map(f =>
+            '<a href="'+f.url+'" target="_blank">&#x1F4CE; '+esc(f.name)+'</a>'
+          ).join('')
+        + '</div>';
+    }
     return '<div class="action-box orange">'
-      + '<p>&#x1F514; Freelancer ishi tamamladi kimi qeyd edib. Asagida gonderilen fayllara baxin ve qerar verin.</p>'
-      + (job.deliveryFiles && job.deliveryFiles.length
-          ? '<div class="file-list">' + job.deliveryFiles.map(f =>
-              '<div class="file-item">&#x1F4CE; <a href="'+f.url+'" target="_blank">'+esc(f.name)+'</a></div>'
-            ).join('') + '</div>'
-          : '<p style="font-size:12px;color:var(--ink3);">Fayl gonderilmeyib.</p>')
+      + '<p>&#x1F514; Freelancer isi tamamladi kimi qeyd edib. Asagida teslim edilenleri gorun ve qerar verin.</p>'
+      + filesHtml
       + '<div class="action-btns" style="margin-top:12px;">'
       + '<button class="btn btn-green" onclick="completeJob()">&#x2705; Tesdiqle — is tamamlandi</button>'
       + '<button class="btn btn-danger" onclick="disputeJob()">&#x26A0; Mubahise ac</button>'
       + '</div></div>';
   }
 
-  // --- MUSTERI: in_progress-de bekleyir ---
+  // Musteri: in_progress-de bekleyir
   if (isOwner && job.status === 'in_progress') {
     return '<div class="action-box blue"><p>&#x23F3; Freelancer is uzerinde calisir. Tamamlandiqda sizden tesdiq istenilecek.</p></div>';
   }
 
-  // --- MUBAHISE: ucterefli sohhbet ---
+  // Mubahise - ucterefli soхbet
   if (job.status === 'disputed') {
-    const canWrite = isOwner || isAssign || isAdmin;
+    const canWrite = isOwner || isAssigned || isAdmin;
     return '<div class="action-box red">'
-      + '<p>&#x26A0; Bu is mubahisededir. Asagida ucunuz de fikrinizi yazin. Admin qerarini bildirdigde is ya tamamlandi ya da iptala ucrayacaq.</p>'
-      + (isAdmin
-          ? '<div class="action-btns">'
-            + '<button class="btn btn-green btn-sm" onclick="resolveDispute(\'completed\')">&#x2705; Musteri lehine — tamamlandi</button>'
-            + '<button class="btn btn-danger btn-sm" onclick="resolveDispute(\'cancelled\')">&#x274C; Freelancer lehine — iptala</button>'
-            + '</div>'
-          : '')
-      + '<div class="dispute-chat" id="dispute-chat-area"><p style="color:var(--ink3);font-size:13px;">Yuklenilir...</p></div>'
-      + (canWrite
-          ? '<div class="dispute-input-row">'
-            + '<input type="text" id="dispute-msg-input" placeholder="Fikrinizi yazin..." onkeydown="if(event.key===\'Enter\')sendDisputeMsg()">'
-            + '<button class="btn btn-green" onclick="sendDisputeMsg()">Gonder</button>'
-            + '</div>'
-          : '')
+      + '<p>&#x26A0; Bu is mubahisededir. Asagida ucterefli soхbet aparila biler. Admin qerari verecek.</p>'
+      + '<div class="dispute-chat" id="dispute-chat"><div style="text-align:center;color:var(--ink3);font-size:13px;">Yuklenilir...</div></div>'
+      + (canWrite ? '<div class="dc-input-row">'
+          + '<input type="text" id="dc-input" placeholder="Fikrinizi yazin..." onkeydown="if(event.key===\'Enter\')sendDisputeMsg()">'
+          + '<button class="btn btn-green btn-sm" onclick="sendDisputeMsg()">Gonder</button>'
+          + (isAdmin ? '<button class="btn btn-line btn-sm" onclick="resolveDispute()">Hell et</button>' : '')
+          + '</div>' : '')
       + '</div>';
   }
 
   if (job.status === 'completed') {
-    return '<div class="action-box green"><p>&#x2705; Bu is ugurla tamamlandi.</p>'
-      + (job.deliveryFiles && job.deliveryFiles.length
-          ? '<div class="file-list">' + job.deliveryFiles.map(f =>
-              '<div class="file-item">&#x1F4CE; <a href="'+f.url+'" target="_blank" download>'+esc(f.name)+'</a></div>'
-            ).join('') + '</div>'
-          : '')
-      + '</div>';
+    let filesHtml = '';
+    if (job.deliverables && job.deliverables.length) {
+      filesHtml = '<div class="file-preview">'
+        + job.deliverables.map(f =>
+            '<a href="'+f.url+'" target="_blank">&#x1F4CE; '+esc(f.name)+'</a>'
+          ).join('')
+        + '</div>';
+    }
+    return '<div class="action-box green"><p>&#x2705; Bu is ugurla tamamlandi.</p>' + filesHtml + '</div>';
   }
-  if (job.status === 'cancelled') {
-    return '<div class="action-box red"><p>&#x274C; Bu is iptala ucradi.</p></div>';
-  }
+
   return '';
 }
 
+// ===== RENDER =====
 function render(bids) {
   const isOwner = FB.user && FB.user.uid === job.clientId;
   const isAdmin = FB.userData?.role === 'admin';
-  const myBid   = FB.user ? bids.find(b => b.freelancerId === FB.user.uid) : null;
+  const myBid = FB.user ? bids.find(b => b.freelancerId === FB.user.uid) : null;
 
   document.getElementById('jd-wrap').innerHTML =
   '<div>'
@@ -196,51 +204,53 @@ function render(bids) {
     + '</div>'
     + '<h3 style="font-size:15px;margin-bottom:8px;">' + t('jd_desc') + '</h3>'
     + '<p style="font-size:14.5px;color:var(--ink2);line-height:1.7;white-space:pre-wrap;">' + esc(job.description) + '</p>'
-    + (job.briefFiles && job.briefFiles.length
-        ? '<div style="margin-top:12px;"><b style="font-size:13px;">&#x1F4CE; Texniki tapshiriq faylları:</b>'
-          + '<div class="file-list">' + job.briefFiles.map(f =>
-              '<div class="file-item">&#x1F4CE; <a href="'+f.url+'" target="_blank">'+esc(f.name)+'</a></div>'
-            ).join('') + '</div></div>'
+    + (job.attachments && job.attachments.length
+        ? '<div style="margin-top:12px;"><b style="font-size:13px;">&#x1F4CE; Tapshiriq faylları:</b><div class="file-preview">'
+          + job.attachments.map(f=>'<a href="'+f.url+'" target="_blank">&#x1F4CE; '+esc(f.name)+'</a>').join('')
+          + '</div></div>'
         : '')
     + actionBox()
   + '</div>'
   + '<div class="jd-card" style="margin-top:18px;">'
     + '<h3 style="font-size:17px;margin-bottom:16px;">' + t('jd_props') + ' (' + bids.length + ')</h3>'
     + '<div id="bids-area">'
-      + (bids.length === 0
+      + (bids.length===0
           ? '<div class="empty"><div class="ico">&#x1F680;</div><p>'+t('jd_no_props')+'</p></div>'
-          : bids.map(b => bidHtml(b, isOwner)).join(''))
+          : bids.map(b=>bidHtml(b,isOwner)).join(''))
     + '</div>'
   + '</div>'
-+ '</div>'
+  + '</div>'
 
-+ '<div class="jd-side">'
-  + '<div class="jd-card">'
-    + '<div class="jd-price">&#x20BC;' + Number(job.totalPrice || job.budget).toFixed(2) + '</div>'
-    + (job.serviceFee ? '<div style="font-size:12px;color:var(--ink3);margin-bottom:4px;">+&#x20BC;' + Number(job.serviceFee).toFixed(2) + ' xidmet haqqi</div>' : '')
-    + '<div style="font-size:12px;color:var(--ink3);margin-bottom:16px;">' + t('jd_fixed') + '</div>'
-    + (myBid
-        ? '<div class="ok-box" style="display:block;">&#x2705; ' + t('jd_bid_sent') + ': <b>&#x20BC;' + myBid.amount + '</b>' + (myBid.status==='accepted'?' — '+t('st_accepted'):'')+  '</div>'
-        : (!isOwner && !isAdmin && job.status === 'approved')
-          ? '<button class="btn btn-green" style="width:100%;" onclick="openBid(\''+job.id+'\',\''+esc(job.title)+'\')">'+t('jd_send')+'</button>'
-          : '')
-    + (isOwner ? '<p style="font-size:12.5px;color:var(--ink3);text-align:center;">'+t('jd_yours')+'</p>' : '')
-    + '<div style="margin-top:16px;">'
-      + '<div class="info-row"><span>'+t('jd_cat')+'</span><strong>'+esc(job.category)+'</strong></div>'
-      + '<div class="info-row"><span>'+t('jd_dur')+'</span><strong>'+esc(job.deadline)+' '+t('day_s')+'</strong></div>'
-      + '<div class="info-row"><span>'+t('jd_props')+'</span><strong>'+bids.length+'</strong></div>'
-      + '<div class="info-row"><span>'+t('jd_posted')+'</span><strong>'+timeAgo(job.createdAt)+'</strong></div>'
+  + '<div class="jd-side">'
+    + '<div class="jd-card">'
+      + '<div class="jd-price">&#x20BC;' + Number(job.totalPrice||job.budget).toFixed(2) + '</div>'
+      + (job.serviceFee ? '<div style="font-size:12px;color:var(--ink3);margin-bottom:4px;">+&#x20BC;'+Number(job.serviceFee).toFixed(2)+' xidmet haqqi</div>' : '')
+      + '<div style="font-size:12px;color:var(--ink3);margin-bottom:16px;">' + t('jd_fixed') + '</div>'
+      + (myBid
+          ? '<div class="ok-box" style="display:block;">&#x2705; '+t('jd_bid_sent')+': <b>&#x20BC;'+myBid.amount+'</b>'+(myBid.status==='accepted'?' — '+t('st_accepted'):'')+' </div>'
+          : (!isOwner && !isAdmin && job.status==='approved')
+            ? '<button class="btn btn-green" style="width:100%;" onclick="openBid(\''+job.id+'\',\''+esc(job.title)+'\')">'+t('jd_send')+'</button>'
+            : '')
+      + (isOwner ? '<p style="font-size:12.5px;color:var(--ink3);text-align:center;">'+t('jd_yours')+'</p>' : '')
+      + '<div style="margin-top:16px;">'
+        + '<div class="info-row"><span>'+t('jd_cat')+'</span><strong>'+esc(job.category)+'</strong></div>'
+        + '<div class="info-row"><span>'+t('jd_dur')+'</span><strong>'+esc(job.deadline)+' '+t('day_s')+'</strong></div>'
+        + '<div class="info-row"><span>'+t('jd_props')+'</span><strong>'+bids.length+'</strong></div>'
+        + '<div class="info-row"><span>'+t('jd_posted')+'</span><strong>'+timeAgo(job.createdAt)+'</strong></div>'
+      + '</div>'
     + '</div>'
-  + '</div>'
-  + '<div class="jd-card">'
-    + '<h4 style="font-size:13px;margin-bottom:12px;color:var(--ink2);">'+t('jd_client')+'</h4>'
-    + '<div style="display:flex;align-items:center;gap:11px;">'
-      + '<div class="avatar" style="width:42px;height:42px;font-size:16px;">' + esc((job.clientName||'?')[0].toUpperCase()) + '</div>'
-      + '<div style="font-weight:700;font-size:14.5px;">' + esc(job.clientName||t('db_client')) + '</div>'
+    + '<div class="jd-card">'
+      + '<h4 style="font-size:13px;margin-bottom:12px;color:var(--ink2);">'+t('jd_client')+'</h4>'
+      + '<div style="display:flex;align-items:center;gap:11px;">'
+        + '<div class="avatar" style="width:42px;height:42px;font-size:16px;">' + esc((job.clientName||'?')[0].toUpperCase()) + '</div>'
+        + '<div style="font-weight:700;font-size:14.5px;">' + esc(job.clientName||t('db_client')) + '</div>'
+      + '</div>'
+      + (!isOwner ? '<button class="btn btn-line btn-sm" style="width:100%;margin-top:14px;" onclick="openMessage(\''+job.clientId+'\',\''+esc(job.clientName||t('db_client'))+'\')">'+t('msg_send')+'</button>' : '')
     + '</div>'
-    + (!isOwner ? '<button class="btn btn-line btn-sm" style="width:100%;margin-top:14px;" onclick="openMessage(\''+job.clientId+'\',\''+esc(job.clientName||t('db_client'))+'\')">'+t('msg_send')+'</button>' : '')
-  + '</div>'
-+ '</div>';
+  + '</div>';
+
+  // Disputed ise dispute subscribe et
+  if (job.status === 'disputed') subscribeDispute();
 }
 
 function bidHtml(b, isOwner) {
@@ -250,14 +260,14 @@ function bidHtml(b, isOwner) {
         + '<div class="avatar">' + esc((b.freelancerName||'?')[0].toUpperCase()) + '</div>'
         + '<div>'
           + '<div class="prop-name">' + esc(b.freelancerName) + ' ' + planBadge(b.freelancerPlan) + '</div>'
-          + '<div class="prop-meta">' + esc(b.freelancerTitle||'Freelancer') + ' &middot; &#x2B50; ' + (b.freelancerRating > 0 ? b.freelancerRating.toFixed(1) : t('new_lbl')) + ' &middot; &#x23F1; ' + b.days + ' ' + t('day_s') + '</div>'
+          + '<div class="prop-meta">' + esc(b.freelancerTitle||'Freelancer') + ' &middot; &#x2B50; ' + (b.freelancerRating>0?b.freelancerRating.toFixed(1):t('new_lbl')) + ' &middot; &#x23F1; ' + b.days + ' ' + t('day_s') + '</div>'
         + '</div>'
       + '</div>'
       + '<div style="text-align:right;">'
         + '<div class="prop-amount">&#x20BC;' + b.amount + '</div>'
-        + (b.status === 'accepted'
+        + (b.status==='accepted'
             ? '<span class="badge badge-green" style="margin-top:4px;">'+t('st_accepted')+'</span>'
-            : (isOwner && job.status === 'approved')
+            : (isOwner && job.status==='approved')
               ? '<button class="btn btn-green btn-sm" style="margin-top:6px;" onclick="acceptBid(\''+b.id+'\',\''+b.freelancerId+'\')">'+t('accept')+'</button>'
               : '')
         + (isOwner ? '<button class="btn btn-line btn-sm" style="margin-top:6px;" onclick="openMessage(\''+b.freelancerId+'\',\''+esc(b.freelancerName)+'\')">'+t('msg_btn')+'</button>' : '')
@@ -272,96 +282,68 @@ window.acceptBid = async function(bidId, freelancerId) {
   if (!confirm(t('cf_bid'))) return;
   const { db, doc, updateDoc } = FB;
   try {
-    await updateDoc(doc(db, 'bids', bidId), { status: 'accepted' });
-    await updateDoc(doc(db, 'jobs', jobId), { status: 'in_progress', assignedTo: freelancerId });
+    await updateDoc(doc(db,'bids',bidId), { status:'accepted' });
+    await updateDoc(doc(db,'jobs',jobId), { status:'in_progress', assignedTo: freelancerId });
     showToast('Teklif qebul edildi! Is bashlayir');
     load();
-  } catch(e) { showToast('Xeta: ' + e.message); }
+  } catch(e){ showToast('Xeta: '+e.message); }
 };
 
-// ===== FREELANCER: IS TESLIMI MODALI =====
-window.openSubmitModal = function() {
-  if (document.getElementById('submit-modal')) return;
-  const m = document.createElement('div');
-  m.id = 'submit-modal';
-  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;';
-  m.innerHTML =
-    '<div style="background:var(--bg);border-radius:16px;padding:24px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;">'
-    + '<h3 style="margin-bottom:16px;">&#x1F4E4; Ishi teslim et</h3>'
-    + '<p style="font-size:13.5px;color:var(--ink2);margin-bottom:14px;">Shekil, fayl ve ya link gonderek musteriye ishi teslim edin (max 5 fayl, 10MB/fayl).</p>'
-    + '<div class="file-upload-area" onclick="document.getElementById(\'submit-files-input\').click()">'
-      + '&#x1F4CE; Fayl sechin ve ya bura surukhleyin<br><small style="color:var(--ink3);">JPG, PNG, PDF, ZIP, MP4 ve s. — max 10MB</small>'
-      + '<input type="file" id="submit-files-input" multiple accept="image/*,.pdf,.zip,.rar,.doc,.docx,.mp4,.mov,.sketch,.fig" onchange="previewSubmitFiles(this)">'
-    + '</div>'
-    + '<div id="submit-files-preview" class="file-list"></div>'
-    + '<p style="font-size:13px;color:var(--ink2);margin:14px 0 6px;">Qeyd (istege bagli):</p>'
-    + '<textarea id="submit-note" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--ink);font-size:14px;min-height:80px;resize:vertical;" placeholder="Musteiye izah..."></textarea>'
-    + '<div style="display:flex;gap:10px;margin-top:16px;">'
-      + '<button class="btn btn-green" style="flex:1;" onclick="doSubmitWork()">&#x2705; Gonder</button>'
-      + '<button class="btn btn-line" onclick="document.getElementById(\'submit-modal\').remove()">Iptala</button>'
-    + '</div>'
-    + '<p id="submit-progress" style="font-size:12px;color:var(--green);margin-top:8px;display:none;">Yuklenir...</p>'
-    + '</div>';
-  document.body.appendChild(m);
-};
-
-window.previewSubmitFiles = function(input) {
-  const prev = document.getElementById('submit-files-preview');
-  prev.innerHTML = Array.from(input.files).map(f =>
-    '<div class="file-item">&#x1F4CE; ' + esc(f.name) + ' <small style="color:var(--ink3);">(' + (f.size/1024/1024).toFixed(2) + ' MB)</small></div>'
+// ===== FAYL PREVIEW (yuklemeden once) =====
+let selectedFiles = [];
+window.previewFiles = function(input) {
+  selectedFiles = Array.from(input.files);
+  const el = document.getElementById('file-preview-list');
+  if (!el) return;
+  el.innerHTML = selectedFiles.map(f =>
+    '<span style="padding:5px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:12px;">&#x1F4CE; '+esc(f.name)+'</span>'
   ).join('');
 };
 
-window.doSubmitWork = async function() {
-  const filesInput = document.getElementById('submit-files-input');
-  const note = document.getElementById('submit-note').value.trim();
-  const prog = document.getElementById('submit-progress');
-  const files = Array.from(filesInput.files);
+// ===== FREELANCER: ISHI TAMAMLADI + FAYL YUKLE =====
+window.submitWork = async function() {
+  if (!confirm('Ishi tamamlandi kimi qeyd etmek isteyirsiniz?\nMusteri tesdiq etmelidir.')) return;
+  const btn = document.getElementById('submit-work-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Yuklenir...'; }
 
-  if (!confirm('Ishi tamamlandi kimi gonderek?\nMusteri tesdiq etmelidir.')) return;
-
-  prog.style.display = 'block';
-  prog.textContent = 'Fayllar yuklenir...';
-
+  const { db, doc, updateDoc } = FB;
   try {
-    const storage = getStorage();
-    const deliveryFiles = [];
+    let deliverables = [];
 
-    for (const file of files) {
-      if (file.size > 10 * 1024 * 1024) { showToast(file.name + ' cox boyukdur (max 10MB)'); continue; }
-      const path = 'deliveries/' + jobId + '/' + Date.now() + '_' + file.name;
-      const sRef = storageRef(storage, path);
-      await uploadBytes(sRef, file);
-      const url = await getDownloadURL(sRef);
-      deliveryFiles.push({ name: file.name, url });
+    // Faylları Firebase Storage-a yukle
+    if (selectedFiles.length > 0 && storage) {
+      for (const file of selectedFiles) {
+        if (file.size > 10 * 1024 * 1024) { showToast(esc(file.name) + ' coxdur (max 10MB)'); continue; }
+        const path = 'deliverables/' + jobId + '/' + Date.now() + '_' + file.name;
+        const storageRef = sRef(storage, path);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        deliverables.push({ name: file.name, url });
+      }
     }
 
-    const { db, doc, updateDoc } = FB;
-    await updateDoc(doc(db, 'jobs', jobId), {
+    await updateDoc(doc(db,'jobs',jobId), {
       status: 'submitted',
-      deliveryFiles,
-      deliveryNote: note,
+      deliverables,
       submittedAt: new Date()
     });
-
-    document.getElementById('submit-modal').remove();
-    showToast('Is musteriye gonderildi! Tesdiq gozlenir');
+    showToast('Is musteriye gonderildi! Tesdiq gozlenilir');
     load();
-  } catch(e) {
-    prog.textContent = 'Xeta: ' + e.message;
+  } catch(e){
     showToast('Xeta: ' + e.message);
+    if (btn) { btn.disabled=false; btn.textContent='Isi tamamladim'; }
   }
 };
 
-// ===== MUSTERI: TESDIQLE =====
+// ===== MUSTERI: TESDIQ =====
 window.completeJob = async function() {
-  if (!confirm('Ishi tesdiqleyirik ve tamamlandi kimi qeyd edirik?')) return;
+  if (!confirm('Ishi tesdiqleyir ve tamamlandi kimi qeyd edirik?')) return;
   const { db, doc, updateDoc } = FB;
   try {
-    await updateDoc(doc(db, 'jobs', jobId), { status: 'completed', completedAt: new Date() });
+    await updateDoc(doc(db,'jobs',jobId), { status:'completed', completedAt: new Date() });
     showToast('Is ugurla tamamlandi!');
     load();
-  } catch(e) { showToast('Xeta: ' + e.message); }
+  } catch(e){ showToast('Xeta: '+e.message); }
 };
 
 // ===== MUSTERI: MUBAHISE =====
@@ -369,13 +351,13 @@ window.disputeJob = async function() {
   if (!confirm('Mubahise achmaq isteyirsiniz?\nAdmin arasiya girecek.')) return;
   const { db, doc, updateDoc } = FB;
   try {
-    await updateDoc(doc(db, 'jobs', jobId), { status: 'disputed', disputedAt: new Date() });
+    await updateDoc(doc(db,'jobs',jobId), { status:'disputed' });
     showToast('Mubahise achildi. Admin elaqe saxlayacaq.');
     load();
-  } catch(e) { showToast('Xeta: ' + e.message); }
+  } catch(e){ showToast('Xeta: '+e.message); }
 };
 
-// ===== MUBAHISE SOHHBET: REAL-TIME =====
+// ===== DISPUTE CHAT - REAL TIME =====
 function subscribeDispute() {
   if (unsubDispute) unsubDispute();
   const q = fsQuery(
@@ -383,65 +365,68 @@ function subscribeDispute() {
     orderBy('at', 'asc')
   );
   unsubDispute = onSnapshot(q, snap => {
-    const area = document.getElementById('dispute-chat-area');
-    if (!area) return;
+    const el = document.getElementById('dispute-chat');
+    if (!el) return;
     const msgs = [];
     snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
     if (!msgs.length) {
-      area.innerHTML = '<p style="color:var(--ink3);font-size:13px;">Henuz mesaj yoxdur. Fikrinizi yazin.</p>';
+      el.innerHTML = '<div style="text-align:center;color:var(--ink3);font-size:13px;padding:12px;">Hec bir mesaj yoxdur. Birincini siz yazin.</div>';
       return;
     }
-    area.innerHTML = msgs.map(m => {
-      const isAdmin  = m.role === 'admin';
-      const isMine   = m.from === FB.user?.uid;
-      const cls      = isAdmin ? 'admin' : isMine ? 'mine' : 'other';
-      const who      = isAdmin ? '&#x1F451; Admin' : esc(m.name || 'Istifadeci');
-      return '<div class="dispute-msg ' + cls + '">'
-        + '<div class="dm-who">' + who + '</div>'
+    el.innerHTML = msgs.map(m => {
+      const isMe = FB.user && m.uid === FB.user.uid;
+      const isAdminMsg = m.role === 'admin';
+      const cls = isAdminMsg ? 'admin' : isMe ? 'mine' : 'other';
+      return '<div class="dc-msg ' + cls + '">'
+        + (isAdminMsg ? '&#x1F451; <b>Admin:</b> ' : '')
         + esc(m.text)
+        + '<div class="dc-meta">' + esc(m.name) + ' &middot; ' + (m.at ? new Date(m.at.seconds*1000).toLocaleTimeString('az',{hour:'2-digit',minute:'2-digit'}) : '') + '</div>'
         + '</div>';
     }).join('');
-    area.scrollTop = area.scrollHeight;
+    el.scrollTop = el.scrollHeight;
   });
 }
 
 window.sendDisputeMsg = async function() {
-  const input = document.getElementById('dispute-msg-input');
-  if (!input) return;
-  const text = input.value.trim();
-  if (!text || !FB.user) return;
-  input.value = '';
+  const inp = document.getElementById('dc-input');
+  if (!inp) return;
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
   try {
-    await fsAddDoc(
-      fsCol(FB.db, 'jobs', jobId, 'dispute_messages'),
-      {
-        from: FB.user.uid,
-        name: FB.userData?.name || FB.user.email,
-        role: FB.userData?.role || 'user',
-        text,
-        at: fsST()
-      }
-    );
-  } catch(e) { showToast('Gonderilmedi: ' + e.message); }
+    await fsAdd(fsCol(FB.db, 'jobs', jobId, 'dispute_messages'), {
+      text,
+      uid: FB.user.uid,
+      name: FB.userData?.name || FB.user.email.split('@')[0],
+      role: FB.userData?.role || 'user',
+      at: fsST()
+    });
+  } catch(e){ showToast('Gonderilmedi: '+e.message); }
 };
 
-// ===== ADMIN: MUBAHISE HELL ET =====
-window.resolveDispute = async function(resolution) {
-  const msg = resolution === 'completed'
-    ? 'Musteri lehine - is tamamlandi kimi qeyd edilecek. Eminsiniz?'
-    : 'Freelancer lehine - is iptala ucrayacaq. Eminsiniz?';
-  if (!confirm(msg)) return;
+// ===== ADMIN: MUBAHISENI HELL ET =====
+window.resolveDispute = async function() {
+  const resolution = prompt('Qerari yazin (musteri ve freelancer gorur):');
+  if (!resolution) return;
   const { db, doc, updateDoc } = FB;
   try {
-    await updateDoc(doc(db, 'jobs', jobId), {
-      status: resolution,
-      resolvedAt: new Date(),
-      resolvedBy: FB.user.uid
+    // Admin qerari dispute chat-a yazilir
+    await fsAdd(fsCol(FB.db, 'jobs', jobId, 'dispute_messages'), {
+      text: 'ADMIN QARARI: ' + resolution,
+      uid: FB.user.uid,
+      name: 'Admin',
+      role: 'admin',
+      at: fsST()
     });
+    // Status secimi
+    if (confirm('Ishi tamamlandi kimi qeyd etmek? (OK=Tamamlandi, Legv=Ipttal)')) {
+      await updateDoc(doc(db,'jobs',jobId), { status:'completed', completedAt: new Date() });
+    } else {
+      await updateDoc(doc(db,'jobs',jobId), { status:'cancelled' });
+    }
     showToast('Mubahise hell edildi.');
-    if (unsubDispute) { unsubDispute(); unsubDispute = null; }
     load();
-  } catch(e) { showToast('Xeta: ' + e.message); }
+  } catch(e){ showToast('Xeta: '+e.message); }
 };
 </script>
 </body>
