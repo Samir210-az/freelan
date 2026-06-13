@@ -541,6 +541,7 @@ window.removePhoto = function() {
 
 // ── BALANS ──────────────────────────────────────────────────
 const WA_NUMBER = '994552107111';
+let _myJobs = []; // yüklənmiş işlər cache
 
 async function loadJobsForSelect() {
   const { db, collection, getDocs } = FB;
@@ -550,15 +551,15 @@ async function loadJobsForSelect() {
     const uid  = FB.user.uid;
     const role = FB.userData?.role;
     const snap = await getDocs(collection(db, 'jobs'));
-    const jobs = [];
+    _myJobs = [];
     snap.forEach(d => {
       const j = { id: d.id, ...d.data() };
-      if (role === 'client' && j.clientId === uid) jobs.push(j);
-      if (role === 'freelancer' && j.assignedTo === uid) jobs.push(j);
+      if (role === 'client'     && j.clientId   === uid) _myJobs.push(j);
+      if (role === 'freelancer' && j.assignedTo === uid) _myJobs.push(j);
     });
-    jobs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    _myJobs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
     sel.innerHTML = '<option value="">— Seçin (istəyə bağlı) —</option>' +
-      jobs.map(j => `<option value="${j.id}" data-title="${esc(j.title)}" data-budget="${j.budget||''}" data-id="${j.id}">${esc(j.title)}${j.budget ? ' (₼'+j.budget+')' : ''}</option>`).join('');
+      _myJobs.map(j => '<option value="'+j.id+'">'+esc(j.title)+(j.budget?' (₼'+j.budget+')':'')+'</option>').join('');
     updateWhatsAppLink();
   } catch(e) { console.error('loadJobsForSelect:', e); }
 }
@@ -570,25 +571,22 @@ function updateWhatsAppLink() {
   const name   = FB.userData?.name || FB.user?.email || '';
   const email  = FB.user?.email || '';
 
-  const selOpt    = sel?.options[sel.selectedIndex];
-  const jobTitle  = selOpt?.dataset?.title || '';
-  const jobBudget = selOpt?.dataset?.budget || '';
-  const jobId     = selOpt?.dataset?.id || '';
-  const jobLink   = jobId ? `https://samir210-az.github.io/freelan/job.html?id=${jobId}` : '';
+  // seçilmiş işi _myJobs cache-dən al
+  const jobId  = sel?.value || '';
+  const selJob = _myJobs.find(j => j.id === jobId);
+  const jobTitle  = selJob?.title  || '';
+  const jobBudget = selJob?.budget || '';
+  const jobLink   = jobId ? 'https://samir210-az.github.io/freelan/job.html?id=' + jobId : '';
 
-  let msg = `📋 *Freelan.az — Balans artırma sorğusu*\n`;
-  msg += `👤 İstifadəçi: ${name}`;
-  if (email) msg += ` (${email})`;
-  if (jobTitle) {
-    msg += `\n💼 İş: ${jobTitle}`;
-    if (jobBudget) msg += ` — ₼${jobBudget} AZN`;
-    if (jobLink)   msg += `\n🔗 Link: ${jobLink}`;
-  }
-  if (amount) msg += `\n💰 Ödəniş məbləği: ₼${amount} AZN`;
-  if (note)   msg += `\n📝 Qeyd: ${note}`;
-  msg += `\n\nZəhmət olmasa ödənişi təsdiqləyin.`;
+  let msg = '📋 *Freelan.az — Balans artırma sorğusu*\n';
+  msg += '👤 İstifadəçi: ' + name + ' (' + email + ')';
+  if (jobTitle)  msg += '\n💼 İş: ' + jobTitle + (jobBudget ? ' — ₼' + jobBudget + ' AZN' : '');
+  if (jobLink)   msg += '\n🔗 Link: ' + jobLink;
+  if (amount)    msg += '\n💰 Ödəniş məbləği: ₼' + amount + ' AZN';
+  if (note)      msg += '\n📝 Qeyd: ' + note;
+  msg += '\n\nZəhmət olmasa ödənişi təsdiqləyin.';
 
-  const link = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+  const link = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(msg);
   const btn = document.getElementById('whatsapp-btn');
   if (btn) btn.href = link;
 }
