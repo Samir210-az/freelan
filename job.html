@@ -128,16 +128,29 @@ function actionBox() {
 
   // MUSTERİ: submitted
   if (isOwner && job.status === 'submitted') {
+    const balance = parseFloat(FB.userData?.balance || 0);
+    const needed  = parseFloat(job.budget || 0);
+    const hasBalance = needed === 0 || balance >= needed;
     const linkHtml = job.deliverableLink
-      ? '<p style="margin:8px 0 4px;font-size:13px;color:var(--ink2);">&#x1F4CE; Freelancerin gondərdiyi link:</p>'
+      ? '<p style="margin:8px 0 4px;font-size:13px;color:var(--ink2);">&#x1F4CE; Freelancerin göndərdiyi link:</p>'
         + '<a class="delivered-link" href="' + esc(job.deliverableLink) + '" target="_blank" rel="noopener">&#x1F517; ' + esc(job.deliverableLink) + '</a>'
-      : '<p style="margin:8px 0;font-size:13px;color:var(--ink3);">Freelancer fayl linki gondermeyib. Mesaj vasitesile sorusha bilersiniz.</p>';
+      : '<p style="margin:8px 0;font-size:13px;color:var(--ink3);">Freelancer fayl linki göndərməyib. Mesaj vasitəsilə soruşa bilərsiniz.</p>';
+    const balanceWarn = !hasBalance
+      ? '<div style="background:rgba(217,100,0,.1);border:1px solid rgba(217,100,0,.3);border-radius:8px;padding:12px;margin:10px 0;font-size:13.5px;">'
+        + '&#x26A0;&#xFE0F; <b>Balansınız kifayət deyil!</b> İşi təsdiqləmək üçün ₼' + needed + ' AZN lazımdır.<br>'
+        + 'Cari balans: <b>₼' + balance.toFixed(2) + '</b><br>'
+        + '<a href="dashboard.html" onclick="sessionStorage.setItem(\'openSec\',\'balance\')" style="color:var(--green);font-weight:600;">&#x1F4B3; Balansı artır →</a>'
+        + '</div>'
+      : '';
     return '<div class="action-box orange">'
-      + '<p>&#x1F514; Freelancer isi tamamladi kimi qeyd edib. Asagidaki linke baxin ve qerar verin.</p>'
+      + '<p>&#x1F514; Freelancer işi tamamladı. Aşağıdakı linkə baxın və qərar verin.</p>'
       + linkHtml
+      + balanceWarn
       + '<div class="action-btns">'
-      + '<button class="btn btn-green" onclick="completeJob()">&#x2705; Tesdiqle — is tamamlandi</button>'
-      + '<button class="btn btn-danger" onclick="disputeJob()">&#x26A0; Mubahise ac</button>'
+      + (hasBalance
+          ? '<button class="btn btn-green" onclick="completeJob()">&#x2705; Təsdiqləyin — iş tamamlandı (₼' + needed + ')</button>'
+          : '<button class="btn btn-green" disabled style="opacity:.4;cursor:not-allowed;">&#x1F512; Balansı artırın, sonra təsdiqləyin</button>')
+      + '<button class="btn btn-danger" onclick="disputeJob()">&#x26A0; Mübahisə aç</button>'
       + '</div></div>';
   }
 
@@ -300,27 +313,58 @@ window.acceptBid = async function(bidId, freelancerId) {
 window.submitWork = async function() {
   const linkInput = document.getElementById('work-link-input');
   const deliverableLink = linkInput ? linkInput.value.trim() : '';
-  if (!confirm('Ishi tamamlandi kimi qeyd etmek isteyirsiniz?\nMusteri tesdiq etmelidir.')) return;
-  const { db, doc, updateDoc } = FB;
+  if (!confirm('İşi tamamlandı kimi göndərmək istəyirsiniz?\nMüştəri balansını artırıb təsdiq etməlidir.')) return;
+  const { db, doc, updateDoc, collection, addDoc, serverTimestamp } = FB;
   try {
     await updateDoc(doc(db,'jobs',jobId), {
       status: 'submitted',
       deliverableLink: deliverableLink || '',
-      submittedAt: new Date()
+      submittedAt: serverTimestamp()
     });
-    showToast('Is musteriye gonderildi! Tesdiq gozlenilir');
+    await addDoc(collection(db,'notifications'), {
+      toUid: job.clientId,
+      type: 'work_submitted',
+      jobId: jobId,
+      jobTitle: job.title,
+      freelancerName: FB.userData?.name || '',
+      amount: job.budget || 0,
+      read: false,
+      createdAt: serverTimestamp()
+    });
+    showToast('İş müştəriyə göndərildi! Müştəri balans artırıb təsdiq etməlidir.');
     load();
-  } catch(e){ showToast('Xeta: '+e.message); }
+  } catch(e){ showToast('Xəta: '+e.message); }
 };
 
 window.completeJob = async function() {
-  if (!confirm('Ishi tesdiqleyirik ve tamamlandi kimi qeyd edirik?')) return;
-  const { db, doc, updateDoc } = FB;
+  const balance = parseFloat(FB.userData?.balance || 0);
+  const needed  = parseFloat(job.budget || 0);
+  if (needed > 0 && balance < needed) {
+    showToast('❌ Balansınız kifayət deyil! Əvvəlcə ₼' + needed + ' AZN balansa artırın.');
+    return;
+  }
+  if (!confirm('İşi təsdiqləyirsiniz?' + (needed > 0 ? ' Balansınızdan ₼' + needed + ' silinəcək.' : ''))) return;
+  const { db, doc, updateDoc, collection, addDoc, serverTimestamp, getDoc } = FB;
   try {
-    await updateDoc(doc(db,'jobs',jobId), { status:'completed', completedAt: new Date() });
-    showToast('Is ugurla tamamlandi!');
+    if (needed > 0) {
+      await updateDoc(doc(db,'users', FB.user.uid), { balance: balance - needed });
+      FB.userData.balance = balance - needed;
+    }
+    await updateDoc(doc(db,'jobs',jobId), { status:'completed', completedAt: serverTimestamp() });
+    await addDoc(collection(db,'notifications'), {
+      toUid: 'admin',
+      type: 'job_completed',
+      jobId: jobId,
+      jobTitle: job.title,
+      clientName: FB.userData?.name || '',
+      freelancerId: job.assignedTo || '',
+      amount: needed,
+      read: false,
+      createdAt: serverTimestamp()
+    });
+    showToast('✅ İş təsdiqləndi! Admin ödənişi həyata keçirəcək.');
     load();
-  } catch(e){ showToast('Xeta: '+e.message); }
+  } catch(e){ showToast('Xəta: '+e.message); }
 };
 
 window.disputeJob = async function() {
