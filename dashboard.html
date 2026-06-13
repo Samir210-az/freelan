@@ -559,7 +559,7 @@ window.removePhoto = function() {
 
 // ── BALANS ──────────────────────────────────────────────────
 const WA_NUMBER = '994552107111';
-let _myJobs = []; // yüklənmiş işlər cache
+let _myJobs = [];
 
 async function loadJobsForSelect() {
   const { db, collection, getDocs } = FB;
@@ -576,77 +576,85 @@ async function loadJobsForSelect() {
       if (role === 'freelancer' && j.assignedTo === uid) _myJobs.push(j);
     });
     _myJobs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-    sel.innerHTML = '<option value="">— Seçin (istəyə bağlı) —</option>' +
-      _myJobs.map(j => '<option value="'+j.id+'">'+esc(j.title)+(j.budget?' (₼'+j.budget+')':'')+'</option>').join('');
-    updateWhatsAppLink();
+    sel.innerHTML = '<option value="">— Seçin (istəyə bağlı) —</option>'
+      + _myJobs.map(j => '<option value="' + j.id + '">' + esc(j.title) + (j.budget ? ' (₼' + j.budget + ')' : '') + '</option>').join('');
+    buildWhatsAppLink();
   } catch(e) { console.error('loadJobsForSelect:', e); }
 }
 
-function updateWhatsAppLink() {
+function buildWhatsAppLink() {
   const sel    = document.getElementById('topup-job');
-  const amount = document.getElementById('topup-amount')?.value;
-  const note   = document.getElementById('topup-note')?.value?.trim();
-  const name   = FB.userData?.name || FB.user?.email || '';
-  const email  = FB.user?.email || '';
+  const amount = (document.getElementById('topup-amount')?.value || '').trim();
+  const note   = (document.getElementById('topup-note')?.value   || '').trim();
+  const name   = FB.userData?.name  || '';
+  const email  = FB.user?.email     || '';
 
-  // seçilmiş işi _myJobs cache-dən al
   const jobId  = sel?.value || '';
-  const selJob = _myJobs.find(j => j.id === jobId);
-  const jobTitle  = selJob?.title  || '';
-  const jobBudget = selJob?.budget || '';
-  const jobLink   = jobId ? 'https://samir210-az.github.io/freelan/job.html?id=' + jobId : '';
+  const job    = _myJobs.find(j => j.id === jobId);
 
-  let msg = '📋 *Freelan.az — Balans artırma sorğusu*\n';
-  msg += '👤 İstifadəçi: ' + name + ' (' + email + ')';
-  if (jobTitle)  msg += '\n💼 İş: ' + jobTitle + (jobBudget ? ' — ₼' + jobBudget + ' AZN' : '');
-  if (jobLink)   msg += '\n🔗 Link: ' + jobLink;
-  if (amount)    msg += '\n💰 Ödəniş məbləği: ₼' + amount + ' AZN';
-  if (note)      msg += '\n📝 Qeyd: ' + note;
+  // İş seçilməyibsə aktiv işləri siyahıla
+  let jobPart = '';
+  if (job) {
+    jobPart = '\n💼 İş: ' + job.title + (job.budget ? ' — ₼' + job.budget + ' AZN' : '');
+    jobPart += '\n🔗 https://samir210-az.github.io/freelan/job.html?id=' + job.id;
+  } else if (_myJobs.length) {
+    jobPart = '\n📋 Aktiv işlərim: ' + _myJobs.slice(0,3).map(j => j.title + (j.budget ? ' (₼' + j.budget + ')' : '')).join(', ');
+  }
+
+  let msg = '📋 *Freelan.az — Balans artırma sorğusu*';
+  msg += '\n👤 ' + name + ' (' + email + ')';
+  msg += jobPart;
+  if (amount) msg += '\n💰 Məbləğ: ₼' + amount + ' AZN';
+  if (note)   msg += '\n📝 ' + note;
   msg += '\n\nZəhmət olmasa ödənişi təsdiqləyin.';
 
-  const link = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(msg);
   const btn = document.getElementById('whatsapp-btn');
-  if (btn) btn.href = link;
+  if (btn) btn.href = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(msg);
 }
+
+// input dəyişdikdə linki yenilə
+function updateWhatsAppLink() { buildWhatsAppLink(); }
 
 window.sendTopup = async function() {
   const { db, collection, addDoc, serverTimestamp } = FB;
-  const amtRaw = document.getElementById('topup-amount').value;
-  const note   = document.getElementById('topup-note').value.trim();
-  const sel    = document.getElementById('topup-job');
-  const selOpt = sel?.options[sel.selectedIndex];
-  const jobId    = sel?.value || '';
-  const jobTitle = selOpt?.dataset?.title || '';
-  const jobBudget = selOpt?.dataset?.budget || '';
-  const msgEl  = document.getElementById('topup-msg');
-  const amount = parseFloat(amtRaw) || 0;
+  const amount   = parseFloat(document.getElementById('topup-amount').value) || 0;
+  const note     = (document.getElementById('topup-note').value || '').trim();
+  const jobId    = document.getElementById('topup-job')?.value || '';
+  const job      = _myJobs.find(j => j.id === jobId);
+  const jobTitle = job?.title  || '';
+  const jobBudget = String(job?.budget || '');
+  const msgEl    = document.getElementById('topup-msg');
 
-  updateWhatsAppLink();
+  // Əvvəlcə linki qur, sonra WhatsApp-ı aç
+  buildWhatsAppLink();
   const btn = document.getElementById('whatsapp-btn');
-  if (btn && btn.href !== '#') window.open(btn.href, '_blank');
+  if (btn && btn.href && btn.href !== '#' && btn.href !== location.href) {
+    window.open(btn.href, '_blank');
+  }
 
-  // Həmişə Firestore-a yaz (məbləğ olmasa belə)
+  // Firestore-a yaz
   try {
     const d = FB.userData || {};
     await addDoc(collection(db, 'payments'), {
       userId:    FB.user.uid,
-      userName:  d.name || FB.user.email,
+      userName:  d.name || email,
       userEmail: FB.user.email,
       amount:    amount || null,
-      jobId:     jobId    || '',
-      jobTitle:  jobTitle || '',
-      jobBudget: jobBudget || '',
+      jobId:     jobId,
+      jobTitle:  jobTitle,
+      jobBudget: jobBudget,
       method:    'whatsapp',
-      note:      note || '',
+      note:      note,
       status:    'pending',
       createdAt: serverTimestamp()
     });
     msgEl.style.color = 'var(--green)';
-    msgEl.textContent = '✅ Sorğu göndərildi! Tezliklə əlaqə saxlanılacaq.';
+    msgEl.textContent = '✅ Sorğu göndərildi!';
     document.getElementById('topup-amount').value = '';
     document.getElementById('topup-note').value = '';
+    const sel = document.getElementById('topup-job');
     if (sel) sel.value = '';
-    updateWhatsAppLink();
+    buildWhatsAppLink();
     loadTopupHistory();
   } catch(e) {
     msgEl.style.color = 'var(--red)';
@@ -659,23 +667,32 @@ async function loadTopupHistory() {
   const el = document.getElementById('topup-history');
   if (!el) return;
   try {
-    const q = query(collection(db, 'payments'), where('userId', '==', FB.user.uid));
-    const snap = await getDocs(q);
+    const snap = await getDocs(query(collection(db, 'payments'), where('userId', '==', FB.user.uid)));
     const list = [];
     snap.forEach(d => list.push({ id: d.id, ...d.data() }));
     list.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-    if (!list.length) { el.innerHTML = '<div class="empty" style="padding:20px 0;"><div class="ico">📭</div><p>Hələ sorğu göndərməmisiniz</p></div>'; return; }
-    const sb = s => s==='approved' ? '<span class="badge badge-green">Təsdiqləndi ✅</span>' : s==='rejected' ? '<span class="badge badge-red">Rədd edildi ❌</span>' : '<span class="badge badge-orange">Gözləyir ⏳</span>';
-    el.innerHTML = list.map(p => `
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line,rgba(0,0,0,.08));">
-        <div>
-          <div style="font-weight:700;">₼${Number(p.amount).toFixed(2)}</div>
-          <div style="font-size:12px;color:var(--ink2);">${p.note || 'Bank köçürməsi'} · ${timeAgo(p.createdAt)}</div>
-          ${p.adminNote ? '<div style="font-size:12px;color:var(--ink2);">Admin: '+esc(p.adminNote)+'</div>' : ''}
-        </div>
-        <div>${sb(p.status)}</div>
-      </div>`).join('');
-  } catch(e) { el.innerHTML = '<div class="empty"><p>Yükləmə xətası</p></div>'; }
+    if (!list.length) {
+      el.innerHTML = '<div class="empty" style="padding:20px 0;"><div class="ico">📭</div><p>Hələ sorğu göndərməmisiniz</p></div>';
+      return;
+    }
+    const sb = s => s === 'approved'
+      ? '<span class="badge badge-green">Təsdiqləndi ✅</span>'
+      : s === 'rejected'
+        ? '<span class="badge badge-red">Rədd edildi ❌</span>'
+        : '<span class="badge badge-orange">Gözləyir ⏳</span>';
+    el.innerHTML = list.map(p =>
+      '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line,rgba(0,0,0,.08));">'
+        + '<div>'
+          + '<div style="font-weight:700;">₼' + (p.amount ? Number(p.amount).toFixed(2) : '—') + '</div>'
+          + '<div style="font-size:12px;color:var(--ink2);">' + esc(p.jobTitle || 'Ümumi balans') + ' · ' + timeAgo(p.createdAt) + '</div>'
+          + (p.adminNote ? '<div style="font-size:12px;color:var(--ink2);">Admin: ' + esc(p.adminNote) + '</div>' : '')
+        + '</div>'
+        + '<div>' + sb(p.status) + '</div>'
+      + '</div>'
+    ).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="empty"><p>Yükləmə xətası</p></div>';
+  }
 }
 
 window.saveSettings = async function() {
