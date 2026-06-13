@@ -258,8 +258,9 @@ function renderPayments(list) {
       <div class="prop-head">
         <div style="flex:1;">
           <div class="prop-name">${esc(p.userName||'—')} <span style="font-weight:400;font-size:13px;color:var(--ink2);">(${esc(p.userEmail||'')})</span></div>
-          <div class="prop-meta">Bank köçürməsi · ${timeAgo(p.createdAt)}</div>
-          ${p.note ? `<div class="prop-cover" style="margin-top:6px;">📝 ${esc(p.note)}</div>` : ''}
+          <div class="prop-meta">WhatsApp ödənişi · ${timeAgo(p.createdAt)}</div>
+          ${p.jobTitle ? `<div class="prop-cover" style="margin-top:4px;">💼 İş: <b>${esc(p.jobTitle)}</b></div>` : ''}
+          ${p.note ? `<div class="prop-cover" style="margin-top:2px;">📝 ${esc(p.note)}</div>` : ''}
         </div>
         <div style="text-align:right;flex-shrink:0;">
           <div class="prop-amount">₼${Number(p.amount).toFixed(2)}</div>
