@@ -42,6 +42,7 @@
       <a data-sec="mybids" onclick="showSec('mybids')" id="nav-mybids" style="display:none;" data-i18n="db_mybids">💼 Təkliflərim</a>
       <a data-sec="active" data-i18n="db_active" onclick="showSec('active')">🔄 Aktiv işlər</a>
       <a href="messages.html" data-i18n="db_msgs">💬 Mesajlar</a>
+      <a data-sec="balance" onclick="showSec('balance')">💰 Balans</a>
       <a data-sec="settings" data-i18n="db_set" onclick="showSec('settings')">⚙️ Tənzimləmələr</a>
     </nav>
   </aside>
@@ -81,6 +82,54 @@
     </div>
 
     <!-- SETTINGS -->
+    <!-- BALANCE -->
+    <div class="dash-sec" id="sec-balance">
+      <h2 style="font-size:22px;margin-bottom:20px;">💰 Balans idarəetməsi</h2>
+      <div style="display:grid;gap:18px;max-width:600px;">
+
+        <!-- Cari balans -->
+        <div class="jd-card" style="display:flex;align-items:center;gap:18px;">
+          <div style="font-size:38px;">💳</div>
+          <div>
+            <div style="font-size:13px;color:var(--ink2);margin-bottom:4px;">Cari balansınız</div>
+            <div style="font-size:32px;font-weight:800;color:var(--green);" id="bal-current">₼0</div>
+          </div>
+        </div>
+
+        <!-- Balans artırma forması -->
+        <div class="jd-card">
+          <h3 style="font-size:16px;font-weight:700;margin-bottom:14px;">📤 Balans artır</h3>
+          <p style="font-size:13px;color:var(--ink2);margin-bottom:16px;">Bank köçürməsi ilə ödəniş edin, aşağıda məbləği daxil edin. Admin ödənişi yoxladıqdan sonra balansınız artırılacaq.</p>
+
+          <!-- Bank detalları -->
+          <div style="background:var(--card2,rgba(0,0,0,.04));border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:13px;line-height:2;">
+            <div><b>Bank:</b> ABB (Azər Beynəlxalq Bankı)</div>
+            <div><b>Hesab №:</b> AZ21NABZ01350100000000001234</div>
+            <div><b>Alıcı:</b> Freelan.az MMC</div>
+            <div><b>VÖEN:</b> 1234567890</div>
+            <div style="color:var(--orange,#f90);font-weight:600;">⚠️ Köçürmə qeydinə e-poçtunuzu yazın!</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Məbləğ (₼)</label>
+            <input class="form-input" type="number" id="topup-amount" placeholder="Məs: 50" min="5" max="5000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Qeyd <small style="color:var(--ink3);">(köçürmə tarixi, bank adı — istəyə bağlı)</small></label>
+            <input class="form-input" type="text" id="topup-note" placeholder="Məs: ABB bank, 13.06.2026">
+          </div>
+          <div id="topup-msg" style="font-size:13px;margin-bottom:10px;min-height:20px;"></div>
+          <button class="btn btn-green" onclick="sendTopup()">📨 Sorğu göndər</button>
+        </div>
+
+        <!-- Keçmiş sorğular -->
+        <div class="jd-card">
+          <h3 style="font-size:16px;font-weight:700;margin-bottom:14px;">📋 Sorğularım</h3>
+          <div id="topup-history"><div class="empty" style="padding:20px 0;"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
+        </div>
+      </div>
+    </div>
+
     <div class="dash-sec" id="sec-settings">
       <h2 style="font-size:22px;margin-bottom:20px;" data-i18n="db_set">Tənzimləmələr</h2>
       <div class="jd-card" style="max-width:560px;">
@@ -184,6 +233,10 @@ window.showSec = function(sec) {
   document.getElementById('sec-' + sec)?.classList.add('active');
   document.querySelectorAll('.dash-nav a[data-sec]').forEach(a => a.classList.remove('active'));
   document.querySelector(`.dash-nav a[data-sec="${sec}"]`)?.classList.add('active');
+  if (sec === 'balance') {
+    document.getElementById('bal-current').textContent = '₼' + (FB.userData?.balance || 0);
+    loadTopupHistory();
+  }
 };
 
 async function loadMyJobs() {
@@ -445,6 +498,60 @@ window.removePhoto = function() {
   _photoDirty = true;
   setPhotoPreview('');
 };
+
+};
+
+// ── BALANS ──────────────────────────────────────────────────
+window.sendTopup = async function() {
+  const { db, collection, addDoc, serverTimestamp } = FB;
+  const amtRaw = document.getElementById('topup-amount').value;
+  const note   = document.getElementById('topup-note').value.trim();
+  const msg    = document.getElementById('topup-msg');
+  const amount = parseFloat(amtRaw);
+  if (!amount || amount < 5) { msg.style.color = 'var(--red)'; msg.textContent = '❌ Minimum məbləğ ₼5-dir'; return; }
+  try {
+    const d = FB.userData || {};
+    await addDoc(collection(db, 'payments'), {
+      userId: FB.user.uid,
+      userName: d.name || FB.user.email,
+      userEmail: FB.user.email,
+      amount,
+      method: 'bank_transfer',
+      note: note || '',
+      status: 'pending',
+      createdAt: serverTimestamp()
+    });
+    msg.style.color = 'var(--green)';
+    msg.textContent = '✅ Sorğu göndərildi! Admin ödənişi yoxladıqdan sonra balansınız artırılacaq.';
+    document.getElementById('topup-amount').value = '';
+    document.getElementById('topup-note').value = '';
+    loadTopupHistory();
+  } catch(e) { msg.style.color = 'var(--red)'; msg.textContent = '❌ Xəta: ' + e.message; }
+};
+
+async function loadTopupHistory() {
+  const { db, collection, query, where, orderBy, getDocs } = FB;
+  const el = document.getElementById('topup-history');
+  if (!el) return;
+  try {
+    const q = query(collection(db, 'payments'), where('userId', '==', FB.user.uid));
+    const snap = await getDocs(q);
+    const list = [];
+    snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+    list.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    if (!list.length) { el.innerHTML = '<div class="empty" style="padding:20px 0;"><div class="ico">📭</div><p>Hələ sorğu göndərməmisiniz</p></div>'; return; }
+    const sb = s => s==='approved' ? '<span class="badge badge-green">Təsdiqləndi ✅</span>' : s==='rejected' ? '<span class="badge badge-red">Rədd edildi ❌</span>' : '<span class="badge badge-orange">Gözləyir ⏳</span>';
+    el.innerHTML = list.map(p => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line,rgba(0,0,0,.08));">
+        <div>
+          <div style="font-weight:700;">₼${Number(p.amount).toFixed(2)}</div>
+          <div style="font-size:12px;color:var(--ink2);">${p.note || 'Bank köçürməsi'} · ${timeAgo(p.createdAt)}</div>
+          ${p.adminNote ? '<div style="font-size:12px;color:var(--ink2);">Admin: '+esc(p.adminNote)+'</div>' : ''}
+        </div>
+        <div>${sb(p.status)}</div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = '<div class="empty"><p>Yükləmə xətası</p></div>'; }
+}
 
 window.saveSettings = async function() {
   const { db, doc, updateDoc } = FB;
