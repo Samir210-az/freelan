@@ -132,7 +132,7 @@ window.applyI18n = function() {
   });
 };
 
-window.FB = {
+window.FB = { _app: app,
   auth, db, user: null, userData: null, ready: false,
   collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, query, limit, where, serverTimestamp
 };
@@ -834,6 +834,7 @@ window.requestPlan = async function(plan) {
 renderHeader();
 renderFooter();
 applyI18n();
+
 
 
 
