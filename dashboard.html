@@ -22,7 +22,8 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=4">
+<script>try{var th=localStorage.getItem("theme");if(!th&&window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches)th="dark";if(th)document.documentElement.setAttribute("data-theme",th);}catch(e){}</script>
+<link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
 
@@ -83,6 +84,14 @@
     <div class="dash-sec" id="sec-settings">
       <h2 style="font-size:22px;margin-bottom:20px;" data-i18n="db_set">Tənzimləmələr</h2>
       <div class="jd-card" style="max-width:560px;">
+        <div class="photo-up">
+          <div class="avatar" id="set-ava">?</div>
+          <div class="photo-up-actions">
+            <label class="btn btn-line btn-sm" for="set-photo-file" id="set-photo-label" data-i18n="ph_upload">📷 Şəkil yüklə</label>
+            <button class="btn btn-ghost btn-sm" id="set-photo-remove" onclick="removePhoto()" style="display:none;color:var(--red);" data-i18n="ph_remove">Sil</button>
+            <input type="file" id="set-photo-file" accept="image/*" onchange="onPhotoPick(this)">
+          </div>
+        </div>
         <div class="form-group"><label class="form-label" data-i18n="au_name">Ad, Soyad</label>
           <input class="form-input" id="set-name"></div>
         <div class="form-group" id="set-title-wrap"><label class="form-label"><span data-i18n="set_title">İxtisas başlığı</span> <small style="color:var(--ink3);" data-i18n="set_title_s">(məs: UI/UX Dizayner)</small></label>
@@ -123,7 +132,7 @@
 
 <footer id="app-footer"></footer>
 
-<script type="module" src="js/app.js?v=6"></script>
+<script type="module" src="js/app.js?v=7"></script>
 <script type="module">
 document.addEventListener('fb-ready', init);
 
@@ -137,7 +146,7 @@ async function init() {
   document.getElementById('dash-wrap').style.display = 'grid';
 
   const name = d.name || FB.user.email.split('@')[0];
-  document.getElementById('du-avatar').textContent = name[0].toUpperCase();
+  document.getElementById('du-avatar').innerHTML = avaInner(d.photo, name);
   document.getElementById('du-name').textContent = name;
   document.getElementById('du-role').textContent = (d.role === 'freelancer' ? '🧑‍💻 Freelancer' : '💼 ' + t('db_client')) + (d.plan === 'pro' ? ' · ⭐ PRO' : d.plan === 'business' ? ' · 💼 Biznes' : '');
   document.getElementById('ov-hello').textContent = t('db_hello') + ', ' + name + '! 👋';
@@ -165,6 +174,7 @@ async function init() {
   document.getElementById('set-skills').value = (d.skills || []).join(', ');
   document.getElementById('set-rate').value = d.rate || '';
   document.getElementById('set-bio').value = d.bio || '';
+  setPhotoPreview(d.photo || '');
 
   loadActive();
 }
@@ -349,6 +359,51 @@ window.submitRate = async function() {
   }
 };
 
+// ===== PROFILE PHOTO =====
+let _photo = null;        // cari/pending base64 (null = dəyişməyib, '' = silinib)
+let _photoDirty = false;
+
+function setPhotoPreview(photo) {
+  _photo = photo || '';
+  document.getElementById('set-ava').innerHTML = avaInner(photo, FB.userData?.name || '?');
+  document.getElementById('set-photo-remove').style.display = photo ? 'inline-flex' : 'none';
+  document.getElementById('set-photo-label').textContent = photo ? t('ph_change') : t('ph_upload');
+}
+
+window.onPhotoPick = function(input) {
+  const file = input.files && input.files[0];
+  input.value = '';
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast(t('ph_bad')); return; }
+  if (file.size > 5 * 1024 * 1024) { showToast(t('ph_big')); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      // kvadrat kəsim + 256px-ə kiçildib JPEG-ə sıxırıq
+      const size = 256;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const side = Math.min(img.width, img.height);
+      const sx = (img.width - side) / 2, sy = (img.height - side) / 2;
+      ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+      let q = 0.82, data = canvas.toDataURL('image/jpeg', q);
+      while (data.length > 120000 && q > 0.4) { q -= 0.1; data = canvas.toDataURL('image/jpeg', q); }
+      _photoDirty = true;
+      setPhotoPreview(data);
+      showToast('🖼 ' + t('ph_upload'));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+window.removePhoto = function() {
+  _photoDirty = true;
+  setPhotoPreview('');
+};
+
 window.saveSettings = async function() {
   const { db, doc, updateDoc } = FB;
   const name = document.getElementById('set-name').value.trim();
@@ -360,11 +415,16 @@ window.saveSettings = async function() {
     rate: parseInt(document.getElementById('set-rate').value) || 0,
     bio: document.getElementById('set-bio').value.trim()
   };
+  if (_photoDirty) data.photo = _photo || '';
   try {
     await updateDoc(doc(db, 'users', FB.user.uid), data);
     Object.assign(FB.userData, data);
+    _photoDirty = false;
+    // header çipi və sidebar avatarını yenilə
+    document.getElementById('du-avatar').innerHTML = avaInner(FB.userData.photo, name);
+    if (typeof updateHeaderUser === 'function') updateHeaderUser();
     const ok = document.getElementById('set-ok');
-    ok.textContent = '✅ Yadda saxlanıldı';
+    ok.textContent = t('db_saved');
     ok.style.display = 'block';
     setTimeout(() => ok.style.display = 'none', 2500);
   } catch(e) { showToast('Xəta: ' + e.message); }

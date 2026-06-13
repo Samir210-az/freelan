@@ -22,7 +22,8 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=4">
+<script>try{var th=localStorage.getItem("theme");if(!th&&window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches)th="dark";if(th)document.documentElement.setAttribute("data-theme",th);}catch(e){}</script>
+<link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
 
@@ -56,12 +57,15 @@
 
 <footer id="app-footer"></footer>
 
-<script type="module" src="js/app.js?v=6"></script>
+<script type="module" src="js/app.js?v=7"></script>
 <script type="module">
-import { onSnapshot, orderBy, query as fsQuery, collection as fsCollection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { onSnapshot, orderBy, query as fsQuery, collection as fsCollection, where as fsWhere } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 let activeChatId = null;
 let unsub = null;
+let unsubContacts = null;
+let chatsCache = [];
+let didAutoOpen = false;
 
 document.addEventListener('fb-ready', init);
 
@@ -71,52 +75,69 @@ async function init() {
     return;
   }
   document.getElementById('msg-wrap').style.display = 'grid';
-  loadContacts();
+  subscribeContacts();
 }
 
-// Contacts: all users this person has a chat with OR can chat with (bids/jobs relationships)
-async function loadContacts() {
-  const { db, collection, getDocs, query, where } = FB;
-  const el = document.getElementById('contacts');
-  try {
-    const snap = await getDocs(query(collection(db, 'chats'), where('members', 'array-contains', FB.user.uid)));
-    const chats = [];
-    snap.forEach(d => chats.push({ id: d.id, ...d.data() }));
-    chats.sort((a,b) => (b.lastAt?.seconds||0) - (a.lastAt?.seconds||0));
-    if (!chats.length) {
-      el.innerHTML = '<div class="empty"><div class="ico">💬</div><p style="font-size:13px;">' + t('ms_none') + '</p></div>';
-      return;
-    }
-    el.innerHTML = chats.map(c => {
-      const otherName = c.memberNames?.[c.members.find(m => m !== FB.user.uid)] || t('user_lbl');
-      return `
-      <div class="msg-contact" data-chat="${c.id}" onclick="openChat('${c.id}','${esc(otherName)}')">
-        <div class="avatar">${esc(otherName[0].toUpperCase())}</div>
-        <div>
-          <div class="nm">${esc(otherName)}</div>
-          <div class="lst">${esc(c.lastMsg || '')}</div>
-        </div>
-      </div>`;
-    }).join('');
+// localStorage ilə oxunma vəziyyəti (Firestore yazısı olmadan)
+function readKey(chatId) { return 'read_' + chatId + '_' + FB.user.uid; }
+function lastReadSec(chatId) { return Number(localStorage.getItem(readKey(chatId)) || 0); }
+function markRead(chatId, sec) { localStorage.setItem(readKey(chatId), String(sec || Math.floor(Date.now()/1000))); }
 
-    // Auto-open chat from URL param (?chat=...)
-    const want = new URLSearchParams(location.search).get('chat');
-    if (want) {
-      const c = chats.find(x => x.id === want);
-      if (c) {
-        const otherName = c.memberNames?.[c.members.find(m => m !== FB.user.uid)] || t('user_lbl');
-        openChat(c.id, otherName);
+// Kontaktlar siyahısı — REAL-TIME (onSnapshot)
+function subscribeContacts() {
+  const el = document.getElementById('contacts');
+  const q = fsQuery(fsCollection(FB.db, 'chats'), fsWhere('members', 'array-contains', FB.user.uid));
+  if (unsubContacts) unsubContacts();
+  unsubContacts = onSnapshot(q, snap => {
+    chatsCache = [];
+    snap.forEach(d => chatsCache.push({ id: d.id, ...d.data() }));
+    chatsCache.sort((a,b) => (b.lastAt?.seconds||0) - (a.lastAt?.seconds||0));
+    renderContacts();
+    if (!didAutoOpen) {
+      didAutoOpen = true;
+      const want = new URLSearchParams(location.search).get('chat');
+      if (want) {
+        const c = chatsCache.find(x => x.id === want);
+        if (c) openChat(c.id, otherNameOf(c));
       }
     }
-  } catch(e) {
-    el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p style="font-size:12px;">' + esc(e.message) + '</p></div>';
+  }, err => {
+    el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p style="font-size:12px;">' + esc(err.message) + '</p></div>';
+  });
+}
+
+function otherNameOf(c) {
+  return c.memberNames?.[c.members.find(m => m !== FB.user.uid)] || t('user_lbl');
+}
+
+function renderContacts() {
+  const el = document.getElementById('contacts');
+  if (!chatsCache.length) {
+    el.innerHTML = '<div class="empty"><div class="ico">💬</div><p style="font-size:13px;">' + t('ms_none') + '</p></div>';
+    return;
   }
+  el.innerHTML = chatsCache.map(c => {
+    const otherName = otherNameOf(c);
+    const isUnread = c.lastFrom && c.lastFrom !== FB.user.uid
+      && c.id !== activeChatId
+      && (c.lastAt?.seconds || 0) > lastReadSec(c.id);
+    return `
+    <div class="msg-contact ${c.id===activeChatId?'active':''} ${isUnread?'unread':''}" data-chat="${c.id}" onclick="openChat('${c.id}','${esc(otherName)}')">
+      <div class="avatar">${esc(otherName[0].toUpperCase())}</div>
+      <div style="min-width:0;flex:1;">
+        <div class="nm">${esc(otherName)}</div>
+        <div class="lst">${esc(c.lastMsg || '')}</div>
+      </div>
+      ${isUnread ? '<span class="unread-dot"></span>' : ''}
+    </div>`;
+  }).join('');
 }
 
 window.openChat = function(chatId, name) {
   activeChatId = chatId;
-  document.querySelectorAll('.msg-contact').forEach(c => c.classList.remove('active'));
-  document.querySelector(`.msg-contact[data-chat="${chatId}"]`)?.classList.add('active');
+  const c = chatsCache.find(x => x.id === chatId);
+  markRead(chatId, c?.lastAt?.seconds);
+  renderContacts();
   document.getElementById('chat-head').innerHTML = `<div class="avatar">${esc(name[0].toUpperCase())}</div><b>${esc(name)}</b>`;
   document.getElementById('chat-input-row').style.display = 'flex';
 
@@ -130,6 +151,9 @@ window.openChat = function(chatId, name) {
       ? msgs.map(m => `<div class="bubble ${m.from === FB.user.uid ? 'b-out' : 'b-in'}">${esc(m.text)}</div>`).join('')
       : '<div class="empty"><div class="ico">👋</div><p>' + t('ms_first') + '</p></div>';
     list.scrollTop = list.scrollHeight;
+    // açıq çatda yeni mesaj gəlsə, oxunmuş kimi qeyd et
+    const last = msgs[msgs.length - 1];
+    if (last && last.at?.seconds) markRead(chatId, last.at.seconds);
   });
 };
 
@@ -143,7 +167,10 @@ window.sendMsg = async function() {
     await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
       from: FB.user.uid, text, at: serverTimestamp()
     });
-    await updateDoc(doc(db, 'chats', activeChatId), { lastMsg: text, lastAt: serverTimestamp() });
+    await updateDoc(doc(db, 'chats', activeChatId), {
+      lastMsg: text, lastAt: serverTimestamp(), lastFrom: FB.user.uid
+    });
+    markRead(activeChatId);
   } catch(e) { showToast('Göndərilmədi: ' + e.message); }
 };
 </script>
