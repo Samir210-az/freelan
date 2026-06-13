@@ -23,44 +23,228 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 <script>try{var th=localStorage.getItem("theme");if(!th&&window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches)th="dark";if(th)document.documentElement.setAttribute("data-theme",th);}catch(e){}</script>
 <link rel="stylesheet" href="css/style.css?v=5">
+<style>
+.blog-hero{background:var(--hero-bg,#0d1f12);color:#fff;padding:60px 24px 48px;text-align:center;}
+.blog-hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,42px);font-weight:800;margin-bottom:12px;}
+.blog-hero p{font-size:17px;opacity:.8;max-width:520px;margin:0 auto;}
+.blog-grid{max-width:1100px;margin:0 auto;padding:48px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:28px;}
+.blog-card{background:var(--bg);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .2s;display:flex;flex-direction:column;}
+.blog-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.10);transform:translateY(-3px);}
+.blog-card-img{width:100%;height:180px;object-fit:cover;background:var(--bg2);}
+.blog-card-emoji{width:100%;height:180px;display:flex;align-items:center;justify-content:center;font-size:72px;background:linear-gradient(135deg,#0d1f12 0%,#1a3a20 100%);}
+.blog-card-body{padding:22px 20px 18px;flex:1;display:flex;flex-direction:column;}
+.blog-tag{display:inline-block;background:#e8f5e9;color:#2e7d32;font-size:11px;font-weight:700;border-radius:20px;padding:3px 10px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;}
+[data-theme="dark"] .blog-tag{background:#1a3a1d;color:#7ecf82;}
+.blog-card-title{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;line-height:1.4;margin-bottom:10px;color:var(--ink);}
+.blog-card-excerpt{font-size:14px;color:var(--ink3);line-height:1.65;flex:1;}
+.blog-card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:16px;font-size:12px;color:var(--ink3);}
+.blog-card-read{color:var(--green);font-weight:600;font-size:13px;}
+
+/* Modal */
+.blog-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;}
+.blog-modal-bg.open{display:flex;}
+.blog-modal{background:var(--bg);border-radius:20px;max-width:720px;width:100%;padding:40px;position:relative;margin:auto;}
+.blog-modal-x{position:absolute;top:16px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--ink3);line-height:1;padding:4px 8px;}
+.blog-modal h2{font-family:'Sora',sans-serif;font-size:clamp(22px,4vw,32px);font-weight:800;line-height:1.3;margin-bottom:8px;}
+.blog-modal-meta{font-size:13px;color:var(--ink3);margin-bottom:24px;}
+.blog-modal-body{font-size:16px;line-height:1.8;color:var(--ink2);}
+.blog-modal-body h3{font-family:'Sora',sans-serif;font-size:19px;font-weight:700;margin:28px 0 10px;color:var(--ink);}
+.blog-modal-body p{margin-bottom:16px;}
+.blog-modal-body ul{margin:0 0 16px 20px;}
+.blog-modal-body ul li{margin-bottom:8px;}
+.blog-modal-body strong{color:var(--ink);}
+@media(max-width:600px){.blog-modal{padding:24px 18px;}.blog-grid{padding:24px 16px;}}
+</style>
 </head>
 <body>
-
 <header id="app-header"></header>
 
-<div class="container">
-  <div class="page-head">
-    <h1 data-i18n="bl_h">Blog 📝</h1>
-    <p data-i18n="bl_s">Freelance dünyasından məsləhətlər və yeniliklər</p>
-  </div>
+<div class="blog-hero">
+  <h1>📝 Blog</h1>
+  <p>Freelance dünyasından praktiki məsləhətlər, karyera tövsiyələri və iş həyatı</p>
+</div>
 
-  <div class="grid-3" style="margin-top:28px;padding-bottom:60px;">
-    <div class="job-card">
-      <div style="font-size:34px;">🚀</div>
-      <div class="job-title" data-i18n="bl1t">Freelance karyeraya necə başlamalı?</div>
-      <div class="job-desc" data-i18n="bl1p">İlk profili yaratmaqdan ilk müştəriyə qədər...</div>
-      <div class="job-meta"><span data-i18n="bl_soon">📅 Tezliklə</span></div>
-    </div>
-    <div class="job-card">
-      <div style="font-size:34px;">💰</div>
-      <div class="job-title" data-i18n="bl2t">Qiymət təyin etməyin 5 qaydası</div>
-      <div class="job-desc" data-i18n="bl2p">Çox aşağı qiymət — dəyərsizləşmə...</div>
-      <div class="job-meta"><span data-i18n="bl_soon">📅 Tezliklə</span></div>
-    </div>
-    <div class="job-card">
-      <div style="font-size:34px;">✍️</div>
-      <div class="job-title" data-i18n="bl3t">Qazandıran müraciət məktubu</div>
-      <div class="job-desc" data-i18n="bl3p">Müştərinin diqqətini çəkən təklif necə yazılır?</div>
-      <div class="job-meta"><span data-i18n="bl_soon">📅 Tezliklə</span></div>
-    </div>
-  </div>
+<div class="blog-grid" id="blog-grid"></div>
 
-  <div class="empty" style="padding-bottom:60px;">
-    <p data-i18n="bl_note">Blog yazıları tezliklə əlavə olunacaq. İzləmədə qalın! 👀</p>
+<!-- Blog Modal -->
+<div class="blog-modal-bg" id="blog-modal" style="display:none;">
+  <div class="blog-modal">
+    <button class="blog-modal-x" onclick="closeBlogModal()">✕</button>
+    <div class="blog-tag" id="bm-tag"></div>
+    <h2 id="bm-title"></h2>
+    <div class="blog-modal-meta" id="bm-meta"></div>
+    <div class="blog-modal-body" id="bm-body"></div>
   </div>
 </div>
 
 <footer id="app-footer"></footer>
 <script type="module" src="js/app.js?v=8"></script>
+<script>
+const ARTICLES = [
+  {
+    id: 1,
+    emoji: '🚀',
+    tag: 'Karyera',
+    title: 'Freelance karyeraya necə başlamalı?',
+    date: '10 İyun 2026',
+    readTime: '6 dəq',
+    excerpt: 'İlk profili yaratmaqdan ilk müştəriyə qədər — Azərbaycanda freelancer olmağın addım-addım yolu.',
+    body: `
+      <p>Freelance karyeraya başlamaq həyəcanverici, eyni zamanda çaşdırıcı ola bilər. Hara müraciət edəcəksiniz? Qiymətinizi necə təyin edəcəksiniz? Müştərini necə inandıracaqsınız? Bu məqalədə Azərbaycan bazarına uyğun praktiki addımları izah edirik.</p>
+      <h3>1. Sahənizi müəyyən edin</h3>
+      <p>Hamı üçün hər şey etməyə çalışmayın. <strong>Dizayn, proqramlaşdırma, kopiraytinq, SMM, tərcümə</strong> — bunlardan hansında daha güclüsünüz? Dar ixtisaslaşma sizi bazarda daha görünən edir.</p>
+      <h3>2. Portfolio hazırlayın</h3>
+      <p>Əgər real layihəniz yoxdursa, problem deyil. Aşağıdakıları edə bilərsiniz:</p>
+      <ul>
+        <li>Xəyali bir şirkət üçün nümunə iş hazırlayın</li>
+        <li>Açıq mənbəli layihələrə töhfə verin</li>
+        <li>Tanışlarınız üçün pulsuz və ya ucuz iş görün</li>
+      </ul>
+      <h3>3. Profilinizi doldurun</h3>
+      <p>Freelan.az-da profilinizin hər sahəsini doldurun. Foto, bio, bacarıqlar, saatlıq tarif — bunların hamısı müştərinin sizə inamını artırır. Boş profillər nadir hallarda seçilir.</p>
+      <h3>4. İlk müraciəti göndərin</h3>
+      <p>Təklif göndərərkən şablon mətndən imtina edin. Müştərinin elanını diqqətlə oxuyun və <strong>konkret probleminə konkret həll</strong> təklif edin. Qısa, aydın, fərdi müraciət həmişə üstün gəlir.</p>
+      <h3>5. Birinci reytinqinizi qazanın</h3>
+      <p>İlk iş üçün bir az daha aşağı qiymət təklif etməkdən qorxmayın — məqsəd reytinq və rəy qazanmaqdır. Sonrakı işlər üçün qiymətinizi artıra bilərsiniz.</p>
+    `
+  },
+  {
+    id: 2,
+    emoji: '💰',
+    tag: 'Qiymətqoyma',
+    title: 'Freelancer kimi qiymətinizi necə təyin etməlisiniz?',
+    date: '5 İyun 2026',
+    readTime: '5 dəq',
+    excerpt: 'Çox aşağı qiymət — dəyərsizləşmə, çox yüksək — müştərisizlik. Düzgün balansı necə tapmaq olar?',
+    body: `
+      <p>Qiymətqoyma freelancerların ən çox güləndən biri. Həm özünüzü ucuzlatmaq, həm də müştərini qorxutmaq istəmirsiniz. İşin sirri bazarı bilmək və öz dəyərinizi anlamaqdadır.</p>
+      <h3>Azərbaycan bazarını araşdırın</h3>
+      <p>Freelan.az-da oxşar sahədə çalışan freelancerların profillərinə baxın. Saatlıq tariflər nə qədərdir? Hansı bacarıq səviyyəsi hansı qiymətlə gedir? Bu, bazarın zəmin qiymətini başa düşməyə kömək edir.</p>
+      <h3>Xərclərinizdən başlayın</h3>
+      <p>Aylıq xərclərinizi hesablayın: internet, proqram abunəlikləri, vergi (varsa), yaşayış. Bu rəqəmi iş saatlarınıza bölün — <strong>minimum tarif</strong> budur.</p>
+      <h3>Layihə əsaslı qiymət</h3>
+      <ul>
+        <li><strong>Logo dizaynı:</strong> 80–300 ₼</li>
+        <li><strong>Landing page:</strong> 200–600 ₼</li>
+        <li><strong>SMM paketi (aylıq):</strong> 150–400 ₼</li>
+        <li><strong>Mətn yazısı (1000 söz):</strong> 20–60 ₼</li>
+        <li><strong>Mobil tətbiq:</strong> 800–3000 ₼+</li>
+      </ul>
+      <h3>Qiymətinizi artırın</h3>
+      <p>Hər tamamlanan iş və rəy ilə qiymətinizi 10–20% artırmağı hədəfləyin. Müştərilər keyfiyyəti gördükdə daha çox ödəməyə razıdırlar. <strong>Reytinqiniz ən güclü dəlildir.</strong></p>
+    `
+  },
+  {
+    id: 3,
+    emoji: '✍️',
+    tag: 'Təklif',
+    title: 'Müştərini qazanan müraciət məktubu necə yazılır?',
+    date: '1 İyun 2026',
+    readTime: '4 dəq',
+    excerpt: 'Şablon müraciətlər məhv edir. Müştərinin diqqətini çəkən, iş qazandıran müraciətin sirləri.',
+    body: `
+      <p>Hər gün onlarla müraciət alan müştəri nəyi axtarır? Özünü başa düşən, probleminə konkret həll təklif edən, güvənilən birini. Müraciət məktubunuz bunu 30 saniyədə çatdırmalıdır.</p>
+      <h3>Şablon ifadələrdən qaçın</h3>
+      <p>«Mən peşəkar freelanceram və sizin layihənizə kömək etmək istəyirəm» — bu cümləni yüzlərlə rəqibiniz yazır. Bunun əvəzinə birbaşa elanın məzmununa keçin.</p>
+      <h3>Elanı diqqətlə oxuyun</h3>
+      <p>Müştərinin yazdıqlarını diqqətlə oxuyun. Onun <strong>əsl problemi</strong> nədir? Sadəcə logo istəmir — brendini qurmaq istəyir. Sadəcə kod istəmir — biznesini böyütmək istəyir. Bu perspektivdən yazın.</p>
+      <h3>Strukturu saxlayın</h3>
+      <ul>
+        <li><strong>İlk cümlə:</strong> Müştərinin elanına birbaşa cavab verin</li>
+        <li><strong>Orta hissə:</strong> Oxşar işinizdən bir nümunə göstərin</li>
+        <li><strong>Son:</strong> Konkret sual verin — əlaqə qurun</li>
+      </ul>
+      <h3>Uzunluq</h3>
+      <p>3–5 cümlə ideal həcmdir. Romancı olmayın. Müştərinin vaxtı azdır — əsas məlumatı tez çatdırın. Ətraflı məlumat müsahibə mərhələsinə saxlanır.</p>
+    `
+  },
+  {
+    id: 4,
+    emoji: '⏰',
+    tag: 'Məhsuldarlıq',
+    title: 'Evdən işləyərkən vaxtı necə idarə etməli?',
+    date: '27 May 2026',
+    readTime: '5 dəq',
+    excerpt: 'Freelancerların ən böyük problemi vaxt idarəçiliyi. Məhsuldar olmağın praktiki üsulları.',
+    body: `
+      <p>Ofis mühiti olmadan öz-özünüzü idarə etmək çətindir. Sosial media, ev işləri, rahat yataq — bunlar ən böyük diqqət düşmənləridir. Amma doğru sistemlə evdən ofisdən daha məhsuldar işləmək mümkündür.</p>
+      <h3>Sabit iş saatı</h3>
+      <p>Hər gün eyni vaxtda işə başlayın. Beyin müntəzəmliyə alışır. Səhər 9:00-da başlayırsınızsa, o vaxta qədər hazır olun — məhz iş rejimini simulyasiya edin.</p>
+      <h3>Pomodoro texnikası</h3>
+      <p><strong>25 dəqiqə iş + 5 dəqiqə fasilə</strong> — bu sadə sistem diqqəti qoruyur, yanmağın qarşısını alır. 4 pomodordan sonra uzun fasilə (15–30 dəq) götürün.</p>
+      <h3>Ayrı iş yeri</h3>
+      <p>Mümkünsə, yataq otağında işləməyin. Beyniniz o yeri dincliklə əlaqələndirir. Masa, kompüter, düzgün işıqlandırma — iş mühiti yaratmaq məhsuldarlığı əhəmiyyətli artırır.</p>
+      <h3>Gün planlaması</h3>
+      <ul>
+        <li>Axşam növbəti günün 3 əsas tapşırığını yazın</li>
+        <li>Ən vacib işi səhər tamamlayın (enerji yüksəkdir)</li>
+        <li>E-poçt və mesajları gün ərzində müəyyən vaxtlarda yoxlayın</li>
+      </ul>
+    `
+  },
+  {
+    id: 5,
+    emoji: '🤝',
+    tag: 'Müştəri münasibətləri',
+    title: 'Müştərilərlə uzunmüddətli münasibət qurmaq',
+    date: '20 May 2026',
+    readTime: '4 dəq',
+    excerpt: 'Yeni müştəri tapmaq mövcud müştərini saxlamaqdan 5 dəfə baha başa gəlir. Sadiq müştəri bazası necə qurulur?',
+    body: `
+      <p>Ən uğurlu freelancerlar hər ay yeni müştəri axtarmır — mövcud müştəriləri onlara yeni iş gətirir. Bu isə yalnız bir şeylə mümkündür: <strong>güvən.</strong></p>
+      <h3>Vaxtında çatdırın</h3>
+      <p>Bəlkə ən vacib qaydadır. Termin keçirtmək peşəkarlığa ciddi zərər verir. Gecikmə hiss edirsinizsə, öncədən xəbər verin — müştəri gözləntiləri idarə edə bilir, sürprizlə baş a çıxara bilmir.</p>
+      <h3>Gözləntilərdən artıq verin</h3>
+      <p>Logo istədi — brand guide də əlavə edin. Mətn istədi — SEO tövsiyəsi də yazın. Kiçik «bonus» müştərini heyran edir, sizi yadda qalır. Bu, ən ucuz marketinqdir.</p>
+      <h3>Əlaqəni kəsməyin</h3>
+      <p>İş bitdikdən 2–4 həftə sonra yazın: «Hər şey yaxşıdır? Başqa köməyim lazım ola bilərmi?» Bu sadə mesaj çox vaxt yeni layihəyə çevrilir.</p>
+      <h3>Reytinq istəyin</h3>
+      <p>Müştəri razı qaldısa, reytinq vermək üçün utanmadan xahiş edin. «Əgər işdən razı qaldınızsa, qısa rəy buraxsanız çox sevinilərdim» — bu kifayətdir. Reytinqlər gələcək müştərilər üçün ən güclü sübut sayılır.</p>
+    `
+  }
+];
+
+function renderBlogGrid() {
+  const grid = document.getElementById('blog-grid');
+  grid.innerHTML = ARTICLES.map(a => `
+    <div class="blog-card" onclick="openArticle(${a.id})">
+      <div class="blog-card-emoji">${a.emoji}</div>
+      <div class="blog-card-body">
+        <span class="blog-tag">${a.tag}</span>
+        <div class="blog-card-title">${a.title}</div>
+        <div class="blog-card-excerpt">${a.excerpt}</div>
+        <div class="blog-card-meta">
+          <span>📅 ${a.date} · ⏱ ${a.readTime}</span>
+          <span class="blog-card-read">Oxu →</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+window.openArticle = function(id) {
+  const a = ARTICLES.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('bm-tag').textContent = a.tag;
+  document.getElementById('bm-title').textContent = a.title;
+  document.getElementById('bm-meta').textContent = '📅 ' + a.date + ' · ⏱ ' + a.readTime;
+  document.getElementById('bm-body').innerHTML = a.body;
+  const modal = document.getElementById('blog-modal');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+};
+
+window.closeBlogModal = function() {
+  document.getElementById('blog-modal').style.display = 'none';
+  document.body.style.overflow = '';
+};
+
+document.getElementById('blog-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeBlogModal();
+});
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBlogModal(); });
+
+renderBlogGrid();
+</script>
 </body>
 </html>
