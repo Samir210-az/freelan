@@ -35,6 +35,12 @@
 .dc-input-row input{flex:1;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:13.5px;}
 .btn-danger{background:#d23232;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;}
 .btn-danger:hover{background:#b52020;}
+/* Ulduz reytinq */
+.star-row{display:flex;gap:6px;margin:10px 0;}
+.star-btn{font-size:28px;cursor:pointer;background:none;border:none;padding:0;line-height:1;transition:transform .1s;}
+.star-btn:hover{transform:scale(1.2);}
+.star-btn.active{filter:drop-shadow(0 0 4px gold);}
+.review-textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:13.5px;resize:vertical;min-height:80px;margin-top:8px;box-sizing:border-box;}
 </style>
 </head>
 <body>
@@ -56,6 +62,7 @@ import {
 const jobId = new URLSearchParams(location.search).get('id');
 let job = null;
 let unsubDispute = null;
+let selectedStars = 0;
 
 document.addEventListener('fb-ready', load);
 document.addEventListener('bid-sent', load);
@@ -106,20 +113,20 @@ function actionBox() {
   const isAssigned = uid === job.assignedTo;
   const isAdmin    = FB.userData?.role === 'admin';
 
-  // ── FREELANCER: ishi tamamladim + link ──
+  // FREELANCER: ishi tamamladim + link
   if (isAssigned && job.status === 'in_progress') {
     return '<div class="action-box blue">'
-      + '<p>&#x1F4E6; Siz bu isi icra edirsiniz. Isi bitirdikden sonra Google Drive, Dropbox ve ya baska link elave edib "Isi tamamladim" basin.</p>'
+      + '<p>&#x1F4E6; Siz bu isi icra edirsiniz. Isi bitirdikden sonra Google Drive, Dropbox ve ya basqa link elave edib basin.</p>'
       + '<div class="work-link-box">'
       + '<input type="url" id="work-link-input" placeholder="https://drive.google.com/... ve ya basqa link">'
       + '</div>'
-      + '<small style="color:var(--ink3);">&#x2139; Link olmadan da gondere bilersiniz — musteri mesaj vasitesile ala biler.</small>'
+      + '<small style="color:var(--ink3);">&#x2139; Link olmadan da gondere bilersiniz.</small>'
       + '<div class="action-btns">'
       + '<button class="btn btn-green" onclick="submitWork()">&#x2705; Isi tamamladim</button>'
       + '</div></div>';
   }
 
-  // ── MUSTERİ: submitted - tesdiqle ya mubahise ──
+  // MUSTERİ: submitted
   if (isOwner && job.status === 'submitted') {
     const linkHtml = job.deliverableLink
       ? '<p style="margin:8px 0 4px;font-size:13px;color:var(--ink2);">&#x1F4CE; Freelancerin gondərdiyi link:</p>'
@@ -134,12 +141,12 @@ function actionBox() {
       + '</div></div>';
   }
 
-  // ── MUSTERİ: in_progress-de bekleyir ──
+  // MUSTERİ: in_progress-de bekleyir
   if (isOwner && job.status === 'in_progress') {
     return '<div class="action-box blue"><p>&#x23F3; Freelancer is uzerinde calisir. Tamamlandiqda sizden tesdiq istenilecek.</p></div>';
   }
 
-  // ── MUBAHISE - ucterefli soхbet ──
+  // MUBAHISE - ucterefli soхbet
   if (job.status === 'disputed') {
     const canWrite = isOwner || isAssigned || isAdmin;
     return '<div class="action-box red">'
@@ -156,12 +163,34 @@ function actionBox() {
       + '</div>';
   }
 
-  // ── TAMAMLANDI ──
+  // TAMAMLANDI
   if (job.status === 'completed') {
     const linkHtml = job.deliverableLink
       ? '<a class="delivered-link" href="' + esc(job.deliverableLink) + '" target="_blank" rel="noopener">&#x1F517; Is linki: ' + esc(job.deliverableLink) + '</a>'
       : '';
-    return '<div class="action-box green"><p>&#x2705; Bu is ugurla tamamlandi.</p>' + linkHtml + '</div>';
+
+    // Musteri rey versin (eger vermeyibse)
+    const reviewHtml = (isOwner && !job.reviewLeft)
+      ? '<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">'
+        + '<b style="font-size:14px;">&#x2B50; Freelanceri qiymətləndirin</b>'
+        + '<div class="star-row" id="star-row">'
+        + [1,2,3,4,5].map(i =>
+            '<button class="star-btn" id="star-'+i+'" onclick="setStar('+i+')" title="'+i+' ulduz">&#x2606;</button>'
+          ).join('')
+        + '</div>'
+        + '<textarea class="review-textarea" id="review-text" placeholder="Rəyinizi yazin... (istege bagli)"></textarea>'
+        + '<div class="action-btns">'
+        + '<button class="btn btn-green" onclick="submitReview()">&#x2B50; Reyi gonder</button>'
+        + '<button class="btn btn-line" onclick="skipReview()">Kec</button>'
+        + '</div>'
+        + '</div>'
+      : (job.reviewLeft ? '<p style="margin-top:10px;font-size:13px;color:var(--ink3);">&#x2705; Reyi artiq gondermissiniz.</p>' : '');
+
+    return '<div class="action-box green">'
+      + '<p>&#x2705; Bu is ugurla tamamlandi.</p>'
+      + linkHtml
+      + reviewHtml
+      + '</div>';
   }
 
   if (job.status === 'cancelled') {
@@ -202,7 +231,6 @@ function render(bids) {
       + '</div>'
     + '</div>'
   + '</div>'
-
   + '<div class="jd-side">'
     + '<div class="jd-card">'
       + '<div class="jd-price">&#x20BC;' + Number(job.totalPrice||job.budget).toFixed(2) + '</div>'
@@ -258,7 +286,6 @@ function bidHtml(b, isOwner) {
   + '</div>';
 }
 
-// ===== BID QEBUL =====
 window.acceptBid = async function(bidId, freelancerId) {
   if (!confirm(t('cf_bid'))) return;
   const { db, doc, updateDoc } = FB;
@@ -270,13 +297,10 @@ window.acceptBid = async function(bidId, freelancerId) {
   } catch(e){ showToast('Xeta: '+e.message); }
 };
 
-// ===== FREELANCER: ISHI TAMAMLADI + LINK =====
 window.submitWork = async function() {
   const linkInput = document.getElementById('work-link-input');
   const deliverableLink = linkInput ? linkInput.value.trim() : '';
-
   if (!confirm('Ishi tamamlandi kimi qeyd etmek isteyirsiniz?\nMusteri tesdiq etmelidir.')) return;
-
   const { db, doc, updateDoc } = FB;
   try {
     await updateDoc(doc(db,'jobs',jobId), {
@@ -289,7 +313,6 @@ window.submitWork = async function() {
   } catch(e){ showToast('Xeta: '+e.message); }
 };
 
-// ===== MUSTERI: TESDIQ =====
 window.completeJob = async function() {
   if (!confirm('Ishi tesdiqleyirik ve tamamlandi kimi qeyd edirik?')) return;
   const { db, doc, updateDoc } = FB;
@@ -300,9 +323,8 @@ window.completeJob = async function() {
   } catch(e){ showToast('Xeta: '+e.message); }
 };
 
-// ===== MUSTERI: MUBAHISE =====
 window.disputeJob = async function() {
-  if (!confirm('Mubahise achmaq isteyirsiniz?\nAdmin arasiya girecek ve soхbet bashlayacaq.')) return;
+  if (!confirm('Mubahise achmaq isteyirsiniz?\nAdmin arasiya girecek.')) return;
   const { db, doc, updateDoc } = FB;
   try {
     await updateDoc(doc(db,'jobs',jobId), { status:'disputed' });
@@ -311,28 +333,86 @@ window.disputeJob = async function() {
   } catch(e){ showToast('Xeta: '+e.message); }
 };
 
-// ===== DISPUTE CHAT - REAL TIME =====
+// ===== ULDUZ SECIMI =====
+window.setStar = function(n) {
+  selectedStars = n;
+  for (let i = 1; i <= 5; i++) {
+    const btn = document.getElementById('star-' + i);
+    if (btn) {
+      btn.innerHTML = i <= n ? '&#x2605;' : '&#x2606;';
+      btn.style.color = i <= n ? '#f5a623' : '';
+    }
+  }
+};
+
+// ===== REY GONDER =====
+window.submitReview = async function() {
+  if (!selectedStars) { showToast('Ulduz secin!'); return; }
+  const text = document.getElementById('review-text')?.value.trim() || '';
+  const { db, doc, updateDoc, collection, addDoc, getDoc, serverTimestamp } = FB;
+  try {
+    // Reviews koleksiyasina yaz
+    await addDoc(collection(db, 'reviews'), {
+      jobId,
+      clientId: FB.user.uid,
+      clientName: FB.userData?.name || FB.user.email.split('@')[0],
+      freelancerId: job.assignedTo,
+      rating: selectedStars,
+      text,
+      createdAt: serverTimestamp()
+    });
+
+    // Freelancerin ortalam reytingini yenile
+    if (job.assignedTo) {
+      const fSnap = await getDoc(doc(db, 'users', job.assignedTo));
+      if (fSnap.exists()) {
+        const fd = fSnap.data();
+        const oldRating = fd.rating || 0;
+        const oldCount  = fd.ratingCount || 0;
+        const newCount  = oldCount + 1;
+        const newRating = ((oldRating * oldCount) + selectedStars) / newCount;
+        await updateDoc(doc(db,'users',job.assignedTo), {
+          rating: Math.round(newRating * 10) / 10,
+          ratingCount: newCount
+        });
+      }
+    }
+
+    // Job-a reviewLeft qoy (ikinci defe yazmasin)
+    await updateDoc(doc(db,'jobs',jobId), { reviewLeft: true });
+
+    showToast('Reyiniz gonderildi! Teshekkurler &#x2B50;');
+    load();
+  } catch(e){ showToast('Xeta: '+e.message); }
+};
+
+window.skipReview = async function() {
+  const { db, doc, updateDoc } = FB;
+  try {
+    await updateDoc(doc(db,'jobs',jobId), { reviewLeft: true });
+    load();
+  } catch(e){}
+};
+
+// ===== DISPUTE CHAT =====
 function subscribeDispute() {
   if (unsubDispute) unsubDispute();
-  const q = fsQuery(
-    fsCol(FB.db, 'jobs', jobId, 'dispute_messages'),
-    orderBy('at', 'asc')
-  );
+  const q = fsQuery(fsCol(FB.db,'jobs',jobId,'dispute_messages'), orderBy('at','asc'));
   unsubDispute = onSnapshot(q, snap => {
     const el = document.getElementById('dispute-chat');
     if (!el) return;
     const msgs = [];
-    snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
+    snap.forEach(d => msgs.push({ id:d.id, ...d.data() }));
     if (!msgs.length) {
       el.innerHTML = '<div style="text-align:center;color:var(--ink3);font-size:13px;padding:12px;">Hec bir mesaj yoxdur. Birincini siz yazin.</div>';
       return;
     }
     el.innerHTML = msgs.map(m => {
       const isMe = FB.user && m.uid === FB.user.uid;
-      const isAdminMsg = m.role === 'admin';
-      const cls = isAdminMsg ? 'admin-msg' : isMe ? 'mine' : 'other';
+      const isAdm = m.role === 'admin';
+      const cls = isAdm ? 'admin-msg' : isMe ? 'mine' : 'other';
       return '<div class="dc-msg ' + cls + '">'
-        + (isAdminMsg ? '&#x1F451; <b>Admin: </b>' : '<b>' + esc(m.name) + ':</b> ')
+        + (isAdm ? '&#x1F451; <b>Admin: </b>' : '<b>' + esc(m.name) + ':</b> ')
         + esc(m.text)
         + '<div class="dc-meta">' + (m.at ? new Date(m.at.seconds*1000).toLocaleString('az',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'}) : '') + '</div>'
         + '</div>';
@@ -348,7 +428,7 @@ window.sendDisputeMsg = async function() {
   if (!text) return;
   inp.value = '';
   try {
-    await fsAdd(fsCol(FB.db, 'jobs', jobId, 'dispute_messages'), {
+    await fsAdd(fsCol(FB.db,'jobs',jobId,'dispute_messages'), {
       text,
       uid: FB.user.uid,
       name: FB.userData?.name || FB.user.email.split('@')[0],
@@ -358,13 +438,12 @@ window.sendDisputeMsg = async function() {
   } catch(e){ showToast('Gonderilmedi: '+e.message); }
 };
 
-// ===== ADMIN: MUBAHISENI HELL ET =====
 window.resolveDispute = async function() {
   const resolution = prompt('Qerari yazin (musteri ve freelancer gorur):');
   if (!resolution) return;
   const { db, doc, updateDoc } = FB;
   try {
-    await fsAdd(fsCol(FB.db, 'jobs', jobId, 'dispute_messages'), {
+    await fsAdd(fsCol(FB.db,'jobs',jobId,'dispute_messages'), {
       text: resolution,
       uid: FB.user.uid,
       name: 'Admin',
