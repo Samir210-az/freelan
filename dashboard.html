@@ -526,7 +526,7 @@ async function loadJobsForSelect() {
     snap.forEach(d => jobs.push({ id: d.id, ...d.data() }));
     jobs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
     sel.innerHTML = '<option value="">— Seçin —</option>' +
-      jobs.map(j => `<option value="${j.id}" data-title="${esc(j.title)}" data-budget="${j.budget||''}">${esc(j.title)}${j.budget ? ' (₼'+j.budget+')' : ''}</option>`).join('');
+      jobs.map(j => `<option value="${j.id}" data-title="${esc(j.title)}" data-budget="${j.budget||''}" data-id="${j.id}">${esc(j.title)}${j.budget ? ' (₼'+j.budget+')' : ''}</option>`).join('');
   } catch(e) {}
 }
 
@@ -537,18 +537,21 @@ function updateWhatsAppLink() {
   const name   = FB.userData?.name || FB.user?.email || '';
   const email  = FB.user?.email || '';
 
-  const selOpt = sel?.options[sel.selectedIndex];
+  const selOpt    = sel?.options[sel.selectedIndex];
   const jobTitle  = selOpt?.dataset?.title || '';
   const jobBudget = selOpt?.dataset?.budget || '';
+  const jobId     = selOpt?.dataset?.id || '';
+  const jobLink   = jobId ? `https://samir210-az.github.io/freelan/job.html?id=${jobId}` : '';
 
   let msg = `📋 *Freelan.az — Balans artırma sorğusu*\n`;
   msg += `👤 İstifadəçi: ${name}`;
   if (email) msg += ` (${email})`;
   if (jobTitle) {
     msg += `\n💼 İş: ${jobTitle}`;
-    if (jobBudget) msg += ` (büdcə: ₼${jobBudget})`;
+    if (jobBudget) msg += ` — ₼${jobBudget} AZN`;
+    if (jobLink)   msg += `\n🔗 Link: ${jobLink}`;
   }
-  if (amount) msg += `\n💰 Məbləğ: ₼${amount} AZN`;
+  if (amount) msg += `\n💰 Ödəniş məbləği: ₼${amount} AZN`;
   if (note)   msg += `\n📝 Qeyd: ${note}`;
   msg += `\n\nZəhmət olmasa ödənişi təsdiqləyin.`;
 
