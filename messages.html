@@ -25,24 +25,33 @@
 <script>try{var th=localStorage.getItem("theme");if(!th&&window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches)th="dark";if(th)document.documentElement.setAttribute("data-theme",th);}catch(e){}</script>
 <link rel="stylesheet" href="css/style.css?v=5">
 <style>
-.bubble { position: relative; }
-.bubble:hover .msg-del { opacity: 1; pointer-events: auto; }
+.bubble {
+  position: relative;
+  padding-right: 28px !important;
+}
+.bubble.b-in {
+  padding-right: 12px !important;
+}
 .msg-del {
   position: absolute;
-  top: 4px; right: 4px;
-  background: rgba(220,50,50,0.85);
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  background: rgba(220,50,50,0.75);
   color: #fff;
   border: none;
   border-radius: 50%;
-  width: 20px; height: 20px;
-  font-size: 14px;
-  line-height: 20px;
+  width: 22px;
+  height: 22px;
+  font-size: 15px;
+  line-height: 22px;
   text-align: center;
   cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .15s;
   padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 .msg-del:hover { background: rgba(200,20,20,1); }
 </style>
@@ -53,26 +62,26 @@
 
 <div class="msg-grid" id="msg-wrap" style="display:none;">
   <aside class="msg-side" id="contacts">
-    <div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div>
+    <div class="empty"><div class="ico">&#x23F3;</div><p>Y&#xFC;kl&#x259;nir...</p></div>
   </aside>
   <main class="msg-main">
     <div class="msg-head" id="chat-head">
-      <span style="color:var(--ink3);font-size:14px;" data-i18n="ms_pick">Söhbət seçin</span>
+      <span style="color:var(--ink3);font-size:14px;" data-i18n="ms_pick">S&#xF6;hb&#x259;t se&#xE7;in</span>
     </div>
     <div class="msg-list" id="chat-list">
-      <div class="empty"><div class="ico">💬</div><p data-i18n="ms_pick2">Söhbət başlatmaq üçün sol tərəfdən kontakt seçin</p></div>
+      <div class="empty"><div class="ico">&#x1F4AC;</div><p data-i18n="ms_pick2">S&#xF6;hb&#x259;t ba&#x15F;latmaq &#xFC;&#xE7;&#xFC;n sol t&#x259;r&#x259;fd&#x259;n kontakt se&#xE7;in</p></div>
     </div>
     <div class="msg-input-row" id="chat-input-row" style="display:none;">
-      <input type="text" id="msg-text" data-i18n-ph="ms_ph" placeholder="Mesaj yazın..." onkeydown="if(event.key==='Enter')sendMsg()">
-      <button class="btn btn-green" data-i18n="ms_send" onclick="sendMsg()">Göndər</button>
+      <input type="text" id="msg-text" data-i18n-ph="ms_ph" placeholder="Mesaj yaz&#x131;n..." onkeydown="if(event.key==='Enter')sendMsg()">
+      <button class="btn btn-green" data-i18n="ms_send" onclick="sendMsg()">G&#xF6;nd&#x259;r</button>
     </div>
   </main>
 </div>
 
 <div id="auth-required" class="container" style="display:none;">
   <div class="empty" style="padding:100px 20px;">
-    <div class="ico">🔐</div>
-    <p style="margin-bottom:18px;" data-i18n="ms_auth">Mesajlara baxmaq üçün hesabınıza daxil olun</p>
+    <div class="ico">&#x1F510;</div>
+    <p style="margin-bottom:18px;" data-i18n="ms_auth">Mesajlara baxmaq &#xFC;&#xE7;&#xFC;n hesab&#x131;n&#x131;za daxil olun</p>
     <button class="btn btn-green" data-i18n="login" onclick="openAuth('login')">Daxil ol</button>
   </div>
 </div>
@@ -81,7 +90,15 @@
 
 <script type="module" src="js/app.js?v=8"></script>
 <script type="module">
-import { onSnapshot, orderBy, query as fsQuery, collection as fsCollection, where as fsWhere, deleteDoc, doc as fsDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  onSnapshot,
+  orderBy,
+  query as fsQuery,
+  collection as fsCollection,
+  where as fsWhere,
+  deleteDoc,
+  doc as fsDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 let activeChatId = null;
 let unsub = null;
@@ -100,12 +117,10 @@ async function init() {
   subscribeContacts();
 }
 
-// localStorage ilə oxunma vəziyyəti (Firestore yazısı olmadan)
 function readKey(chatId) { return 'read_' + chatId + '_' + FB.user.uid; }
 function lastReadSec(chatId) { return Number(localStorage.getItem(readKey(chatId)) || 0); }
 function markRead(chatId, sec) { localStorage.setItem(readKey(chatId), String(sec || Math.floor(Date.now()/1000))); }
 
-// Kontaktlar siyahısı — REAL-TIME (onSnapshot)
 function subscribeContacts() {
   const el = document.getElementById('contacts');
   const q = fsQuery(fsCollection(FB.db, 'chats'), fsWhere('members', 'array-contains', FB.user.uid));
@@ -124,7 +139,7 @@ function subscribeContacts() {
       }
     }
   }, err => {
-    el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p style="font-size:12px;">' + esc(err.message) + '</p></div>';
+    el.innerHTML = '<div class="empty"><div class="ico">&#x26A0;</div><p style="font-size:12px;">' + esc(err.message) + '</p></div>';
   });
 }
 
@@ -135,7 +150,7 @@ function otherNameOf(c) {
 function renderContacts() {
   const el = document.getElementById('contacts');
   if (!chatsCache.length) {
-    el.innerHTML = '<div class="empty"><div class="ico">💬</div><p style="font-size:13px;">' + t('ms_none') + '</p></div>';
+    el.innerHTML = '<div class="empty"><div class="ico">&#x1F4AC;</div><p style="font-size:13px;">' + t('ms_none') + '</p></div>';
     return;
   }
   el.innerHTML = chatsCache.map(c => {
@@ -143,15 +158,14 @@ function renderContacts() {
     const isUnread = c.lastFrom && c.lastFrom !== FB.user.uid
       && c.id !== activeChatId
       && (c.lastAt?.seconds || 0) > lastReadSec(c.id);
-    return `
-    <div class="msg-contact ${c.id===activeChatId?'active':''} ${isUnread?'unread':''}" data-chat="${c.id}" onclick="openChat('${c.id}','${esc(otherName)}')">
-      <div class="avatar">${esc(otherName[0].toUpperCase())}</div>
-      <div style="min-width:0;flex:1;">
-        <div class="nm">${esc(otherName)}</div>
-        <div class="lst">${esc(c.lastMsg || '')}</div>
-      </div>
-      ${isUnread ? '<span class="unread-dot"></span>' : ''}
-    </div>`;
+    return '<div class="msg-contact ' + (c.id===activeChatId?'active':'') + ' ' + (isUnread?'unread':'') + '" data-chat="' + c.id + '" onclick="openChat(\'' + c.id + '\',\'' + esc(otherName) + '\')">'
+      + '<div class="avatar">' + esc(otherName[0].toUpperCase()) + '</div>'
+      + '<div style="min-width:0;flex:1;">'
+      + '<div class="nm">' + esc(otherName) + '</div>'
+      + '<div class="lst">' + esc(c.lastMsg || '') + '</div>'
+      + '</div>'
+      + (isUnread ? '<span class="unread-dot"></span>' : '')
+      + '</div>';
   }).join('');
 }
 
@@ -160,7 +174,7 @@ window.openChat = function(chatId, name) {
   const c = chatsCache.find(x => x.id === chatId);
   markRead(chatId, c?.lastAt?.seconds);
   renderContacts();
-  document.getElementById('chat-head').innerHTML = `<div class="avatar">${esc(name[0].toUpperCase())}</div><b>${esc(name)}</b>`;
+  document.getElementById('chat-head').innerHTML = '<div class="avatar">' + esc(name[0].toUpperCase()) + '</div><b>' + esc(name) + '</b>';
   document.getElementById('chat-input-row').style.display = 'flex';
 
   if (unsub) unsub();
@@ -169,28 +183,30 @@ window.openChat = function(chatId, name) {
     const list = document.getElementById('chat-list');
     const msgs = [];
     snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
-    list.innerHTML = msgs.length
-      ? msgs.map(m => {
-          const isOwn = m.from === FB.user.uid;
-          return `<div class="bubble ${isOwn ? 'b-out' : 'b-in'}">
-            ${esc(m.text)}
-            ${isOwn ? `<button class="msg-del" title="Sil" onclick="delMsg('${m.id}')">×</button>` : ''}
-          </div>`;
-        }).join('')
-      : '<div class="empty"><div class="ico">👋</div><p>' + t('ms_first') + '</p></div>';
+    if (!msgs.length) {
+      list.innerHTML = '<div class="empty"><div class="ico">&#x1F44B;</div><p>' + t('ms_first') + '</p></div>';
+      return;
+    }
+    list.innerHTML = msgs.map(function(m) {
+      var isOwn = m.from === FB.user.uid;
+      var delBtn = isOwn
+        ? '<button class="msg-del" onclick="delMsg(\'' + m.id + '\')" title="Sil">&#x2715;</button>'
+        : '';
+      return '<div class="bubble ' + (isOwn ? 'b-out' : 'b-in') + '">' + esc(m.text) + delBtn + '</div>';
+    }).join('');
     list.scrollTop = list.scrollHeight;
-    // açıq çatda yeni mesaj gəlsə, oxunmuş kimi qeyd et
-    const last = msgs[msgs.length - 1];
-    if (last && last.at?.seconds) markRead(chatId, last.at.seconds);
+    var last = msgs[msgs.length - 1];
+    if (last && last.at && last.at.seconds) markRead(chatId, last.at.seconds);
   });
 };
 
 window.delMsg = async function(msgId) {
   if (!activeChatId || !msgId) return;
+  if (!confirm('Bu mesajı silmək istəyirsiniz?')) return;
   try {
     await deleteDoc(fsDoc(FB.db, 'chats', activeChatId, 'messages', msgId));
   } catch(e) {
-    showToast('Silinmədi: ' + e.message);
+    alert('Silinmedi: ' + e.message);
   }
 };
 
@@ -208,7 +224,7 @@ window.sendMsg = async function() {
       lastMsg: text, lastAt: serverTimestamp(), lastFrom: FB.user.uid
     });
     markRead(activeChatId);
-  } catch(e) { showToast('Göndərilmədi: ' + e.message); }
+  } catch(e) { alert('Gonderilmedi: ' + e.message); }
 };
 </script>
 </body>
