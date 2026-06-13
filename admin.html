@@ -42,6 +42,7 @@
       <a data-sec="users" onclick="showSec('users')">👥 İstifadəçilər</a>
       <a data-sec="plans" onclick="showSec('plans')">💎 Tarif sorğuları <span class="badge badge-orange" id="plans-count" style="margin-left:auto;">0</span></a>
       <a data-sec="payments" onclick="showSec('payments')">💳 Ödənişlər <span class="badge badge-orange" id="pay-count" style="margin-left:auto;">0</span></a>
+      <a data-sec="completed" onclick="showSec('completed')">✅ Tamamlanan işlər <span class="badge badge-green" id="done-count" style="margin-left:auto;">0</span></a>
     </nav>
   </aside>
 
@@ -87,6 +88,13 @@
       <p style="font-size:13px;color:var(--ink2);margin:-10px 0 18px;">Müştəri WhatsApp vasitəsilə müraciət etdikdən sonra aşağıda sorğu görünür. Ödənişi aldıqdan sonra <b>Təsdiqlə</b> düyməsinə basın — müştərinin balansı avtomatik artacaq.</p>
       <div id="payments-list"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
     </div>
+
+    <!-- COMPLETED JOBS -->
+    <div class="dash-sec" id="sec-completed">
+      <h2 style="font-size:22px;margin-bottom:20px;">✅ Tamamlanan işlər</h2>
+      <p style="font-size:13px;color:var(--ink2);margin:-10px 0 18px;">Müştəri təsdiqlədiyi işlər — freelancerə ödəniş etməlisiniz.</p>
+      <div id="completed-list"><div class="empty"><div class="ico">⏳</div><p>Yüklənir...</p></div></div>
+    </div>
   </main>
 </div>
 
@@ -130,8 +138,10 @@ async function loadAll() {
     ]);
     let upgSnap = { forEach: () => {} };
     let paySnap = { forEach: () => {} };
+    let notifSnap = { forEach: () => {} };
     try { upgSnap = await getDocs(collection(db, 'upgrades')); } catch(e) {}
     try { paySnap = await getDocs(collection(db, 'payments')); } catch(e) {}
+    try { notifSnap = await getDocs(collection(db, 'notifications')); } catch(e) {}
 
     const jobs = []; jobsSnap.forEach(d => jobs.push({ id: d.id, ...d.data() }));
     const users = []; usersSnap.forEach(d => users.push({ id: d.id, ...d.data() }));
@@ -162,6 +172,13 @@ async function loadAll() {
     renderUsers(users);
     renderUpgrades(pendingUpg);
     renderPayments(payments);
+
+    // Tamamlanan işlər (notifications-dan)
+    const notifs = []; notifSnap.forEach(d => notifs.push({ id: d.id, ...d.data() }));
+    const completedNotifs = notifs.filter(n => n.type === 'job_completed');
+    completedNotifs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    document.getElementById('done-count').textContent = completedNotifs.length;
+    renderCompleted(completedNotifs, jobs);
   } catch(e) {
     showToast('Yükləmə xətası: ' + e.message);
   }
@@ -249,6 +266,46 @@ function renderUpgrades(list) {
     </div>`).join('')
   : '<div class="empty"><div class="ico">✨</div><p>Gözləyən tarif sorğusu yoxdur</p></div>';
 }
+
+function renderCompleted(list, jobs) {
+  const el = document.getElementById('completed-list');
+  if (!el) return;
+  el.innerHTML = list.length ? list.map(n => {
+    const j = jobs.find(j => j.id === n.jobId);
+    return `
+    <div class="prop-item">
+      <div class="prop-head">
+        <div style="flex:1;">
+          <div class="prop-name">💼 ${esc(n.jobTitle||'—')}</div>
+          <div class="prop-meta">
+            👤 Müştəri: <b>${esc(n.clientName||'—')}</b> · ${timeAgo(n.createdAt)}
+          </div>
+          <div class="prop-cover" style="margin-top:6px;">
+            💰 Məbləğ: <b>₼${Number(n.amount||0).toFixed(2)} AZN</b>
+            ${j?.assignedTo ? '· Freelancer ID: '+esc(j.assignedTo) : ''}
+          </div>
+          <a href="job.html?id=${esc(n.jobId)}" target="_blank" style="font-size:12px;color:var(--green);margin-top:4px;display:inline-block;">🔗 Elanı aç →</a>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <span class="badge badge-green">Tamamlandı ✅</span>
+          <div style="margin-top:8px;">
+            <button class="btn btn-line btn-sm" onclick="markPaid('${n.id}')">✔ Ödənildi</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty"><div class="ico">✨</div><p>Hələ tamamlanan iş yoxdur</p></div>';
+}
+
+window.markPaid = async function(notifId) {
+  if (!confirm('Bu işin ödənişini tamamlandı kimi qeyd edirsiniz?')) return;
+  const { db, doc, updateDoc, serverTimestamp } = FB;
+  try {
+    await updateDoc(doc(db, 'notifications', notifId), { paid: true, paidAt: serverTimestamp() });
+    showToast('✅ Ödəniş qeyd edildi');
+    loadAll();
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
 
 function renderPayments(list) {
   const el = document.getElementById('payments-list');
