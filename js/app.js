@@ -737,11 +737,11 @@ window.fbPostJob = async function() {
       title, category: cat, description: desc, budget, serviceFee, totalPrice, deadline,
       clientId: FB.user.uid,
       clientName: FB.userData?.name || 'Müştəri',
-      status: 'approved', bids: 0,
+      status: 'pending', bids: 0,
       createdAt: serverTimestamp()
     });
     closePostJob();
-    showToast('Elanınız dərc olundu! 🎉');
+    showToast('Elanınız moderasiyaya göndərildi! ⏳');
     document.dispatchEvent(new CustomEvent('job-posted'));
   } catch(e) {
     fbErr('pj-err', e.code === 'permission-denied'
@@ -834,5 +834,6 @@ window.requestPlan = async function(plan) {
 renderHeader();
 renderFooter();
 applyI18n();
+
 
 
