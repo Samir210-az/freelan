@@ -218,7 +218,6 @@ function renderHeader() {
       <a href="admin.html" id="nav-admin" style="display:none;color:var(--green);font-weight:700;">👑 Admin</a>
     </nav>
     <div class="hdr-right" id="hdr-right">
-      ${themeBtnHtml()}
       ${langSelHtml()}
       <button class="btn btn-ghost btn-sm" onclick="openAuth('login')">${t('login')}</button>
       <button class="btn btn-green btn-sm" onclick="openAuth('register')">${t('register')}</button>
@@ -519,7 +518,6 @@ window.updateHeaderUser = function() {
   const name = d?.name || FB.user.email.split('@')[0];
   const role = d?.role || 'client';
   right.innerHTML = `
-    ${themeBtnHtml()}
     ${langSelHtml()}
     <a class="user-chip" href="dashboard.html">
       <div class="avatar">${avaInner(d?.photo, name)}</div><span>${esc(name)}</span>
