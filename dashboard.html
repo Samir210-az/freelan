@@ -290,7 +290,7 @@ async function loadMyJobs() {
         } catch(e2) {}
       }
       rows.push(`
-      <div class="prop-item" onclick="location.href='job.html?id=${j.id}'" style="cursor:pointer;">
+      <div class="prop-item mj-job" data-jid="${j.id}" style="cursor:pointer;">
         <div class="prop-head">
           <div>
             <div class="prop-name">${esc(j.title)}</div>
@@ -305,6 +305,9 @@ async function loadMyJobs() {
       </div>`);
     }
     el.innerHTML = rows.join('');
+    el.querySelectorAll('.mj-job').forEach(el2 => {
+      el2.addEventListener('click', () => { location.href = 'job.html?id=' + el2.dataset.jid; });
+    });
   } catch(e) {
     el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>' + esc(e.message) + '</p></div>';
   }
@@ -341,7 +344,7 @@ async function loadMyBids() {
       }
     }
     el.innerHTML = bids.map(b => `
-      <div class="prop-item" style="cursor:pointer;" onclick="location.href='job.html?id=${b.jobId}'">
+      <div class="prop-item mb-job" data-jid="${b.jobId}" style="cursor:pointer;">
         <div class="prop-head">
           <div>
             <div class="prop-name">${esc(titles[b.jobId]||'—')}</div>
@@ -353,6 +356,9 @@ async function loadMyBids() {
           </div>
         </div>
       </div>`).join('');
+    el.querySelectorAll('.mb-job').forEach(el2 => {
+      el2.addEventListener('click', () => { location.href = 'job.html?id=' + el2.dataset.jid; });
+    });
   } catch(e) {
     el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>' + esc(e.message) + '</p></div>';
   }
@@ -368,19 +374,24 @@ async function loadActive() {
     const jobs = [];
     snap.forEach(x => {
       const j = { id: x.id, ...x.data() };
-      const isClient = d.role === 'client' && j.clientId === uid;
+      const isClient = d.role === 'client'     && j.clientId   === uid;
       const isFL     = d.role === 'freelancer' && j.assignedTo === uid;
       if ((isClient || isFL) && ['in_progress','submitted'].includes(j.status)) jobs.push(j);
     });
     jobs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
 
-    el.innerHTML = jobs.length ? jobs.map(j => {
+    if (!jobs.length) {
+      el.innerHTML = '<div class="empty"><div class="ico">🔄</div><p>' + t('db_noactive') + '</p></div>';
+      return;
+    }
+
+    el.innerHTML = jobs.map(j => {
       const isSubmitted = j.status === 'submitted';
-      const balance = parseFloat(FB.userData?.balance || 0);
-      const needed  = parseFloat(j.budget || 0);
+      const balance  = parseFloat(FB.userData?.balance || 0);
+      const needed   = parseFloat(j.budget || 0);
       const hasBalance = balance >= needed;
 
-      let statusHtml = '';
+      let statusHtml  = '';
       let warningHtml = '';
 
       if (d.role === 'client') {
@@ -398,25 +409,32 @@ async function loadActive() {
           : '<span class="badge badge-blue" style="margin-top:4px;">Davam edir</span>';
       }
 
-      return '<div class="prop-item" style="cursor:pointer;" onclick="location.href='job.html?id='+j.id+''">'
+      // onclick üçün JS-ə keç - dırnaq problemi olmur
+      return '<div class="prop-item act-job" data-jid="' + j.id + '" style="cursor:pointer;">'
         + '<div class="prop-head">'
           + '<div style="flex:1;">'
-            + '<div class="prop-name">'+esc(j.title)+'</div>'
-            + '<div class="prop-meta">'+(d.role==='client'?'🧑‍💻 '+esc(j.assignedName||'Freelancer'):'👤 '+esc(j.clientName||'Müştəri'))+'</div>'
+            + '<div class="prop-name">' + esc(j.title) + '</div>'
+            + '<div class="prop-meta">' + (d.role==='client' ? '🧑‍💻 Freelancer' : '👤 ' + esc(j.clientName||'Müştəri')) + '</div>'
             + warningHtml
           + '</div>'
           + '<div style="text-align:right;flex-shrink:0;">'
-            + '<div class="prop-amount">₼'+j.budget+'</div>'
+            + '<div class="prop-amount">₼' + j.budget + '</div>'
             + statusHtml
           + '</div>'
         + '</div>'
       + '</div>';
-    }).join('')
-    : '<div class="empty"><div class="ico">🔄</div><p>' + t('db_noactive') + '</p></div>';
+    }).join('');
+
+    // onclick - data-jid ilə təhlükəsiz
+    el.querySelectorAll('.act-job').forEach(el2 => {
+      el2.addEventListener('click', () => { location.href = 'job.html?id=' + el2.dataset.jid; });
+    });
+
   } catch(e) {
     el.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>' + esc(e.message) + '</p></div>';
   }
 }
+
 
 window.completeJob = async function(jobId) {
   if (!confirm(t('cf_done'))) return;
