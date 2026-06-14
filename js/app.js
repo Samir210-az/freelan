@@ -219,8 +219,8 @@ function renderHeader() {
     </nav>
     <div class="hdr-right" id="hdr-right">
       ${langSelHtml()}
-      <button class="btn btn-ghost btn-sm" onclick="openAuth('login')">${t('login')}</button>
-      <button class="btn btn-green btn-sm" onclick="openAuth('register')">${t('register')}</button>
+      <button class="btn btn-ghost btn-sm" id="hdr-login-btn" onclick="openAuth('login')">${t('login')}</button>
+      <button class="btn btn-green btn-sm" id="hdr-register-btn" onclick="openAuth('register')">${t('register')}</button>
       <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu"><span></span><span></span><span></span></button>
     </div>
   </div>
@@ -516,25 +516,12 @@ window.updateHeaderUser = function() {
   const right = document.getElementById('hdr-right');
   if (!right) return;
   if (!FB.user) {
-    // Logout vəziyyəti: login/register göstər, user chip gizlət
-    const chip = right.querySelector('.user-chip');
-    const logoutBtn = right.querySelector('.btn-logout-hdr');
-    if (chip) chip.remove();
-    if (logoutBtn) logoutBtn.remove();
-    const loginBtn = document.getElementById('hdr-login-btn');
-    const regBtn   = document.getElementById('hdr-register-btn');
-    if (!loginBtn) {
-      // Tam yenidən render et (dil seçicisi varsa saxla)
-      right.innerHTML = `
-        ${langSelHtml()}
-        <button class="btn btn-ghost btn-sm" id="hdr-login-btn" onclick="openAuth('login')">${t('login')}</button>
-        <button class="btn btn-green btn-sm" id="hdr-register-btn" onclick="openAuth('register')">${t('register')}</button>
-        <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu"><span></span><span></span><span></span></button>`;
-    } else {
-      loginBtn.style.display = '';
-      if (regBtn) regBtn.style.display = '';
-    }
-    // Admin linkini gizlət
+    // Login deyil — login/register göstər
+    right.innerHTML =
+      langSelHtml() +
+      '<button class="btn btn-ghost btn-sm" id="hdr-login-btn" onclick="openAuth(\'login\')">' + t('login') + '</button>' +
+      '<button class="btn btn-green btn-sm" id="hdr-register-btn" onclick="openAuth(\'register\')">' + t('register') + '</button>' +
+      '<button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu"><span></span><span></span><span></span></button>';
     const a = document.getElementById('nav-admin');
     if (a) a.style.display = 'none';
     return;
@@ -542,27 +529,14 @@ window.updateHeaderUser = function() {
   const d = FB.userData;
   const name = d?.name || FB.user.email.split('@')[0];
   const role = d?.role || 'client';
-  right.innerHTML = `
-    ${langSelHtml()}
-    <a class="user-chip" href="dashboard.html">
-      <div class="avatar">${avaInner(d?.photo, name)}</div><span>${esc(name)}</span>
-    </a>
-    <button class="btn btn-ghost btn-sm btn-logout-hdr" onclick="fbLogout()">${t('logout')}</button>
-    <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu"><span></span><span></span><span></span></button>`;
+  right.innerHTML =
+    langSelHtml() +
+    '<a class="user-chip" href="dashboard.html"><div class="avatar">' + avaInner(d?.photo, name) + '</div><span>' + esc(name) + '</span></a>' +
+    '<button class="btn btn-ghost btn-sm" onclick="fbLogout()">' + t('logout') + '</button>' +
+    '<button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu"><span></span><span></span><span></span></button>';
   if (role === 'admin') {
     const a = document.getElementById('nav-admin');
     if (a) a.style.display = 'inline-block';
-  }
-  // Mobile menyu - login/register linkləri gizlət, dashboard/logout əlavə et
-  const mm = document.getElementById('mobile-menu');
-  if (mm) {
-    let mmDash = mm.querySelector('.mm-auth-dash');
-    if (!mmDash) {
-      mmDash = document.createElement('div');
-      mmDash.className = 'mm-auth-dash';
-      mmDash.innerHTML = `<a href="dashboard.html">📊 ${t('db_overview')}</a><a href="#" onclick="fbLogout();return false;">${t('logout')}</a>`;
-      mm.appendChild(mmDash);
-    }
   }
 }
 // ===== UNIFIED BID SYSTEM (Upwork "Submit a Proposal") =====
