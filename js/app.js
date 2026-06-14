@@ -219,8 +219,8 @@ function renderHeader() {
     </nav>
     <div class="hdr-right" id="hdr-right">
       ${langSelHtml()}
-      <button class="btn btn-ghost btn-sm" id="hdr-login-btn" onclick="openAuth('login')">${t('login')}</button>
-      <button class="btn btn-green btn-sm" id="hdr-register-btn" onclick="openAuth('register')">${t('register')}</button>
+      <button class="btn btn-ghost btn-sm" onclick="openAuth('login')">${t('login')}</button>
+      <button class="btn btn-green btn-sm" onclick="openAuth('register')">${t('register')}</button>
       <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu"><span></span><span></span><span></span></button>
     </div>
   </div>
@@ -506,7 +506,6 @@ onAuthStateChanged(auth, async (user) => {
     if (user.providerData.some(p => p.providerId === 'password') && !user.emailVerified) showVerifyBanner();
   } else {
     FB.userData = null;
-    updateHeaderUser(); // logout vəziyyətini də dərhal göstər
   }
   FB.ready = true;
   document.dispatchEvent(new CustomEvent('fb-ready', { detail: { user, userData: FB.userData } }));
@@ -514,26 +513,17 @@ onAuthStateChanged(auth, async (user) => {
 
 window.updateHeaderUser = function() {
   const right = document.getElementById('hdr-right');
-  if (!right) return;
-  if (!FB.user) {
-    // Login deyil — login/register göstər
-    right.innerHTML =
-      langSelHtml() +
-      '<button class="btn btn-ghost btn-sm" id="hdr-login-btn" onclick="openAuth(\'login\')">' + t('login') + '</button>' +
-      '<button class="btn btn-green btn-sm" id="hdr-register-btn" onclick="openAuth(\'register\')">' + t('register') + '</button>' +
-      '<button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu"><span></span><span></span><span></span></button>';
-    const a = document.getElementById('nav-admin');
-    if (a) a.style.display = 'none';
-    return;
-  }
+  if (!right || !FB.user) return;
   const d = FB.userData;
   const name = d?.name || FB.user.email.split('@')[0];
   const role = d?.role || 'client';
-  right.innerHTML =
-    langSelHtml() +
-    '<a class="user-chip" href="dashboard.html"><div class="avatar">' + avaInner(d?.photo, name) + '</div><span>' + esc(name) + '</span></a>' +
-    '<button class="btn btn-ghost btn-sm" onclick="fbLogout()">' + t('logout') + '</button>' +
-    '<button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu"><span></span><span></span><span></span></button>';
+  right.innerHTML = `
+    ${langSelHtml()}
+    <a class="user-chip" href="dashboard.html">
+      <div class="avatar">${avaInner(d?.photo, name)}</div><span>${esc(name)}</span>
+    </a>
+    <button class="btn btn-ghost btn-sm" onclick="fbLogout()">${t('logout')}</button>
+    <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu"><span></span><span></span><span></span></button>`;
   if (role === 'admin') {
     const a = document.getElementById('nav-admin');
     if (a) a.style.display = 'inline-block';
@@ -764,7 +754,7 @@ window.fbPostJob = async function() {
 // ===== SHARED RENDER HELPERS =====
 window.jobCardHtml = function(j) {
   return `
-  <div class="job-card" onclick="location.href='job.html?id='+this.dataset.jid" data-jid="${j.id}" style="cursor:pointer;">
+  <div class="job-card" onclick="location.href='job.html?id=${j.id}'">
     <div class="job-top">
       <div class="job-title">${esc(j.title)}</div>
       <div class="job-price" style="text-align:right;">
