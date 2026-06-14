@@ -822,14 +822,10 @@ window.requestPlan = async function(plan) {
 
 
 // ===== INIT =====
-// Tema: inline <head> skripti data-theme təyin edir; burada ehtiyat tətbiq
+// Tema: həmişə light
 (function initTheme(){
-  if (!document.documentElement.getAttribute('data-theme')) {
-    let th = null;
-    try { th = localStorage.getItem('theme'); } catch(_) {}
-    if (!th) th = (window.matchMedia && matchMedia('(prefers-color-scheme:dark)').matches) ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', th);
-  }
+  localStorage.removeItem('theme');
+  document.documentElement.setAttribute('data-theme', 'light');
 })();
 renderHeader();
 renderFooter();
