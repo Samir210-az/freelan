@@ -506,6 +506,7 @@ onAuthStateChanged(auth, async (user) => {
     if (user.providerData.some(p => p.providerId === 'password') && !user.emailVerified) showVerifyBanner();
   } else {
     FB.userData = null;
+    updateHeaderUser(); // logout vəziyyətini də dərhal göstər
   }
   FB.ready = true;
   document.dispatchEvent(new CustomEvent('fb-ready', { detail: { user, userData: FB.userData } }));
@@ -513,7 +514,31 @@ onAuthStateChanged(auth, async (user) => {
 
 window.updateHeaderUser = function() {
   const right = document.getElementById('hdr-right');
-  if (!right || !FB.user) return;
+  if (!right) return;
+  if (!FB.user) {
+    // Logout vəziyyəti: login/register göstər, user chip gizlət
+    const chip = right.querySelector('.user-chip');
+    const logoutBtn = right.querySelector('.btn-logout-hdr');
+    if (chip) chip.remove();
+    if (logoutBtn) logoutBtn.remove();
+    const loginBtn = document.getElementById('hdr-login-btn');
+    const regBtn   = document.getElementById('hdr-register-btn');
+    if (!loginBtn) {
+      // Tam yenidən render et (dil seçicisi varsa saxla)
+      right.innerHTML = `
+        ${langSelHtml()}
+        <button class="btn btn-ghost btn-sm" id="hdr-login-btn" onclick="openAuth('login')">${t('login')}</button>
+        <button class="btn btn-green btn-sm" id="hdr-register-btn" onclick="openAuth('register')">${t('register')}</button>
+        <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu"><span></span><span></span><span></span></button>`;
+    } else {
+      loginBtn.style.display = '';
+      if (regBtn) regBtn.style.display = '';
+    }
+    // Admin linkini gizlət
+    const a = document.getElementById('nav-admin');
+    if (a) a.style.display = 'none';
+    return;
+  }
   const d = FB.userData;
   const name = d?.name || FB.user.email.split('@')[0];
   const role = d?.role || 'client';
@@ -522,11 +547,22 @@ window.updateHeaderUser = function() {
     <a class="user-chip" href="dashboard.html">
       <div class="avatar">${avaInner(d?.photo, name)}</div><span>${esc(name)}</span>
     </a>
-    <button class="btn btn-ghost btn-sm" onclick="fbLogout()">${t('logout')}</button>
+    <button class="btn btn-ghost btn-sm btn-logout-hdr" onclick="fbLogout()">${t('logout')}</button>
     <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu"><span></span><span></span><span></span></button>`;
   if (role === 'admin') {
     const a = document.getElementById('nav-admin');
     if (a) a.style.display = 'inline-block';
+  }
+  // Mobile menyu - login/register linkləri gizlət, dashboard/logout əlavə et
+  const mm = document.getElementById('mobile-menu');
+  if (mm) {
+    let mmDash = mm.querySelector('.mm-auth-dash');
+    if (!mmDash) {
+      mmDash = document.createElement('div');
+      mmDash.className = 'mm-auth-dash';
+      mmDash.innerHTML = `<a href="dashboard.html">📊 ${t('db_overview')}</a><a href="#" onclick="fbLogout();return false;">${t('logout')}</a>`;
+      mm.appendChild(mmDash);
+    }
   }
 }
 // ===== UNIFIED BID SYSTEM (Upwork "Submit a Proposal") =====
