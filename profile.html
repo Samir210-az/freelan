@@ -36,9 +36,10 @@
 
 <footer id="app-footer"></footer>
 
-<script type="module" src="js/app.js?v=9"></script>
+<script type="module" src="js/app.js?v=10"></script>
 <script type="module">
-const uid = new URLSearchParams(location.search).get('id');
+// profile.html ?id=UID  OR  ?uid=UID  (admin paneldən gələn link)
+const uid = new URLSearchParams(location.search).get('id') || new URLSearchParams(location.search).get('uid');
 document.addEventListener('fb-ready', load);
 
 let loading = false;
@@ -46,21 +47,22 @@ async function load() {
   if (loading) return; loading = true;
   const el = document.getElementById('profile-wrap');
   if (!uid) { el.innerHTML = '<div class="empty"><div class="ico">😕</div><p>'+t('pf_nf')+'</p></div>'; loading = false; return; }
-  const { db, doc, getDoc } = FB;
+  const { db, doc, getDoc, collection, getDocs, query, where } = FB;
   try {
     const snap = await getDoc(doc(db, 'users', uid));
     if (!snap.exists()) { el.innerHTML = '<div class="empty"><div class="ico">😕</div><p>'+t('pf_nf')+'</p></div>'; loading = false; return; }
     const u = snap.data();
-    document.title = u.name + ' — Freelan.az';
+    document.title = (u.name || 'Profil') + ' — Freelan.az';
 
-    // Load reviews
+    // === Rəylər ===
     let reviewsHtml = '';
+    let revCount = 0;
     try {
-      const { collection, getDocs, query, where } = FB;
       const rs = await getDocs(query(collection(db, 'reviews'), where('freelancerId', '==', uid)));
       const revs = [];
       rs.forEach(d => revs.push(d.data()));
       revs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+      revCount = revs.length;
       if (revs.length) {
         reviewsHtml = `<div class="jd-card" style="margin-top:18px;">
           <h3 style="font-size:16px;margin-bottom:14px;">${t('pf_reviews')} (${revs.length})</h3>
@@ -75,27 +77,84 @@ async function load() {
                 </div>
               </div>
             </div>
-            ${r.comment ? `<p class="prop-cover">${esc(r.comment)}</p>` : ''}
+            ${(r.comment||r.text) ? `<p class="prop-cover">${esc(r.comment||r.text)}</p>` : ''}
           </div>`).join('')}
         </div>`;
       }
     } catch(e) {}
 
+    // === Tamamlanan işlər (freelancer üçün) ===
+    let completedJobsHtml = '';
+    if (u.role === 'freelancer') {
+      try {
+        const js = await getDocs(query(collection(db, 'jobs'),
+          where('assignedTo', '==', uid), where('status', '==', 'completed')));
+        const cjobs = [];
+        js.forEach(d => cjobs.push({ id: d.id, ...d.data() }));
+        cjobs.sort((a,b) => (b.completedAt?.seconds||b.createdAt?.seconds||0) - (a.completedAt?.seconds||a.createdAt?.seconds||0));
+        if (cjobs.length) {
+          completedJobsHtml = `<div class="jd-card" style="margin-top:18px;">
+            <h3 style="font-size:16px;margin-bottom:14px;">✅ Tamamlanan işlər (${cjobs.length})</h3>
+            ${cjobs.slice(0,6).map(j => `
+            <div class="prop-item" style="cursor:pointer;" onclick="location.href='job.html?id=${j.id}'">
+              <div class="prop-head">
+                <div style="flex:1;">
+                  <div class="prop-name">${esc(j.title)}</div>
+                  <div class="prop-meta">📁 ${esc(j.category)} · ${timeAgo(j.completedAt||j.createdAt)}</div>
+                </div>
+                <div style="text-align:right;flex-shrink:0;">
+                  <div class="prop-amount">₼${j.budget}</div>
+                  <span class="badge badge-gray">Tamamlandı</span>
+                </div>
+              </div>
+            </div>`).join('')}
+            ${cjobs.length > 6 ? `<div style="text-align:center;padding-top:10px;font-size:13px;color:var(--ink3);">+ ${cjobs.length-6} iş daha</div>` : ''}
+          </div>`;
+        }
+      } catch(e) {}
+    }
+
+    // === Aktiv iş statusu ===
+    let activeJobsHtml = '';
+    if (u.role === 'freelancer') {
+      try {
+        const aj = await getDocs(query(collection(db, 'jobs'),
+          where('assignedTo', '==', uid), where('status', '==', 'in_progress')));
+        const acount = aj.size;
+        if (acount > 0) {
+          activeJobsHtml = `<div style="background:rgba(20,160,0,.08);border:1px solid rgba(20,160,0,.2);border-radius:10px;padding:10px 16px;margin-top:12px;font-size:13px;color:var(--green);font-weight:600;">🔄 ${acount} aktiv iş davam edir</div>`;
+        }
+      } catch(e) {}
+    }
+
+    const isOwnProfile = FB.user && FB.user.uid === uid;
+    const isAdmin = FB.userData?.role === 'admin';
+
     el.innerHTML = `
-    <div class="jd-card" style="text-align:center;padding:40px;">
-      <div class="avatar" style="width:84px;height:84px;font-size:30px;margin:0 auto 16px;">${avaInner(u.photo, u.name)}</div>
-      <h1 style="font-size:26px;">${esc(u.name)} ${planBadge(u.plan)}</h1>
-      <p style="color:var(--ink2);margin:4px 0 12px;">${esc(u.title || (u.role === 'freelancer' ? 'Freelancer' : t('db_client')))}</p>
-      <div class="stars" style="font-size:15px;">★ ${u.rating > 0 ? u.rating.toFixed(1) : t('new_lbl')} · ${u.jobsDone||0} ${t('pf_done')}</div>
-      ${u.rate > 0 ? `<div style="font-size:20px;font-weight:800;color:var(--green);margin-top:12px;">₼${u.rate}${t('per_hour')}</div>` : ''}
-      ${(u.skills||[]).length ? `<div class="tags" style="justify-content:center;margin-top:18px;">${u.skills.map(s=>`<span class="tag">${esc(s)}</span>`).join('')}</div>` : ''}
-      <button class="btn btn-green" style="margin-top:20px;" onclick="openMessage('${uid}','${esc(u.name)}')">${t('msg_send')}</button>
+    <div class="jd-card" style="text-align:center;padding:40px 24px;">
+      <div class="avatar" style="width:88px;height:88px;font-size:32px;margin:0 auto 16px;">${avaInner(u.photo, u.name)}</div>
+      <h1 style="font-size:26px;">${esc(u.name||'—')} ${planBadge(u.plan)}</h1>
+      <p style="color:var(--ink2);margin:4px 0 8px;">${esc(u.title || (u.role === 'freelancer' ? 'Freelancer' : t('db_client')))}</p>
+      <div style="font-size:14px;color:var(--ink3);margin-bottom:8px;">
+        ${u.role === 'freelancer' ? '🧑‍💻 Freelancer' : '💼 ' + t('db_client')}
+        ${u.status === 'banned' ? ' · <span style="color:#d23232;">🚫 Bloklanıb</span>' : ''}
+      </div>
+      <div class="stars" style="font-size:15px;">★ ${u.rating > 0 ? u.rating.toFixed(1) : t('new_lbl')} · ${u.jobsDone||0} ${t('pf_done')} · ${revCount} rəy</div>
+      ${u.rate > 0 ? `<div style="font-size:22px;font-weight:800;color:var(--green);margin-top:12px;">₼${u.rate}${t('per_hour')}</div>` : ''}
+      ${(u.skills||[]).length ? `<div class="tags" style="justify-content:center;margin-top:16px;">${u.skills.map(s=>`<span class="tag">${esc(s)}</span>`).join('')}</div>` : ''}
+      ${activeJobsHtml}
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap;">
+        ${!isOwnProfile ? `<button class="btn btn-green" onclick="openMessage('${uid}','${esc(u.name||'')}')">${t('msg_send')}</button>` : ''}
+        ${isOwnProfile ? `<a class="btn btn-green" href="dashboard.html">⚙️ Profili düzəlt</a>` : ''}
+        ${isAdmin ? `<a class="btn btn-line btn-sm" href="admin.html">👑 Admin panel</a>` : ''}
+      </div>
     </div>
     ${u.bio ? `
     <div class="jd-card" style="margin-top:18px;">
       <h3 style="font-size:16px;margin-bottom:10px;">${t('pf_about')}</h3>
       <p style="font-size:14.5px;color:var(--ink2);line-height:1.7;white-space:pre-wrap;">${esc(u.bio)}</p>
     </div>` : ''}
+    ${completedJobsHtml}
     ${reviewsHtml}
     <div style="text-align:center;margin-top:24px;">
       <a class="btn btn-line" href="freelancers.html">${t('pf_all')}</a>
