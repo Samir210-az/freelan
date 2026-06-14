@@ -790,7 +790,7 @@ window.fbPostJob = async function() {
 // ===== SHARED RENDER HELPERS =====
 window.jobCardHtml = function(j) {
   return `
-  <div class="job-card" onclick="location.href='job.html?id=${j.id}'">
+  <div class="job-card" onclick="location.href='job.html?id='+this.dataset.jid" data-jid="${j.id}" style="cursor:pointer;">
     <div class="job-top">
       <div class="job-title">${esc(j.title)}</div>
       <div class="job-price" style="text-align:right;">
