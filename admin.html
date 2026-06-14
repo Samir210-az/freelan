@@ -55,6 +55,8 @@
         <div class="stat-card"><div class="ico">📋</div><div class="val" id="st-jobs">0</div><div class="lbl">Elan</div></div>
         <div class="stat-card"><div class="ico">⏳</div><div class="val" id="st-pending">0</div><div class="lbl">Moderasiyada</div></div>
         <div class="stat-card"><div class="ico">💼</div><div class="val" id="st-bids">0</div><div class="lbl">Təklif</div></div>
+        <div class="stat-card"><div class="ico">💰</div><div class="val" id="st-revenue">₼0</div><div class="lbl">Cəmi dövriyyə</div></div>
+        <div class="stat-card"><div class="ico">💸</div><div class="val" id="st-paid-out">₼0</div><div class="lbl">Ödənildi</div></div>
       </div>
     </div>
 
@@ -108,7 +110,7 @@
 
 <footer id="app-footer"></footer>
 
-<script type="module" src="js/app.js?v=9"></script>
+<script type="module" src="js/app.js?v=10"></script>
 <script type="module">
 document.addEventListener('fb-ready', init);
 
@@ -184,6 +186,7 @@ async function loadAll() {
     _cachedUsers = users;
     document.getElementById('done-count').textContent = completedJobs.length;
     renderCompleted(completedJobs, users);
+    updateRevenueStats(jobs);
   } catch(e) {
     showToast('Yükləmə xətası: ' + e.message);
   }
@@ -235,14 +238,21 @@ function renderUsers(list) {
   const el = document.getElementById('users-table');
   el.innerHTML = list.length ? `
     <table class="tbl">
-      <thead><tr><th>Ad</th><th>E-poçt</th><th>Rol</th><th>Status</th><th>Əməliyyat</th></tr></thead>
+      <thead><tr><th>Ad</th><th>E-poçt</th><th>Rol</th><th>Balans</th><th>Status</th><th>Əməliyyat</th></tr></thead>
       <tbody>${list.map(u => `
         <tr>
-          <td style="font-weight:600;">${esc(u.name||'—')}</td>
-          <td>${esc(u.email||'—')}</td>
+          <td style="font-weight:600;"><a href="profile.html?uid=${u.id}" style="color:var(--green);">${esc(u.name||'—')}</a></td>
+          <td style="font-size:12px;">${esc(u.email||'—')}</td>
           <td>${u.role==='admin'?'<span class="badge badge-gray">👑 Admin</span>':u.role==='freelancer'?'<span class="badge badge-green">Freelancer</span>':'<span class="badge badge-blue">Müştəri</span>'}</td>
+          <td style="font-weight:700;">₼${Number(u.balance||0).toFixed(2)}</td>
           <td>${u.status==='banned'?'<span class="badge badge-red">Bloklanıb</span>':'<span class="badge badge-green">Aktiv</span>'}</td>
-          <td>${u.role!=='admin'?`<button class="btn ${u.status==='banned'?'btn-line':'btn-danger'} btn-sm" onclick="toggleBan('${u.id}','${u.status||'active'}')">${u.status==='banned'?'Bloku aç':'Blokla'}</button>`:'—'}</td>
+          <td style="display:flex;gap:4px;flex-wrap:wrap;">
+            ${u.role!=='admin'?`
+              <button class="btn ${u.status==='banned'?'btn-line':'btn-danger'} btn-sm" onclick="toggleBan('${u.id}','${u.status||'active'}')">${u.status==='banned'?'✅ Bloku aç':'🚫 Blokla'}</button>
+              <button class="btn btn-line btn-sm" onclick="adminSetRole('${u.id}','${u.role||'client'}','${esc(u.name||'')}')" title="Rolu dəyiş">🔄 Rol</button>
+              <button class="btn btn-line btn-sm" onclick="adminSetBalance('${u.id}',${Number(u.balance||0)},'${esc(u.name||'')}')" title="Balans düzəlt">💰 Balans</button>
+            `:'—'}
+          </td>
         </tr>`).join('')}</tbody>
     </table>` : '<div class="empty"><div class="ico">👥</div><p>İstifadəçi yoxdur</p></div>';
 }
@@ -436,6 +446,43 @@ window.toggleBan = async function(uid, cur) {
     loadAll();
   } catch(e) { showToast('Xəta: ' + e.message); }
 };
+
+window.adminSetRole = async function(uid, curRole, name) {
+  const roles = ['client','freelancer'];
+  const newRole = curRole === 'client' ? 'freelancer' : 'client';
+  if (!confirm(`"${name}" istifadəçisinin rolunu\n${curRole === 'client' ? 'Müştəri → Freelancer' : 'Freelancer → Müştəri'}\nolaraq dəyişmək istəyirsiniz?`)) return;
+  const { db, doc, updateDoc } = FB;
+  try {
+    await updateDoc(doc(db, 'users', uid), { role: newRole });
+    showToast(`Rol dəyişdirildi: ${newRole} ✅`);
+    loadAll();
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
+
+window.adminSetBalance = async function(uid, curBalance, name) {
+  const input = prompt(`"${name}" istifadəçisinin balansını daxil edin:\nCari balans: ₼${Number(curBalance).toFixed(2)}`, Number(curBalance).toFixed(2));
+  if (input === null) return;
+  const newBalance = parseFloat(input);
+  if (isNaN(newBalance) || newBalance < 0) { showToast('Düzgün məbləğ daxil edin'); return; }
+  if (!confirm(`Balansı ₼${newBalance.toFixed(2)} olaraq təyin etmək istəyirsiniz?`)) return;
+  const { db, doc, updateDoc } = FB;
+  try {
+    await updateDoc(doc(db, 'users', uid), { balance: newBalance });
+    showToast(`Balans yeniləndi: ₼${newBalance.toFixed(2)} ✅`);
+    loadAll();
+  } catch(e) { showToast('Xəta: ' + e.message); }
+};
+
+// ===== ADMIN STATS: revenue =====
+function updateRevenueStats(jobs) {
+  const completed = jobs.filter(j => j.status === 'completed');
+  const totalRevenue = completed.reduce((s, j) => s + Number(j.paidAmount || j.budget || 0), 0);
+  const adminPaid    = completed.filter(j => j.adminPaid).reduce((s, j) => s + Number(j.paidAmount || j.budget || 0), 0);
+  const el = document.getElementById('st-revenue');
+  if (el) el.textContent = '₼' + totalRevenue.toFixed(2);
+  const elp = document.getElementById('st-paid-out');
+  if (elp) elp.textContent = '₼' + adminPaid.toFixed(2);
+}
 </script>
 </body>
 </html>
