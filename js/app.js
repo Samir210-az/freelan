@@ -287,7 +287,7 @@ function renderFooter() {
     </div>
     <div class="ftr-bottom">
       <span>${t('rights')}</span>
-      <span>By <a href="https://instagram.com/s_akhundoff" target="_blank" rel="noopener">@s_akhundoff</a></span>
+      <span>By <a href="https://aze-ai.az" target="_blank" rel="noopener">securtiy_group</a></span>
     </div>
   </div>`;
 }
